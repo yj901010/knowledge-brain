@@ -1,0 +1,30 @@
+2026-10-08 Local Kubernetes Note Graph API / Next Graph View evidence
+
+Architecture: AGENTS.md and PROJECT.md reviewed before implementation. Same MSA boundaries, canonical Content ownership, derived Brain Query JanusGraph, fresh Space/Identity authority; no AI or cross-service SQL.
+
+Backend:
+backend-validation-1791463377: 38 focused tests, 0 failures/errors/skips, real Cassandra/OpenSearch.
+backend-validation-1791463605: 170 full backend tests, 0 failures/errors/skips, real PostgreSQL/Kafka/CDC/Media/OpenSearch/Cassandra.
+Initial backend-validation-1791463132 failed storage connectivity while old Cassandra Pod was Unknown after cluster resume; only Cassandra Pod replaced, PVC retained, focused/full reruns passed.
+
+Runtime HTTPS:
+note-graph-api-validation-1791464073 Complete: private DTO, resolved links, foreign Space/spoof denial, duplicate/missing cookie, strict parameters/methods, truncation, stable link identity on rename, retirement and immediate revocation.
+note-graph-api-validation-1791464234 Complete: real Space and Cassandra scale-down gives data-free 503; restored original replicas, changed Pod UIDs, fresh reads recover. Sanitized UID proof: .local/note-graph-api-failure-proof.json.
+
+Frontend:
+Pinned Next.js Webpack static export and TypeScript production build PASS.
+graph-web-validation-1791465036 Complete: actual deployed HTTPS Chromium UI test, 1 passed (18.5s).
+Personal Space creation, private Markdown creation, resolved edge, keyboard node activation, Content body navigation, title filter, zoom/reset, responsive mobile no horizontal overflow, Escape closes dialog, simulated 503 clears graph/body, actual session revoke returns welcome without graph data, no page/CSP errors.
+TLS verified using only public local CA imported into disposable test browser; no ignore-certificate-errors/ignoreHTTPSErrors.
+Earlier graph-web-validation-1791464893 reached all UI checks then Node APIRequestContext lacked local CA at final revocation; changed revocation to browser fetch with existing browser CA, set Node public CA for helper, and reran successfully. Failed Job removed after sanitized evidence collection.
+Screenshots inspected: .local/graph-ui-results/desktop.png and mobile.png. Browser logs: .local/graph-ui-results/validation.txt.
+Managed host localhost forward/IAB could not connect during this run; isolated browser validated deployed Gateway instead. User host PowerShell Start-LocalGateway.ps1 remains the access method; own temporary host forward stopped.
+
+Live images:
+space-service local-7444582456ac57b4
+brain-query-service local-7444582456ac57b4
+gateway-service local-6a2058ea1f60ed75
+content-service unchanged local-b531ad7106cfdfc6
+Final Space/BrainQuery/Gateway/Cassandra Ready 1/1. Own intermediate builder Pods/Services/ConfigMaps/NetworkPolicies removed; validation Job evidence retained with TTL.
+
+Limits: at most 200 nodes / 1000 resolved links; canonical events may lag; no global graph count; Note-to-Concept references and Activity event timeline remain planned. Not production HA validation.

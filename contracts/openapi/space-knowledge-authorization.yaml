@@ -1,0 +1,101 @@
+openapi: 3.1.0
+info:
+  title: Space Knowledge Authorization
+  version: 1.2.0
+servers:
+- url: https://space-service.brain-apps.svc:8080
+paths:
+  /internal/space/knowledge-authorization:
+    post:
+      operationId: authorizeKnowledge
+      description: Dedicated Knowledge service bearer over HTTPS. Resolve the live
+        common GUEST/REGISTERED principal through Identity. Private CONCEPT_READ/WRITE
+        require active PERSONAL membership (write OWNER/ADMIN/EDITOR). PUBLIC_CONCEPT_READ
+        requires an active public catalog Space; CONTRIBUTION_PROPOSE requires REGISTERED;
+        CONTRIBUTION_REVIEW/MERGE additionally require active REVIEWER/ADMIN/OWNER
+        membership. Knowledge enforces self-review and base-version restrictions.
+        No authorization cache. CLAIM_EXPERT_VERIFY and MAPPING_OFFICIAL_REVIEW each
+        additionally require its own current Space capability; reviewer membership
+        alone is insufficient.
+      security:
+      - knowledgeServiceBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - spaceId
+              - token
+              - action
+              properties:
+                spaceId:
+                  type: string
+                  format: uuid
+                token:
+                  type: string
+                  pattern: ^[A-Za-z0-9_-]{43}$
+                  writeOnly: true
+                action:
+                  type: string
+                  enum:
+                  - CONCEPT_READ
+                  - CONCEPT_WRITE
+                  - PUBLIC_CONCEPT_READ
+                  - CONTRIBUTION_PROPOSE
+                  - CONTRIBUTION_REVIEW
+                  - CONTRIBUTION_MERGE
+                  - CLAIM_EXPERT_VERIFY
+                  - MAPPING_OFFICIAL_REVIEW
+      responses:
+        '200':
+          description: No-store permission decision
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - spaceId
+                - principalId
+                - action
+                - visibility
+                properties:
+                  spaceId:
+                    type: string
+                    format: uuid
+                  principalId:
+                    type: string
+                    format: uuid
+                  action:
+                    type: string
+                    enum:
+                    - CONCEPT_READ
+                    - CONCEPT_WRITE
+                    - PUBLIC_CONCEPT_READ
+                    - CONTRIBUTION_PROPOSE
+                    - CONTRIBUTION_REVIEW
+                    - CONTRIBUTION_MERGE
+                    - CLAIM_EXPERT_VERIFY
+                    - MAPPING_OFFICIAL_REVIEW
+                  visibility:
+                    type: string
+                    enum:
+                    - PRIVATE
+                    - PUBLIC
+        '400':
+          description: Invalid action or UUID
+        '401':
+          description: Invalid service key or guest credential
+        '403':
+          description: Browser credential or access denied
+        '404':
+          description: Space unavailable
+        '503':
+          description: Identity or persistence unavailable; fail closed
+components:
+  securitySchemes:
+    knowledgeServiceBearer:
+      type: http
+      scheme: bearer
+      description: Separate 256-bit Brain Knowledge-to-Space credential.

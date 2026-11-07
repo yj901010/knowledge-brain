@@ -1,0 +1,19 @@
+PASS record Activity implementation and local Kubernetes validation
+Full backend:707 total,689 passed,0 failures/errors,18 unchanged environment-gated exclusions.
+Content:132/132 including own PostgreSQL and10 frozen Kafka contracts.
+Activity:27/27 including own PostgreSQL, ClickHouse and14 actual immutable Kafka streams.
+Focused browser:3/3; full browser:89/89 including two real Keycloak Space claims.
+Historical body/status and ordered association snapshots; independent body/link versions;
+archived sources; scoped cursor paging; foreign/revoked denial; escaped content and390px.
+Explicit current Content reads preserve sibling drafts; late/failed replies cannot restore details.
+Existing Learning/Planning history and legacy JSON preserved. All10 Content schemas identical.
+Activity restart and two canonical three-owner replays retain13 original events and all
+source/link audits, event IDs/actors/traces/times and original create idempotency intent.
+Active replay guard rejects a second invocation before mutation, including legacy Pod-only labels.
+Operator Jobs have no Kafka capability or API Service selector.
+No canonical, Inbox, ClickHouse, PVC, topic, CDC slot or consumer checkpoint reset.
+All12 app Deployments Ready, all8 Connectors/tasks RUNNING; Content connector unchanged.
+Verified exact image imports on both k3d nodes; four owned builder sets removed.
+HTTPS localhost:8443/graph verified; private/internal anonymous requests denied.
+Evidence:.local/record-activity-proof.json, record-activity-runtime-proof.json,
+record-activity-build-cleanup.json; docs/record-activity.md.

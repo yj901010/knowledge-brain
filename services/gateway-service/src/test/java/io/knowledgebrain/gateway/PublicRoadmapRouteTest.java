@@ -1,0 +1,5 @@
+package io.knowledgebrain.gateway;
+import org.junit.jupiter.api.Test;import static org.junit.jupiter.api.Assertions.*;
+class PublicRoadmapRouteTest {
+ @Test void exactPublicRoutesCannotDirectlyMutateCanonicalOrExposePersonalLearning(){String base="/api/public/spaces/0199e000-0000-7000-8000-000000000002",id="0199e000-0000-7000-8000-000000000003";for(String path:new String[]{"/roadmaps","/roadmaps/"+id,"/roadmaps/"+id+"/revisions","/roadmap-contributions","/roadmap-contributions/"+id,"/roadmap-contributions/"+id+"/reviews"})assertEquals("learning",GatewayRoute.select("GET",base+path).service());for(String path:new String[]{"/roadmap-contributions","/roadmap-contributions/"+id+"/review","/roadmap-contributions/"+id+"/merge"})assertEquals("learning",GatewayRoute.select("POST",base+path).service());for(String path:new String[]{"/roadmaps","/roadmaps/"+id,"/roadmaps/"+id+"/graph","/roadmaps/"+id+"/study-sessions","/roadmap-contributions/"+id})for(String method:new String[]{"PUT","DELETE","PATCH"})assertNull(GatewayRoute.select(method,base+path));assertNull(GatewayRoute.select("GET",base+"/roadmaps/"+id+"/learning"));}
+}

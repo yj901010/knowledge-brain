@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: brain-login
+spec:
+  replicas: {{ .Values.replicas }}
+  selector:
+    matchLabels: {app: brain-login}
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/config.yaml") . | sha256sum }}
+      labels: {app: brain-login}
+    spec:
+      automountServiceAccountToken: false
+      securityContext: {runAsNonRoot: true, runAsUser: 101, runAsGroup: 101, fsGroup: 101}
+      containers:
+        - name: proxy
+          image: {{ .Values.image | quote }}
+          command: [nginx, -c, /config/nginx.conf, -g, 'daemon off;']
+          securityContext: {allowPrivilegeEscalation: false, readOnlyRootFilesystem: true, capabilities: {drop: [ALL]}}
+          ports: [{name: https, containerPort: 8443}]
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+          readinessProbe: {httpGet: {path: /healthz, port: https, scheme: HTTPS}}
+          livenessProbe: {httpGet: {path: /healthz, port: https, scheme: HTTPS}}
+          volumeMounts:
+            - {name: config, mountPath: /config, readOnly: true}
+            - {name: tls, mountPath: /tls, readOnly: true}
+            - {name: trust, mountPath: /trust, readOnly: true}
+            - {name: temporary, mountPath: /tmp}
+      volumes:
+        - {name: config, configMap: {name: brain-login-proxy}}
+        - {name: tls, secret: {secretName: {{ .Values.tlsSecret }}}}
+        - {name: trust, configMap: {name: {{ .Values.backendTrustConfigMap }}}}
+        - {name: temporary, emptyDir: {sizeLimit: 32Mi}}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: brain-login
+spec:
+  selector: {app: brain-login}
+  ports: [{name: https, port: 8443, targetPort: https}]

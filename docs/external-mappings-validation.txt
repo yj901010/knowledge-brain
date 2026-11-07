@@ -1,0 +1,48 @@
+2026-10-20 — Private Concept external mapping candidates implemented and deployed
+
+AGENTS.md/PROJECT.md reviewed. Existing Knowledge ownership, common guest/registered
+authority, PRIVATE defaults, local ACID revisions and Outbox/CDC preserved.
+No dependency/dataset, architecture or public-review policy change.
+
+Backend: backend-validation-1792501047687140400: 799 passed, 5 environment-gated skipped,
+zero failures/errors across13 service modules. Scoped Knowledge: backend-validation-1792500702309824000:
+190 passed,8 Kafka-gated skips. Full run enabled Kafka and all198 Knowledge tests
+passed with0 skips. Includes scoped references, strictJSON/ETags, candidate-only
+state, immutable Concept/Source snapshots, active duplicates/editions, concurrent
+create/edit, atomic rollback, pagination and retirement with retained history.
+Actual Debezium→Kafka verifies all22 payload and11 envelope fields plus schema/
+trace headers and byte-identical Outbox delivery for create/update/retire.
+
+Browser: graph-web-validation-1792501494386224200:109/109 passed, including existing Keycloak/public workflows.
+Focused: graph-web-validation-1792501338720465600:2/2 passed. Tests use actual HTTPS APIs and deployed UI:
+exact identifiers and leading zeros, source picker20+2, mapping pages20+2,
+explicit current Concept/Source inspection, stale Source/mapping conflicts,
+independent parent draft,8-version history, Source/Concept retirement, private
+isolation, rejected official-state injection, delayed/failed reads, revocation,
+escaped metadata, no external fetching and390px mobile fit.
+
+Static Next/TypeScript export, dependency license notices and CSP hashes: graph-static-build-1792501046785189800.
+OpenAPI local refs validated:1427.
+Registry FULL/FULL_TRANSITIVE: external-mapping-contract-validation-1792500700912973900, external-mapping-contract-validation-1792501254400664700
+knowledge/external-mapping-events v1 SHA256:58c6f3a324cd3711dd931388376cfecabe6de4d9e6c3cf5c8a2620784855af3c
+Topic knowledge.external-mapping.v1 has literal Connect-write/owner-validator-read.
+Existing8 connectors/tasks RUNNING; Knowledge connector configuration unchanged.
+No existing projection, topic, Inbox, canonical row or checkpoint reset.
+
+Exact imports on both local nodes:
+Knowledge knowledge-brain/knowledge-service:local-5493a643273e6f7a
+Gateway knowledge-brain/gateway-service:local-947cf4f441d8d016
+All12 app Deployments Ready. Actual Knowledge restart replaced Pod UID.
+Read-only owner fingerprints match for22 mapping rows, retired Concept/Source,
+8 revisions of the selected retired mapping, original/current Concept/Source
+snapshot metadata and byte-identical Outbox payloads.
+Read-only proof Jobs:mapping-durability-1792501405734281500-before, mapping-durability-1792501422787558000-after
+Temporary image builders removed only after exact label/UID ownership checks.
+Host trusted HTTPS https://localhost:8443/graph responds200.
+
+Usage: 개인 개념 보관함 → Concept → 외부 체계 연결.
+Save a manual identifier and evidence as PRIVATE CANDIDATE after explicitly
+inspecting the current Concept and Source. Mapping status does not verify a
+Claim or establish official terminology/license authority. Reviewed mapping
+promotion, literal Claim objects and independent verification remain later work.
+Evidence:.local/external-mappings-proof.json and runtime/build-cleanup proofs.

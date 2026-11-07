@@ -1,0 +1,14 @@
+syntax = "proto3";
+package knowledgebrain.collaboration.studyroadmap.v1;
+option java_package = "io.knowledgebrain.contracts.collaboration.studyroadmap.v1";
+option java_multiple_files = true;
+message StudyRoadmapEnvelopeV1 {
+ string event_id = 1; string event_type = 2; uint32 event_version = 3; int64 occurred_at_epoch_millis = 4;
+ string producer = 5; string aggregate_type = 6; string aggregate_id = 7; string space_id = 8; string actor_id = 9; string trace_id = 10; bytes payload = 11;
+}
+// Relationship/provenance only; Learning retains the canonical graph and group link.
+message StudyRoadmapSnapshotV1 {
+ string binding_id = 1; string study_id = 2; string group_id = 3; int64 version = 4; string state = 5;
+ string roadmap_link_id = 6; int64 roadmap_link_version = 7; string source_space_id = 8; string source_roadmap_id = 9;
+ int64 source_version = 10; string source_title = 11; string visibility = 12; string created_at = 13; string updated_at = 14;
+}

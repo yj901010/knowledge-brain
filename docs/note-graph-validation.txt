@@ -1,0 +1,146 @@
+Graph foundation validation 2026-10-07
+Cassandra 4.0.21 pinned official image; JanusGraph core/cql 1.1.0; Java 25 Maven validation.
+Full regression: 161 tests, 0 failures/errors/skips.
+Graph consumer/rebuild/public API and visualization remain pending.
+
+JOB cassandra-bootstrap-1791382185 Complete
+PASS TLS verified; own graph keyspace/roles; default account disabled
+
+JOB cassandra-validation-1791382767 Complete
+PASS direct verified TLS handshake
+PASS own-keyspace read/write; foreign/auth/schema access denied
+PASS default account rejected
+PASS wrong hostname/CA/password and plaintext rejected
+
+JOB cassandra-validation-1791382802 Complete
+PASS unlabelled Pod denied CQL; no database credentials mounted
+
+JOB backend-validation-1791382803 Complete
+[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.912 s -- in io.knowledgebrain.gateway.GatewayProxyTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.105 s -- in io.knowledgebrain.gateway.ServiceBoundaryTest
+[INFO] Tests run: 13, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.375 s -- in io.knowledgebrain.identity.GuestSessionIntegrationTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.127 s -- in io.knowledgebrain.identity.GuestOutboxIntegrationTest
+PASS CDC committed byte-for-byte Protobuf, schema/trace headers, rollback absent, stable-ID replay, readonly client Write denied; committed=01a116bc-c665-74ad-8225-77ee26434cf4 rolled_back=01a116bc-c675-76cb-9744-1d2fd7e770c4
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 13.89 s -- in io.knowledgebrain.identity.KafkaOutboxIntegrationTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.023 s -- in io.knowledgebrain.identity.UuidV7Test
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.946 s -- in io.knowledgebrain.identity.ServiceBoundaryTest
+[INFO] Tests run: 11, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.113 s -- in io.knowledgebrain.space.GuestIdentityEventTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.183 s -- in io.knowledgebrain.space.PersonalSpaceIntegrationTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.551 s -- in io.knowledgebrain.space.MediaAuthorizationTest
+PASS deployed Space consumer: PRIVATE OWNER, other-principal denial, durable Inbox replay without Kafka acknowledgement, one Outbox per Space, byte-exact CDC Protobuf and trace/schema headers; guests=291
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 26.94 s -- in io.knowledgebrain.space.SpaceKafkaIntegrationTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.999 s -- in io.knowledgebrain.space.ServiceBoundaryTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.005 s -- in io.knowledgebrain.space.ContentAuthorizationTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.008 s -- in io.knowledgebrain.space.QueryAuthorizationTest
+[INFO] Tests run: 18, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.433 s -- in io.knowledgebrain.knowledge.ServiceBoundaryTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.345 s -- in io.knowledgebrain.content.AttachmentStoreIntegrationTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 5.403 s -- in io.knowledgebrain.content.NoteSnapshotIntegrationTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.690 s -- in io.knowledgebrain.content.DailyStoreIntegrationTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.667 s -- in io.knowledgebrain.content.NoteApiTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.272 s -- in io.knowledgebrain.content.DailyApiTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.079 s -- in io.knowledgebrain.content.NoteSnapshotApiTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.032 s -- in io.knowledgebrain.content.AttachmentApiTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.017 s -- in io.knowledgebrain.content.DailyDatesTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.446 s -- in io.knowledgebrain.content.WikiKafkaIntegrationTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.619 s -- in io.knowledgebrain.content.MetadataStoreIntegrationTest
+[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.472 s -- in io.knowledgebrain.content.NoteLinksIntegrationTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.723 s -- in io.knowledgebrain.content.AttachmentKafkaIntegrationTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.658 s -- in io.knowledgebrain.content.DailyKafkaIntegrationTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.016 s -- in io.knowledgebrain.content.MetadataInputTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.697 s -- in io.knowledgebrain.content.NoteKafkaIntegrationTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.005 s -- in io.knowledgebrain.content.WikiLinksTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.861 s -- in io.knowledgebrain.content.ServiceBoundaryTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.630 s -- in io.knowledgebrain.content.NoteStoreIntegrationTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.689 s -- in io.knowledgebrain.content.MetadataKafkaIntegrationTest
+[INFO] Tests run: 57, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.394 s -- in io.knowledgebrain.learning.ServiceBoundaryTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.379 s -- in io.knowledgebrain.planning.ServiceBoundaryTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.409 s -- in io.knowledgebrain.collaboration.ServiceBoundaryTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.400 s -- in io.knowledgebrain.activity.ServiceBoundaryTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.802 s -- in io.knowledgebrain.media.MinioStorageIntegrationTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.902 s -- in io.knowledgebrain.media.MediaApiTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.011 s -- in io.knowledgebrain.media.MediaInputTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.220 s -- in io.knowledgebrain.media.ServiceBoundaryTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.416 s -- in io.knowledgebrain.media.MediaKafkaIntegrationTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.433 s -- in io.knowledgebrain.media.MediaStoreIntegrationTest
+[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.470 s -- in io.knowledgebrain.integration.ServiceBoundaryTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.415 s -- in io.knowledgebrain.notification.ServiceBoundaryTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.995 s -- in io.knowledgebrain.brainquery.NoteProjectionStoreIntegrationTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.408 s -- in io.knowledgebrain.brainquery.NoteSearchStorageIntegrationTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.748 s -- in io.knowledgebrain.brainquery.NoteSearchApiTest
+PASS actual JanusGraph/Cassandra; scoped projection; independent versions; tombstones; reopened persistence
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 6.720 s -- in io.knowledgebrain.brainquery.NoteGraphStoreIntegrationTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.003 s -- in io.knowledgebrain.brainquery.NoteProjectionOffsetTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.012 s -- in io.knowledgebrain.brainquery.NoteGraphProjectionTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.005 s -- in io.knowledgebrain.brainquery.NoteSnapshotClientTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.013 s -- in io.knowledgebrain.brainquery.NoteSearchProjectionTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.264 s -- in io.knowledgebrain.brainquery.ServiceBoundaryTest
+[INFO] Tests run: 31, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+
+JOB cassandra-validation-1791383064 Complete
+PASS direct verified TLS handshake
+PASS own-keyspace read/write; foreign/auth/schema access denied
+PASS default account rejected
+PASS wrong hostname/CA/password and plaintext rejected
+
+JOB backend-validation-1791383075 Complete
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.105 s -- in io.knowledgebrain.brainquery.NoteProjectionStoreIntegrationTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.716 s -- in io.knowledgebrain.brainquery.NoteSearchApiTest
+PASS actual JanusGraph/Cassandra; scoped projection; independent versions; tombstones; reopened persistence
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 8.085 s -- in io.knowledgebrain.brainquery.NoteGraphStoreIntegrationTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.004 s -- in io.knowledgebrain.brainquery.NoteProjectionOffsetTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.014 s -- in io.knowledgebrain.brainquery.NoteGraphProjectionTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.005 s -- in io.knowledgebrain.brainquery.NoteSnapshotClientTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.046 s -- in io.knowledgebrain.brainquery.NoteSearchProjectionTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.393 s -- in io.knowledgebrain.brainquery.ServiceBoundaryTest
+[INFO] Tests run: 31, Failures: 0, Errors: 0, Skipped: 4
+[INFO] BUILD SUCCESS
+
+JOB cassandra-validation-1791383148 Complete
+PASS direct verified TLS handshake
+PASS persisted value after actual Cassandra Pod replacement
+PASS default account rejected
+PASS wrong hostname/CA/password and plaintext rejected
+
+JOB backend-validation-1791383159 Complete
+PASS actual JanusGraph vertices persisted after Cassandra Pod replacement
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.143 s -- in io.knowledgebrain.brainquery.NoteGraphStoreIntegrationTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+
+Actual Cassandra Pod/PVC restart proof:
+{
+  "oldPodUid": "083802a1-6748-4d91-be09-701da3b7f9bd",
+  "newPodUid": "69155000-82f0-48a3-9924-fb37e23f8ee4",
+  "pvcUid": "7da5bfd4-41ec-4e05-ac90-1a2a67f57b5b",
+  "beforeCqlJob": "cassandra-validation-1791383064",
+  "beforeGraphJob": "backend-validation-1791383075",
+  "afterCqlJob": "cassandra-validation-1791383148",
+  "afterGraphJob": "backend-validation-1791383159"
+}
+
+Light-load sample before restart: 910 MiB memory, 12 millicores; not a load benchmark.
+All positive Job Pods wait for NetworkPolicy propagation. Negative network Job mounts public CA only.
+No graph public route/Gremlin endpoint or Kafka ACL was added. Existing user search deployment unchanged.
+
+Final repeated install / scoped-only reopen JOB cassandra-bootstrap-1791383417 Complete
+PASS TLS verified; own graph keyspace/roles; default account disabled
+
+Final repeated install / scoped-only reopen JOB backend-validation-1791383569 Complete
+PASS actual JanusGraph vertices persisted after Cassandra Pod replacement
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.040 s -- in io.knowledgebrain.brainquery.NoteGraphStoreIntegrationTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+Verified: graph admin Secret absent; projector-only Cassandra graph credentials.

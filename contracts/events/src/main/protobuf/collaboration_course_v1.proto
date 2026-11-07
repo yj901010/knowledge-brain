@@ -1,0 +1,20 @@
+syntax = "proto3";
+package knowledgebrain.collaboration.course.v1;
+option java_package = "io.knowledgebrain.contracts.collaboration.course.v1";
+option java_multiple_files = true;
+message CourseEnvelopeV1 {
+ string event_id = 1; string event_type = 2; uint32 event_version = 3;
+ int64 occurred_at_epoch_millis = 4; string producer = 5; string aggregate_type = 6;
+ string aggregate_id = 7; string space_id = 8; string actor_id = 9; string trace_id = 10; bytes payload = 11;
+}
+// Full Group Course snapshot. Never contains personal course sessions/progress/evidence.
+// Deduplicate event_id and apply only increasing aggregate versions on replay.
+message CourseSnapshotV1 {
+ string course_id = 1; string group_id = 2; string space_id = 3; int64 version = 4;
+ string title = 5; string description = 6; string state = 7; string visibility = 8;
+ string creator_id = 9; string created_at = 10; string updated_at = 11;
+ repeated CourseStudyReferenceV1 studies = 12;
+}
+
+// Ordered selection-time provenance; opening resolves the current same-Group Study.
+message CourseStudyReferenceV1 { string study_id = 1; int64 study_version = 2; string title = 3; }

@@ -1,0 +1,14 @@
+syntax = "proto3";
+package content.recordconcepts.v1;
+option java_package = "io.knowledgebrain.contracts.content.recordconcepts.v1";
+option java_multiple_files = true;
+message RecordConceptEventEnvelopeV1 {
+ string event_id=1; string event_type=2; uint32 event_version=3; int64 occurred_at_epoch_millis=4;
+ string producer=5; string aggregate_type=6; string aggregate_id=7; string space_id=8; string actor_id=9; string trace_id=10; bytes payload=11;
+}
+message RecordConceptLinkV1 {string link_id=1; string concept_id=2;}
+// Complete ordered private association revision; Concept IDs are references, not copied Knowledge facts.
+message RecordConceptsChangedPayloadV1 {
+ string association_id=1; string record_type=2; string record_id=3; uint64 version=4;
+ uint64 record_version=5; string record_state=6; string revision_id=7; repeated RecordConceptLinkV1 links=8;
+}

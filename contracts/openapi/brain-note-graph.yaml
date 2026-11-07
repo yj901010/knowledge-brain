@@ -1,0 +1,96 @@
+openapi: 3.1.0
+info:
+  title: Private Note Graph API
+  version: 1.0.0
+paths:
+  /api/spaces/{spaceId}/graph/notes:
+    get:
+      operationId: readPrivateNoteGraph
+      description: 'Fresh Space NOTE_GRAPH authorization before every read. PRIVATE
+        PERSONAL only. Derived eventual graph: ACTIVE nodes and RESOLVED links between
+        selected same-Space nodes. No Markdown, global totals or unresolved labels.
+        Readiness/storage/authority outages fail closed; no-store.'
+      parameters:
+      - name: spaceId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 200
+          default: 100
+      responses:
+        '200':
+          description: Bounded same-Space graph
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - nodes
+                - links
+                - truncated
+                additionalProperties: false
+                properties:
+                  nodes:
+                    type: array
+                    maxItems: 200
+                    items:
+                      type: object
+                      required:
+                      - noteId
+                      - title
+                      additionalProperties: false
+                      properties:
+                        noteId:
+                          type: string
+                          format: uuid
+                        title:
+                          type: string
+                          maxLength: 200
+                  links:
+                    type: array
+                    maxItems: 1000
+                    items:
+                      type: object
+                      required:
+                      - linkId
+                      - sourceNoteId
+                      - targetNoteId
+                      additionalProperties: false
+                      properties:
+                        linkId:
+                          type: string
+                          format: uuid
+                        sourceNoteId:
+                          type: string
+                          format: uuid
+                        targetNoteId:
+                          type: string
+                          format: uuid
+                  truncated:
+                    type: boolean
+        '400':
+          description: Invalid or duplicate query
+        '401':
+          description: Guest credential missing, invalid or revoked
+        '404':
+          description: Space unavailable; no graph fields
+        '503':
+          description: Authority, graph readiness or storage unavailable; no graph
+            fields
+        '403':
+          description: Access denied; no graph fields
+security:
+- guestCookie: []
+components:
+  securitySchemes:
+    guestCookie:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest

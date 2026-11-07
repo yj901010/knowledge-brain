@@ -1,0 +1,56 @@
+spring:
+  application:
+    name: brain-query-service
+  threads:
+    virtual:
+      enabled: true
+  main:
+    keep-alive: true
+server:
+  port: ${PORT:8080}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+      probes:
+        enabled: true
+
+---
+spring:
+  config:
+    activate:
+      on-profile: projector
+management:
+  endpoint:
+    health:
+      group:
+        readiness:
+          include: readinessState,noteProjection
+
+---
+spring:
+  config:
+    activate:
+      on-profile: graph-projector
+management:
+  endpoint:
+    health:
+      group:
+        readiness:
+          include: readinessState,noteProjection,graphProjection
+
+---
+spring:
+  config:
+    activate:
+      on-profile: network-projector
+management:
+  endpoint:
+    health:
+      group:
+        readiness:
+          include: readinessState,noteProjection,graphProjection,brainNetworkProjection

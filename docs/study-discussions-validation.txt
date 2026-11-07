@@ -1,0 +1,20 @@
+Study Discussion validation — 2026-10-23
+
+collaboration: 95 passed, no failures/errors/skips; backend-validation-1792763136905737900-2fd0e6ff
+gateway: 98 passed, no failures/errors/skips; backend-validation-1792763339986345700-a892dd48
+Browser: eight actual-account Group scenarios passed; graph-web-validation-1792763799292741700
+Discussion UI verified MEMBER topic/reply creation with explicit Group sharing, two committed response-loss retries without duplicate topic/reply, immutable literal text and independent Discussion/Study versions.
+Current VIEWER read shared conversation and moderation history but could not create or reply. Even the MEMBER creator could not moderate. OWNER UI locked, reopened and archived a member topic; locked replies were blocked, original reply intent replayed safely, and RETIRED could not reopen.
+A lock/reopen cycle made an old reply context stale; input was preserved after412, explicit refresh retained it with cleared consent, and the new confirmed reply pinned current Discussion revision. Six replies paginated5/1; limit11 was rejected.
+Wrong Study and wrong Discussion/reply scopes failed. Archived Study froze an otherwise OPEN topic and new topic creation while authorized history/replies stayed readable. Demotion blocked even old-key writes; removal denied access and cleared private UI state.
+Group-shared conversation did not expose a separate AUTHOR_AND_OWNER Submission. Other participants remained denied; current OWNER retained the private answer after author removal. Personal Note data stayed unchanged and unreadable by other accounts.
+Guest denial, mobile overflow, page errors and empty persistent browser storage checks passed. Existing Group/membership/shared-roadmap/Study/reference-roadmap/Assignment/Submission flows passed together.
+Backend unit/integration coverage includes current-version no-ops, scoped catalog/history/reply pagination, immutable original create/reply retries after restart and parent archive, one-winner concurrent retries/moderation, lock-versus-reply race and snapshot/revision/reply Outbox rollback.
+Actual Debezium/Connect delivery on both collaboration.discussion.v1 and collaboration.discussion-reply.v1 matched five canonical Protobuf snapshots byte for byte with stable event IDs, aggregate key and trace/schema headers; unacknowledged replay matched again. No direct app producer or new read projector.
+Collaboration V6 adds only own Discussion/revision/reply tables and local Study/Discussion revision FKs. Space remains the fresh membership/role authority. OWNER/MEMBER writer policy and OWNER moderation do not change existing Assignment/Submission permissions.
+Immutable Registry collaboration/discussion-events/1 SHA256 414fcc98f3310dfb7b2e742ba7244e85b9ae0b0e92bd639e6361f1c30f721b48; FULL validity/FULL_TRANSITIVE compatibility. Both dedicated topics/ACLs Ready preceded canonical writes; live literal ACLs are Connect writer/Group validator reader only.
+CDC credentials could not SELECT Discussion/revision/reply/Study tables; Outbox stayed readable. Nine existing connector/tasks RUNNING; no offsets/slot/publication reset.
+OpenAPI: 64 documents and 1735 references resolve; new path parameter templates match declarations. Pinned Next/TypeScript static export passed.
+Collaboration/Gateway exact images imported on both nodes and rolled out; own-module/shared-event source bytes matched build archives, both owned temporary builder resource sets removed. Unrelated service image tags unchanged.
+All 13 application Deployments Ready; trusted HTTPS /graph and /graph/groups200/no-store/CSP. Collaboration schema V6.
+No previous migration/published Protobuf rewrite, new dependency/dataset, AI, public sharing, automatic Personal/Submission copying or destructive text changes.

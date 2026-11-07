@@ -1,0 +1,85 @@
+Focused public knowledge workspace validation — 2026-11-02 (Asia/Seoul)
+State: COMPLETE
+Cluster UID: ee84ca44-bb83-4712-a572-10169a6e2542
+Gateway image: knowledge-brain/gateway-service:local-1de32c2b4210d43d
+
+Delivered
+- Browse-first public search/graph, with Concept contribution/review and typed
+  record/evidence/verification work as explicit task panes; full overview retained.
+- Sidebar, cards, selector and Ctrl/Cmd+K with allowlisted category-only fragments,
+  legacy-link normalization, browser Back/Forward and recovered URL consistency.
+- First-use mounting and hidden/inert in-scope draft retention. Current principal,
+  guest/registered kind, domain and propose/review flags key all retained state.
+- Fresh identity/public catalog checks at entry/navigation/refresh/visibility return;
+  domain, identity/permission changes and failed checks drop retained inputs.
+  Checking hides panes; late aborted checks cannot overwrite a newer task.
+- Later real401 clears hidden drafts without silently creating another guest.
+  Initial anonymous access retains the existing guest identity setup behavior.
+- Explicit proposal/review/merge commands coordinate pending work with domain/task
+  controls. Sidebar/history requests explain the pending command and retain its
+  task. Navigation performs no automatic proposal/review/merge or retry.
+- Original source forms, comparisons, versions, stale-reference checks, independent
+  review, no-self-approval, public consent, audit and private source boundaries stay
+  authoritative. Reviewer membership is separate from expert/official capabilities.
+- Responsive cards, domain/permission labels and source forms, with no content/IDs
+  added to browser storage, URLs or task cards.
+
+11 exact-image HTTPS browser scenarios passed, using real local Keycloak accounts
+and verified project CA without TLS bypass:
+  graph-web-validation-1793628764990645700 / c26c67e3-d030-4eba-bfce-093b5a5ba5e6 : 9 passed
+  graph-web-validation-1793628998966665600 / f7d9d7c8-30de-4d4d-b227-62309643ec5f : 1 passed
+  graph-web-validation-1793629119085696600 / 329f66cc-8a90-4641-a64f-32b0828bf16d : 1 passed
+
+Four focused cases check deferred writer reads, keyboard navigation, visible history
+panes, search and Concept/record draft retention, domain clearing,503 recovery,
+late response isolation, real401, no navigation writes and one explicit unmerged
+proposal while workspace navigation is locked.390px checks and actual viewport
+captures cover the author workboard and original public Source form.
+One discovery layout case and four common workspace/graph cases cover repeated
+refresh/domain selection, themes, command focus/mobile drawer, private Note editing,
+graph keyboard/camera/drag/fit, dense bounded layout and current public graph reads.
+The local200-node/1,000-link fixture displayed in290ms; no backend latency,
+sustained load, HA or general production performance claim is made.
+
+Original public Concept regression verifies create/update/review/merge, stale/self
+denials, private Note/evidence isolation, guest claiming, public Roadmap review,
+version-pinned ratings/adoption and real reviewer revocation. The added UI check
+confirms both hidden Concept/record drafts clear after reviewer revocation while
+ordinary registered proposal rights remain available.
+Original typed workbench regression verifies explicit consent, source/alias/Claim/
+Evidence/Verification/Mapping workflows, exact pins, separate expert/official
+capabilities, capability withdrawal, stale merge, retirement/history and literal
+object/search/relation/private isolation. Temporary Development-only operator
+fixtures are not assertions of real professional credentials.
+
+Read-only Space audit confirms all three temporary reviewer fixtures retired,
+including the failed first legacy run; no active reviewer or capability remains.
+The first legacy test selected a same-named Concept from the workbench instead of
+its paged original source. Its locator/paging are now scoped to that exact source;
+all original update/review/merge assertions passed. Typed literal lookup uses the
+existing bounded catalog search so older fixtures do not obscure the target.
+
+Pinned TypeScript/Next export, CSP hashes and license notices passed.
+149 frontend and831 scoped runtime files match immutable source archives.
+Both existing nodes imported the checked image; owned ephemeral builders were
+cleaned only after evidence capture. Two nodes,14 apps,7 monitoring,13 JVMs and10
+CDC connectors/tasks are healthy. Original app/monitoring Deployment identities,
+all13 PVC UIDs and13 other app images are unchanged; no firing alerts.
+Only Gateway rolled. App/login/Headlamp/MinIO/Grafana host HTTPS200 with verified
+CA and anonymous dashboard401 passed; Gateway loopback forwarding was renewed.
+No canonical data/PVC/offset reset, cluster recreation or whole-cluster restore.
+
+Evidence
+.local/knowledge-workspace-validation.json
+.local/knowledge-workspace-baseline.json
+.local/knowledge-workspace-deployment.json
+.local/knowledge-workspace-builder-evidence/*.json, *.tar.gz, *.log
+.local/knowledge-workspace-forward.json
+.local/graph-ui-results/knowledge-workspace-*.png
+docs/knowledge-workspace.md
+
+No new service/dependency, domain API/schema/migration/event, dataset, cross-owner
+database access, direct Kafka publication, AI or automatic sharing/progress update.
+Earlier backend/qualifier/rebuild/backup tests remain historical. Licensed substantive
+content, broader workflow/accessibility/performance and production delivery/HA/SLO/
+off-host copies/PITR remain separate work.

@@ -1,0 +1,139 @@
+Private web Bookmark validation, 2026-10-18
+
+638 backend tests, zero failures/errors,25 unchanged environment-gated skips
+(613 passed). Content90 uses actual own PostgreSQL and all seven literal Content
+Kafka topics, no skips; Gateway46 no skips; Space33 has its existing two skips.
+New coverage includes exact absolute HTTP(S) URL validation and literal query/
+percent/fragment retention, Unicode and UTF-8 bounds, immutable revisions,
+same-key original intent replay after edit/archive/actor change, conflict before
+no-op, independent source Note, lifecycle/type-bound20+3 catalog and5+2 audit,
+concurrent same-key create/competing edits, full Outbox rollback including request
+key, exact three own Kafka envelopes/headers/source text and ordering, fresh scoped
+BOOKMARK authority, strict JSON/body/query/Origin/TLS and independent bmN guards.
+
+The first deployed browser check identified missing Gateway forwarding of the
+Bookmark Idempotency-Key. Exact-route validation/forwarding and empty read/archive
+guards were added with two regression tests. A later UI check caught a copied
+Korean archive-confirmation label; the UI label was corrected. Focused3 and full75
+now pass against the final deployed image. Initial failed Jobs are retained as
+diagnostic evidence; no data, topic, slot or offset reset was used to pass tests.
+
+Real browser flows cover23 distinct same-address bookmarks,20+3/20+2 catalogs,
+original v1 retry after nine edits and archival,5+5 retained audit, invalid scheme/
+userinfo/backslash/query/cursor denial and foreign principal rejection. Lost create
+response freezes the same key/fields and retries to one object; true edit/archive
+conflicts require latest inspection, preserve unrelated unsaved Note drafts and
+reset archive acknowledgment. Historical HTML is escaped, links have explicit
+noopener/noreferrer/no-referrer new-tab navigation and cause no automatic remote
+request. Mobile390px fit, no JS errors/private browser storage, failed/closed reads
+and real session revocation are verified. Desktop/mobile screenshots inspected.
+Two real Keycloak registrations preserve guest Bookmark IDs/revision IDs/actors,
+keys and original snapshots; later edits record the registered actor and original
+intent still replays after archival. A real Content Pod restart preserves active
+and archived objects, full audit and original-key replay with an independent Note
+unchanged. Synthetic active Bookmark is explicitly archived afterward with204.
+
+Registry new source SHA/VALIDITY FULL/COMPATIBILITY FULL_TRANSITIVE and all six
+previous Content schema bytes are verified against Registry. Prior Learning,
+Planning and Notification schema hashes match earlier completed proofs. Six new
+OpenAPI operations and every local reference resolve. Explicit Content capability
+actions add BOOKMARK_READ/WRITE while preserving Note permissions. CDC selects only
+own Outbox, cannot SELECT Note/two Bookmark canonical tables, cannot CONNECT twelve
+other owner DBs; existing connector/publication/slot/offsets preserved. Twelve app
+Deployments Ready and all eight Connectors/tasks RUNNING. Exact three images imported
+on both nodes. Five temporary builder Pod/Service/NetworkPolicy/source ConfigMap sets
+removed after own labels/UIDs/source owners/initexit0/deployed-image checks.
+No new dependency, external content fetch, canonical reset, PVC/topic deletion,
+cross-owner SQL or AI capability was introduced.
+
+{
+  "date": "2026-10-18",
+  "jobs": {
+    "backend": "backend-validation-1792303571729391200",
+    "focusedBrowser": "graph-web-validation-1792303969",
+    "browser": "graph-web-validation-1792304042",
+    "registry": "bookmark-contract-validation-1792303967",
+    "contentCdc": "content-cdc-bootstrap-1792303387"
+  },
+  "backend": {
+    "tests": 638,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 25
+  },
+  "passedBackend": 613,
+  "contentActualPostgresAndSevenKafkaTopicsTests": 90,
+  "gatewayTests": 46,
+  "spaceTests": 33,
+  "focusedBrowserTests": 3,
+  "browserTests": 75,
+  "registeredBookmarkClaimChecks": 2,
+  "registryBookmarkSha256": "fd8734005c8d77a0768e807bc86d30efea8aad389eeb6a1524d6812f9bcf1af5",
+  "unchangedContentSchemaHashes": {
+    "note": "e62519e0ec755f41dabb2aafcec3b5503cbfbcea6934f1669978a8e9b80fd8d9",
+    "links": "69fa68736670be833ae97f6b72f9aa4e95e117bc4bb19e4b50b9ff3285331416",
+    "metadata": "80ceaaa95dec8f9a4bb71fed2ff2100d882310b53d0ca09da87913d2c946ffa4",
+    "daily": "d90b7403b7117b1c272606cc224481a087d016fc0123bc5782f3f418b53c669d",
+    "attachments": "ab2b00c4fbad16250b0d9bfefdf28f081d4c4db725ab77e565585bb19fee2007",
+    "concepts": "2d096a96ce77b1d3a5f56b2ce733412022ce89e7d6625385bdac4bc9c6cec3ac"
+  },
+  "otherPriorLearningPlanningNotificationSchemasUnchanged": true,
+  "openapiReferences": 1299,
+  "newOperations": [
+    "listPrivateBookmarks",
+    "createPrivateBookmark",
+    "getPrivateBookmark",
+    "updatePrivateBookmark",
+    "archivePrivateBookmark",
+    "getPrivateBookmarkRevisions"
+  ],
+  "readyDeployments": 12,
+  "runningConnectors": [
+    "space-outbox",
+    "planning-outbox",
+    "notification-outbox",
+    "knowledge-outbox",
+    "media-outbox",
+    "content-outbox",
+    "learning-outbox",
+    "identity-outbox"
+  ],
+  "contentConnectorAndSlotUnchanged": true,
+  "images": {
+    "space": "knowledge-brain/space-service:local-d23ae9d77abc8d94",
+    "content": "knowledge-brain/content-service:local-d23ae9d77abc8d94",
+    "gateway": "knowledge-brain/gateway-service:local-2a9aed3684112e65"
+  },
+  "exactNodeImports": {
+    "space": [
+      "space-image-import-1792303241-0",
+      "space-image-import-1792303241-1"
+    ],
+    "content": [
+      "content-image-import-1792303244-0",
+      "content-image-import-1792303244-1"
+    ],
+    "gateway": [
+      "gateway-image-import-1792303913-0",
+      "gateway-image-import-1792303913-1"
+    ]
+  },
+  "runtime": {
+    "spaceId": "01a14dab-5a54-7ab2-9f0f-cf2106702a67",
+    "bookmarkId": "01a14dab-6f31-7f69-b87a-79dcf0429622",
+    "activeBookmarkId": "01a14dab-973e-790f-8e5a-19b2bbf449dd",
+    "noteId": "01a14dab-6733-74f2-8bcc-2e0ea7eae10d",
+    "contentRestart": {
+      "old": "e10ebc7a-7347-46b0-ab3e-4bc511030fd8",
+      "new": "c53f4658-6058-4cc8-936a-1ed1c9847899"
+    },
+    "originalIntentReplayPreserved": true,
+    "immutableRevisionsAndActorsPreserved": true,
+    "activeAndArchivedDiscoveryPreserved": true,
+    "noteSourceUnchanged": true,
+    "replicasPreserved": 1,
+    "keysTokensOnlyInMemory": true
+  },
+  "ownedBuilderSetsRemoved": 5,
+  "hostHttpsVerified": true
+}

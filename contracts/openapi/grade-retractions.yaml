@@ -1,0 +1,292 @@
+openapi: 3.1.0
+info:
+  title: Private immutable grade retraction and restoration
+  version: 1.0.0
+  description: Current registered Group OWNER explicitly annotates one immutable grade
+    version as RETRACTED or RESTORED with a reason. Self retraction/restoration is
+    forbidden, including exact no-op. Author/current OWNER alone read current/history;
+    peers404 even absent. Original score/reason/grade history stays visible; retraction
+    is not deletion, zero points or an ungraded null. New grade version starts without
+    marker; neither resubmission nor unchanged original grade PUT restores an old
+    marker. Initial RESTORED409. OPEN/CLOSED Assignment and nonarchived Study permit
+    annotations; RETIRED/DRAFT parents readonly. Independent UUIDv7/grN CAS, stale412,
+    exact current state+reason no-op unchanged. No grade/answer/feedback/request/private
+    Learning mutation, notification or publication. V13 Collaboration-owned current/full
+    revision/Outbox atomic, local provenance FKs and actor!=author constraints. Exact
+    source versions remain historical, not a write permission for new submissions.
+    Space fresh authority before local transaction, no distributed atomic revocation.
+    Separate collaboration.grade-retraction.v1 and collaboration/grade-retraction-events/1;
+    no prior contract/migration rewrite.
+security:
+- browserSession: []
+paths:
+  ? /api/groups/{groupId}/studies/{studyId}/assignments/{assignmentId}/submissions/{submissionId}/grade/revisions/{gradeVersion}/retraction
+  : parameters: &id012
+    - name: groupId
+      in: path
+      required: true
+      schema: &id001
+        $ref: assignment-submissions.yaml#/components/schemas/Id
+    - name: studyId
+      in: path
+      required: true
+      schema: *id001
+    - name: assignmentId
+      in: path
+      required: true
+      schema: *id001
+    - name: submissionId
+      in: path
+      required: true
+      schema: *id001
+    - name: gradeVersion
+      in: path
+      required: true
+      schema: &id013
+        type: integer
+        format: int64
+        minimum: 1
+        maximum: 9223372036854775807
+    get:
+      operationId: getGradeVersionRetraction
+      responses:
+        '200':
+          description: Authorized private exact-version retraction annotation/history;
+            original grade unchanged
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"gr(0|[1-9][0-9]*)"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/View'
+        '400': &id002
+          description: Exact command/valid Unicode/UUIDv7/canonical positive int64
+            target/strong frN/bounded query required
+        '401': &id003
+          description: Singleton secure HTTPS browser credential required
+        '403': &id004
+          description: Registered current Group access required. Writes current OWNER
+            only, same-origin and no self annotation.
+        '404': &id005
+          description: Scoped Submission/immutable grade revision unavailable, peer
+            or removed participation
+        '409': &id006
+          description: Archived/DRAFT parents are readonly, or initial RESTORED has
+            no retraction
+        '412': &id007
+          description: Independent retraction version changed; refresh/reconfirm
+        '413': &id008
+          description: Body exceeds20480 bytes
+        '415': &id009
+          description: application/json required for write
+        '428': &id010
+          description: Strong If-Match frN required, fr0 before first marker
+        '503': &id011
+          description: Space authority or storage unavailable
+    put:
+      operationId: annotateGradeVersionRetraction
+      parameters:
+      - name: Origin
+        in: header
+        required: true
+        schema:
+          type: string
+      - name: If-Match
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^"gr(0|[1-9][0-9]*)"$
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Input'
+      responses:
+        '200':
+          description: Authorized private exact-version retraction annotation/history;
+            original grade unchanged
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"gr(0|[1-9][0-9]*)"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Retraction'
+        '400': *id002
+        '401': *id003
+        '403': *id004
+        '404': *id005
+        '409': *id006
+        '412': *id007
+        '413': *id008
+        '415': *id009
+        '428': *id010
+        '503': *id011
+  ? /api/groups/{groupId}/studies/{studyId}/assignments/{assignmentId}/submissions/{submissionId}/grade/revisions/{gradeVersion}/retraction/revisions
+  : parameters: *id012
+    get:
+      operationId: getGradeVersionRetractionHistory
+      parameters:
+      - name: before
+        in: query
+        schema: *id013
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 5
+      responses:
+        '200':
+          description: Authorized private exact-version retraction annotation/history;
+            original grade unchanged
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/History'
+        '400': *id002
+        '401': *id003
+        '403': *id004
+        '404': *id005
+        '409': *id006
+        '412': *id007
+        '413': *id008
+        '415': *id009
+        '428': *id010
+        '503': *id011
+components:
+  securitySchemes:
+    browserSession:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest
+  schemas:
+    Retraction:
+      type: object
+      additionalProperties: false
+      required:
+      - retractionId
+      - gradeId
+      - submissionId
+      - assignmentId
+      - studyId
+      - groupId
+      - spaceId
+      - authorId
+      - actorId
+      - gradeVersion
+      - submissionVersion
+      - assignmentVersion
+      - version
+      - state
+      - reason
+      - audience
+      - createdAt
+      - updatedAt
+      properties:
+        retractionId: *id001
+        gradeId: *id001
+        submissionId: *id001
+        assignmentId: *id001
+        studyId: *id001
+        groupId: *id001
+        spaceId: *id001
+        authorId: *id001
+        actorId: *id001
+        gradeVersion: *id013
+        submissionVersion: *id013
+        assignmentVersion: *id013
+        version: *id013
+        state: &id015
+          enum:
+          - RETRACTED
+          - RESTORED
+        reason: &id016
+          type: string
+          minLength: 1
+          description: Nonblank valid Unicode, no NUL/unpaired surrogate; <=8192 UTF8
+            bytes; render literally
+        audience:
+          const: AUTHOR_AND_OWNER
+        createdAt: &id014
+          type: string
+          format: date-time
+        updatedAt: *id014
+    Input:
+      type: object
+      additionalProperties: false
+      required:
+      - state
+      - reason
+      properties:
+        state: *id015
+        reason: *id016
+    View:
+      type: object
+      additionalProperties: false
+      required:
+      - gradeId
+      - gradeVersion
+      - retraction
+      - canWrite
+      properties:
+        gradeId: *id001
+        gradeVersion: *id013
+        retraction:
+          oneOf:
+          - $ref: '#/components/schemas/Retraction'
+          - type: 'null'
+        canWrite:
+          type: boolean
+          description: Current OWNER, not the submitted answer author, with OPEN/CLOSED
+            Assignment and nonarchived Study. Writes recheck locally.
+    Revision:
+      type: object
+      additionalProperties: false
+      required:
+      - revisionId
+      - version
+      - actorId
+      - occurredAt
+      - snapshot
+      properties:
+        revisionId: *id001
+        version: *id013
+        actorId: *id001
+        occurredAt: *id014
+        snapshot:
+          $ref: '#/components/schemas/Retraction'
+    History:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - nextBefore
+      properties:
+        items:
+          type: array
+          maxItems: 10
+          items:
+            $ref: '#/components/schemas/Revision'
+        nextBefore:
+          oneOf:
+          - *id013
+          - type: 'null'

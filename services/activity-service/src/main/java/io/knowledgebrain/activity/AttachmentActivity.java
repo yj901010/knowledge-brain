@@ -1,0 +1,15 @@
+package io.knowledgebrain.activity;
+import java.time.Instant;import java.util.*;import java.text.Normalizer;
+import io.knowledgebrain.contracts.learning.roadmap.v1.RoadmapEventEnvelopeV1;
+import io.knowledgebrain.contracts.content.attachments.v1.NoteAttachmentsChangedPayloadV1;
+/** Original Content relationships and sealed metadata; no binary, capability or current Media hydration. */
+final class AttachmentActivity {
+ static final Set<String> MIME=Set.of("application/octet-stream","application/pdf","image/png","image/jpeg","image/gif","image/webp");
+ static boolean filename(String v){return !v.isEmpty()&&v.codePointCount(0,v.length())<=200&&Normalizer.normalize(v,Normalizer.Form.NFC).equals(v)&&v.strip().equals(v)&&!v.equals(".")&&!v.equals("..")&&!v.contains("/")&&!v.contains("\\")&&v.codePoints().noneMatch(c->Character.isISOControl(c)||c>=0xd800&&c<=0xdfff);}
+ static boolean target(ActivityEvent e){return e.noteAttachments()!=null&&e.noteLinks()==null&&e.metadata()==null&&e.noteConcepts()==null&&e.note()==null&&e.content()==null&&e.planning()==null&&e.roadmapId()==null&&e.nodeId()==null&&e.startedAt()==null&&e.endedAt()==null&&e.durationSeconds()==0&&e.targetPath().equals("/api/spaces/"+e.spaceId()+"/notes/"+e.aggregateId()+"/attachments");}
+ static ActivityEvent decode(RoadmapEventEnvelopeV1 e)throws com.google.protobuf.InvalidProtocolBufferException {
+  var p=NoteAttachmentsChangedPayloadV1.parseFrom(e.getPayload());var note=ActivityEvent.id(p.getNoteId());var revision=ActivityEvent.id(p.getRevisionId());if(!note.equals(ActivityEvent.id(e.getAggregateId()))||!e.getAggregateType().equals("NoteAttachments")||!e.getEventType().equals("NoteAttachmentsChanged")||p.getNoteVersion()<1||p.getAttachmentVersion()<1||!Set.of("ACTIVE","RETIRED").contains(p.getNoteState())||p.getAttachmentsCount()>20||p.getNoteState().equals("RETIRED")&&p.getAttachmentsCount()!=0)throw ActivityEvent.invalid();
+  var attachments=new ArrayList<ActivityEvent.Attachment>();var ids=new HashSet<UUID>();var media=new HashSet<UUID>();for(var v:p.getAttachmentsList()){var id=ActivityEvent.id(v.getAttachmentId());var file=ActivityEvent.id(v.getMediaId());if(!ids.add(id)||!media.add(file)||!filename(v.getFilename())||!MIME.contains(v.getMimeType())||v.getByteSize()<1||v.getByteSize()>10485760||!v.getSha256().matches("[0-9a-f]{64}"))throw ActivityEvent.invalid();attachments.add(new ActivityEvent.Attachment(id,file,v.getFilename(),v.getMimeType(),v.getByteSize(),v.getSha256()));}
+  return new ActivityEvent(ActivityEvent.id(e.getEventId()),ActivityEvent.id(e.getSpaceId()),ActivityEvent.id(e.getActorId()),e.getTraceId(),Instant.ofEpochMilli(e.getOccurredAtEpochMillis()).toString(),"NOTE_ATTACHMENTS",e.getEventType(),e.getAggregateType(),note,p.getAttachmentVersion(),null,null,"노트 첨부파일","",p.getNoteState(),"",null,null,0,"/api/spaces/"+e.getSpaceId()+"/notes/"+note+"/attachments",null,null,null,null,null,null,new ActivityEvent.NoteAttachments(revision,p.getNoteVersion(),List.copyOf(attachments)));
+ }
+}

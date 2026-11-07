@@ -1,0 +1,14 @@
+syntax = "proto3";
+package content.question.v1;
+option java_package = "io.knowledgebrain.contracts.content.question.v1";
+option java_multiple_files = true;
+message QuestionEventEnvelopeV1 {
+ string event_id=1; string event_type=2; uint32 event_version=3; int64 occurred_at_epoch_millis=4;
+ string producer=5; string aggregate_type=6; string aggregate_id=7; string space_id=8;
+ string actor_id=9; string trace_id=10; bytes payload=11;
+}
+// Complete private Content-owned question revision. ANSWERED is self-reported, not knowledge verification.
+message QuestionChangedPayloadV1 {
+ string question_id=1; string revision_id=2; uint64 version=3; string visibility=4; string state=5;
+ string title=6; string context=7; string answer=8; string status=9; string created_at=10; string updated_at=11;
+}

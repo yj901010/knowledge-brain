@@ -1,0 +1,5 @@
+apiVersion: v2
+name: brain-observability
+description: Private OpenTelemetry, metrics, logs, traces and operator alerts
+type: application
+version: 0.1.0

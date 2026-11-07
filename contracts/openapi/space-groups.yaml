@@ -1,0 +1,276 @@
+openapi: 3.1.0
+info:
+  title: Space Group capability (internal only)
+  version: 1.0.0
+servers:
+- url: https://space-service.brain-apps.svc:8080
+security:
+- collaborationCapability: []
+paths:
+  /internal/space/group-access:
+    post:
+      summary: Fresh registered principal and current GROUP PRIVATE OWNER authorization
+      description: Strict JSON, maximum 8192 bytes, no query parameters. Empty groupIds
+        resolves principal only. Never restores retired membership or Space. UUID
+        references must be canonical lowercase UUIDv7.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - token
+              - groupIds
+              properties:
+                token:
+                  type: string
+                  pattern: ^[A-Za-z0-9_-]{43}$
+                  writeOnly: true
+                groupIds:
+                  type: array
+                  maxItems: 101
+                  uniqueItems: true
+                  items:
+                    type: string
+                    format: uuid
+      responses:
+        '200':
+          description: No-store current principal and granted Group references
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Access'
+        '400':
+          description: Malformed or ambiguous request
+        '401':
+          description: Service authentication or browser credential invalid
+        '403':
+          description: Registered account required
+        '404':
+          description: Existing Group Space unavailable; no regrant
+        '503':
+          description: Identity or persistence unavailable
+  /internal/space/group-provision:
+    post:
+      summary: Idempotently provision GROUP PRIVATE Space and creator OWNER in a local
+        transaction
+      description: Strict JSON, maximum 8192 bytes, no query parameters. Empty groupIds
+        resolves principal only. Never restores retired membership or Space. UUID
+        references must be canonical lowercase UUIDv7.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - token
+              - groupId
+              properties:
+                token:
+                  type: string
+                  pattern: ^[A-Za-z0-9_-]{43}$
+                  writeOnly: true
+                groupId:
+                  type: string
+                  format: uuid
+      responses:
+        '200':
+          description: No-store current principal and granted Group references
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Access'
+        '400':
+          description: Malformed or ambiguous request
+        '401':
+          description: Service authentication or browser credential invalid
+        '403':
+          description: Registered account required
+        '404':
+          description: Existing Group Space unavailable; no regrant
+        '503':
+          description: Identity or persistence unavailable
+  /internal/space/group-participation:
+    post:
+      summary: Fresh registered Group participation grant; distinct from OWNER-only
+        creation authorization
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - token
+              - groupIds
+              properties:
+                token:
+                  type: string
+                  pattern: ^[A-Za-z0-9_-]{43}$
+                  writeOnly: true
+                groupIds:
+                  type: array
+                  maxItems: 101
+                  uniqueItems: true
+                  items:
+                    type: string
+                    format: uuid
+                    pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+      responses:
+        '200':
+          description: No-store principalId, REGISTERED kind, current grants and nextAfter
+            for plural catalog
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - principalId
+                - kind
+                - grants
+                properties:
+                  principalId:
+                    type: string
+                    format: uuid
+                  kind:
+                    const: REGISTERED
+                  grants:
+                    type: array
+                    maxItems: 101
+                    items:
+                      $ref: '#/components/schemas/ParticipationGrant'
+        '401':
+          description: Service or browser credential invalid
+        '403':
+          description: Registered principal required
+  /internal/space/group-participations:
+    post:
+      summary: Fresh registered Group participation grant; distinct from OWNER-only
+        creation authorization
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - token
+              - after
+              - limit
+              properties:
+                token:
+                  type: string
+                  pattern: ^[A-Za-z0-9_-]{43}$
+                  writeOnly: true
+                after:
+                  type:
+                  - string
+                  - 'null'
+                  format: uuid
+                limit:
+                  type: integer
+                  minimum: 1
+                  maximum: 100
+      responses:
+        '200':
+          description: No-store principalId, REGISTERED kind, current grants and nextAfter
+            for plural catalog
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - principalId
+                - kind
+                - grants
+                - nextAfter
+                properties:
+                  principalId:
+                    type: string
+                    format: uuid
+                  kind:
+                    const: REGISTERED
+                  grants:
+                    type: array
+                    maxItems: 101
+                    items:
+                      $ref: '#/components/schemas/ParticipationGrant'
+                  nextAfter:
+                    type:
+                    - string
+                    - 'null'
+                    format: uuid
+        '401':
+          description: Service or browser credential invalid
+        '403':
+          description: Registered principal required
+components:
+  securitySchemes:
+    collaborationCapability:
+      type: http
+      scheme: bearer
+      description: Dedicated Collaboration-to-Space capability. Browser cookies alone
+        are insufficient.
+  schemas:
+    Grant:
+      type: object
+      required:
+      - groupId
+      - spaceId
+      - role
+      - visibility
+      properties:
+        groupId:
+          type: string
+          format: uuid
+        spaceId:
+          type: string
+          format: uuid
+        role:
+          const: OWNER
+        visibility:
+          const: PRIVATE
+    Access:
+      type: object
+      required:
+      - principalId
+      - kind
+      - grants
+      properties:
+        principalId:
+          type: string
+          format: uuid
+        kind:
+          const: REGISTERED
+        grants:
+          type: array
+          maxItems: 101
+          items:
+            $ref: '#/components/schemas/Grant'
+    ParticipationGrant:
+      type: object
+      required:
+      - groupId
+      - spaceId
+      - role
+      - visibility
+      properties:
+        groupId:
+          type: string
+          format: uuid
+        spaceId:
+          type: string
+          format: uuid
+        role:
+          enum:
+          - OWNER
+          - MEMBER
+          - VIEWER
+        visibility:
+          const: PRIVATE

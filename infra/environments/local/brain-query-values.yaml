@@ -1,0 +1,134 @@
+replicaCount: 1
+image:
+  repository: knowledge-brain/brain-query-service
+  tag: ''
+  pullPolicy: Never
+  digest: sha256:16d4c42afbcbb8c40a02c8704997114ff470b995a5c33f7c96a46b784989ba1a
+resources:
+  requests:
+    cpu: 100m
+    memory: 512Mi
+  limits:
+    cpu: '1'
+    memory: 1536Mi
+env:
+- name: SPRING_PROFILES_ACTIVE
+  value: projector,graph-projector,network-projector
+- name: BRAIN_QUERY_PERSISTENCE_ENABLED
+  value: 'true'
+- name: BRAIN_QUERY_CONSUMER_ENABLED
+  value: 'true'
+- name: BRAIN_QUERY_DATABASE_URL
+  value: jdbc:postgresql://brain-postgres.brain-data.svc:5432/brain_brainquery
+- name: BRAIN_QUERY_DATABASE_PASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: brain-brainquery-db
+      key: password
+- name: BRAIN_QUERY_KAFKA_BOOTSTRAP_SERVERS
+  value: brain-kafka-kafka-bootstrap.brain-events.svc:9093
+- name: BRAIN_QUERY_SEARCH_ORIGIN
+  value: https://brain-opensearch.brain-data.svc:9200
+- name: SERVER_SSL_ENABLED
+  value: 'true'
+- name: SERVER_SSL_CERTIFICATE
+  value: file:/api-tls/tls.crt
+- name: SERVER_SSL_CERTIFICATE_PRIVATE_KEY
+  value: file:/api-tls/tls.key
+- name: BRAIN_QUERY_API_ENABLED
+  value: 'true'
+- name: BRAIN_QUERY_SPACE_ORIGIN
+  value: https://space-service.brain-apps.svc:8080
+- name: BRAIN_QUERY_SPACE_TRUST_FILE
+  value: /space-trust/ca.crt
+- name: BRAIN_QUERY_SPACE_AUTHORIZATION_KEY
+  valueFrom:
+    secretKeyRef:
+      name: brain-query-space-authorization
+      key: key
+- name: BRAIN_QUERY_GRAPH_ENABLED
+  value: 'true'
+- name: BRAIN_QUERY_GRAPH_HOST
+  value: brain-cassandra.brain-data.svc
+- name: BRAIN_QUERY_NETWORK_ENABLED
+  value: 'true'
+- name: BRAIN_QUERY_PUBLIC_ENABLED
+  value: 'true'
+- name: BRAIN_QUERY_PUBLIC_KNOWLEDGE_ORIGIN
+  value: https://knowledge-service.brain-apps.svc:8080
+- name: BRAIN_QUERY_PUBLIC_CHECK_KEY
+  valueFrom:
+    secretKeyRef:
+      name: brain-knowledge-public-check
+      key: key
+- name: BRAIN_QUERY_PUBLIC_CACHE_ENABLED
+  value: 'true'
+- name: BRAIN_QUERY_PUBLIC_CACHE_HOST
+  value: brain-valkey.brain-data.svc
+- name: BRAIN_QUERY_PUBLIC_CACHE_DIRECTORY
+  value: /public-cache
+extraVolumeMounts:
+- name: reader
+  mountPath: /search-reader
+  readOnly: true
+- name: space-trust
+  mountPath: /space-trust
+  readOnly: true
+- name: kafka
+  mountPath: /kafka
+  readOnly: true
+- name: api-tls
+  mountPath: /api-tls
+  readOnly: true
+- name: projector
+  mountPath: /search-projector
+  readOnly: true
+- name: graph-projector
+  mountPath: /graph-projector
+  readOnly: true
+- name: graph-kafka
+  mountPath: /graph-kafka
+  readOnly: true
+- name: network-kafka
+  mountPath: /network-kafka
+  readOnly: true
+- name: public-kafka
+  mountPath: /public-kafka
+  readOnly: true
+- name: public-cache
+  mountPath: /public-cache
+  readOnly: true
+extraVolumes:
+- name: reader
+  secret:
+    secretName: brain-search-reader-tls
+- name: space-trust
+  secret:
+    secretName: brain-guest-api-trust
+- name: kafka
+  secret:
+    secretName: brain-query-kafka
+- name: api-tls
+  secret:
+    secretName: brain-brain-query-api-tls
+- name: projector
+  secret:
+    secretName: brain-search-projector-tls
+- name: graph-projector
+  secret:
+    secretName: brain-graph-projector
+- name: graph-kafka
+  secret:
+    secretName: brain-graph-kafka
+- name: network-kafka
+  secret:
+    secretName: brain-network-kafka
+- name: public-kafka
+  secret:
+    secretName: brain-public-kafka
+- name: public-cache
+  secret:
+    secretName: brain-public-search-cache
+    optional: true
+probeScheme: HTTPS
+restrictGuestApiIngress: true

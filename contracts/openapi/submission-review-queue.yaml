@@ -1,0 +1,160 @@
+openapi: 3.1.0
+info:
+  title: OWNER submission review metadata queue
+  version: 1.0.0
+  description: Current registered Group OWNER only. MEMBER/VIEWER denied403 even if
+    queue empty; removed membership denied by fresh Space authority. Only submitted
+    work retained under existing OWNER access, no non-submitters list. No answer,
+    feedback/retraction/request reason, Note or other personal source body in summaries.
+    Filters are exact metadata predicates, never grades or completion. ALL default;
+    NEEDS_FEEDBACK when no comment, latest comment targets older answer, or its exact
+    feedback version is RETRACTED. HAS_FEEDBACK is complement, not acceptance. RETRACTED_FEEDBACK
+    includes the latest comment's retraction even when it belongs to an old answer.
+    Historical retractions on earlier comment versions do not mark newer comments.
+    PENDING_RESUBMISSION independent of feedback and parent lifecycle. Closed/archived
+    parent records remain readable without reopening submission. One bounded Collaboration-owned
+    metadata statement, all joins local/unique, no cross-service query. Current point-in-time
+    UUIDv7 keyset; changes between pages may change filter eligibility, refresh from
+    start for latest results. Existing canonical/event contracts remain unchanged;
+    no mutation, migration, new event, new dependency or cached authoritative state.
+    Fresh Space authorization precedes read; concurrent revocation may race admitted
+    read, subsequent calls recheck.
+security:
+- browserSession: []
+paths:
+  /api/groups/{groupId}/studies/{studyId}/assignments/{assignmentId}/submissions/review-queue:
+    parameters:
+    - name: groupId
+      in: path
+      required: true
+      schema: &id001
+        $ref: assignment-submissions.yaml#/components/schemas/Id
+    - name: studyId
+      in: path
+      required: true
+      schema: *id001
+    - name: assignmentId
+      in: path
+      required: true
+      schema: *id001
+    get:
+      operationId: getOwnerSubmissionReviewQueue
+      parameters:
+      - name: filter
+        in: query
+        schema:
+          type: string
+          enum:
+          - ALL
+          - NEEDS_FEEDBACK
+          - HAS_FEEDBACK
+          - RETRACTED_FEEDBACK
+          - PENDING_RESUBMISSION
+          default: ALL
+      - name: after
+        in: query
+        schema: *id001
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      responses:
+        '200':
+          description: Bounded metadata-only current queue; same shape regardless
+            parent lifecycle
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Page'
+        '400':
+          description: Unknown/duplicate query, invalid exact filter, canonical UUIDv7
+            cursor/parent or limit, query>256, nonempty GET body
+        '401':
+          description: Singleton secure HTTPS browser credential required
+        '403':
+          description: Current registered Group OWNER required; unsupported method/path
+            denied
+        '404':
+          description: Group grant or scoped Study/Assignment unavailable
+        '503':
+          description: Space authority or Collaboration storage unavailable
+components:
+  securitySchemes:
+    browserSession:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest
+  schemas:
+    ReviewSummary:
+      type: object
+      additionalProperties: false
+      required:
+      - submissionId
+      - authorId
+      - version
+      - assignmentVersion
+      - updatedAt
+      - feedbackVersion
+      - feedbackSubmissionVersion
+      - retractionState
+      - needsFeedback
+      - requestVersion
+      - requestState
+      - requestedSubmissionVersion
+      properties:
+        submissionId: *id001
+        authorId: *id001
+        version: &id002
+          type: integer
+          format: int64
+          minimum: 1
+          maximum: 9223372036854775807
+        assignmentVersion: *id002
+        updatedAt:
+          type: string
+          format: date-time
+        feedbackVersion: &id003
+          oneOf:
+          - *id002
+          - type: 'null'
+        feedbackSubmissionVersion: *id003
+        retractionState:
+          enum:
+          - NONE
+          - RETRACTED
+          - RESTORED
+        needsFeedback:
+          type: boolean
+          description: No feedback, latest feedback targets older answer, or latest
+            feedback version is RETRACTED; not a grading/acceptance/completion flag
+        requestVersion: *id003
+        requestState:
+          enum:
+          - NONE
+          - REQUESTED
+          - CANCELLED
+          - RESOLVED
+        requestedSubmissionVersion: *id003
+    Page:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - nextAfter
+      properties:
+        items:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/ReviewSummary'
+        nextAfter:
+          oneOf:
+          - *id001
+          - type: 'null'

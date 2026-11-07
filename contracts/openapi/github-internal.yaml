@@ -1,0 +1,302 @@
+openapi: 3.1.0
+info:
+  title: Integration scoped Space authority and canonical Activity recovery
+  version: 1.0.0
+  description: Internal HTTPS only. Dedicated independent Bearer keys; browser cookies
+    denied; never routed through Gateway. Integration exports only its retained github-commit
+    Outbox bytes. Freeze through before cursor scans, five results per page. Integration
+    never queries Space/Identity/Activity databases.
+security:
+- serviceBearer: []
+paths:
+  /internal/space/integration-authorization:
+    post:
+      operationId: authorizeGitHubSpace
+      parameters: []
+      responses:
+        '200':
+          description: Private no-store response
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                - spaceId
+                - principalId
+                - action
+                - visibility
+                properties:
+                  spaceId: &id001
+                    type: string
+                    format: uuid
+                    pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+                  principalId: *id001
+                  action:
+                    enum:
+                    - GITHUB_READ
+                    - GITHUB_WRITE
+                  visibility:
+                    const: PRIVATE
+        '400':
+          description: Malformed/duplicate/unknown input
+        '401':
+          description: Session unavailable
+        '403':
+          description: Registered account or same-origin authority required
+        '404':
+          description: Space or source unavailable
+        '409':
+          description: Active duplicate, disconnected source, changed source identity
+            or idempotency mismatch
+        '412':
+          description: Current repository version differs
+        '428':
+          description: Strong If-Match required
+        '502':
+          description: GitHub public source unavailable or malformed
+        '503':
+          description: GitHub throttled or authority unavailable
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - spaceId
+              - token
+              - action
+              properties:
+                spaceId: *id001
+                token:
+                  type: string
+                  pattern: ^[A-Za-z0-9_-]{43}$
+                action:
+                  enum:
+                  - GITHUB_READ
+                  - GITHUB_WRITE
+  /internal/integration/activity-events:
+    get:
+      operationId: exportRetainedGitHubCommitEvents
+      parameters:
+      - name: after
+        in: query
+        required: false
+        schema: *id001
+      - name: through
+        in: query
+        required: false
+        schema: *id001
+      responses:
+        '200':
+          description: Private no-store response
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                - through
+                - nextAfter
+                - items
+                properties:
+                  through:
+                    type:
+                    - string
+                    - 'null'
+                    format: uuid
+                  nextAfter:
+                    type:
+                    - string
+                    - 'null'
+                    format: uuid
+                  items:
+                    type: array
+                    maxItems: 5
+                    items:
+                      type: object
+                      additionalProperties: false
+                      required:
+                      - eventId
+                      - topic
+                      - payload
+                      properties:
+                        eventId: *id001
+                        topic:
+                          const: integration.github-commit.v1
+                        payload:
+                          type: string
+                          contentEncoding: base64
+        '400':
+          description: Malformed/duplicate/unknown input
+        '401':
+          description: Session unavailable
+        '403':
+          description: Registered account or same-origin authority required
+        '404':
+          description: Space or source unavailable
+        '409':
+          description: Active duplicate, disconnected source, changed source identity
+            or idempotency mismatch
+        '412':
+          description: Current repository version differs
+        '428':
+          description: Strong If-Match required
+        '502':
+          description: GitHub public source unavailable or malformed
+        '503':
+          description: GitHub throttled or authority unavailable
+  /api/spaces/{spaceId}/github/repositories/{repositoryId}/commits/{commitId}/reference:
+    parameters:
+    - name: spaceId
+      in: path
+      required: true
+      schema: &id002
+        type: string
+        format: uuid
+        pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+    - name: repositoryId
+      in: path
+      required: true
+      schema: *id002
+    - name: commitId
+      in: path
+      required: true
+      schema: *id002
+    get:
+      operationId: readImportedCommitLearningReference
+      description: Internal owner read; not exposed by Gateway. Fresh registered PERSONAL
+        PRIVATE OWNER with common secure Cookie. No GitHub network request. Disconnected
+        sources retain imported facts. Exact actor/space/repository/commit echoed;
+        no credentials or author email.
+      parameters: []
+      responses:
+        '200':
+          description: '200'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LearningReference'
+        '400':
+          description: '400'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '401':
+          description: '401'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '403':
+          description: '403'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '404':
+          description: '404'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '409':
+          description: '409'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '412':
+          description: '412'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '428':
+          description: '428'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '503':
+          description: '503'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+      security:
+      - commonSessionCookie: []
+components:
+  securitySchemes:
+    serviceBearer:
+      type: http
+      scheme: bearer
+    commonSessionCookie:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest
+  schemas:
+    LearningReference:
+      type: object
+      additionalProperties: false
+      required:
+      - spaceId
+      - principalId
+      - repositoryId
+      - commitId
+      - repositoryFullName
+      - sha
+      - subject
+      - authorLogin
+      - committedAt
+      - importedAt
+      - url
+      - visibility
+      - sourceVisibility
+      - version
+      properties:
+        spaceId: *id002
+        principalId: *id002
+        repositoryId: *id002
+        commitId: *id002
+        repositoryFullName:
+          type: string
+          pattern: ^[A-Za-z0-9-]{1,39}/[A-Za-z0-9_.-]{1,100}$
+        sha:
+          type: string
+          pattern: ^([0-9a-f]{40}|[0-9a-f]{64})$
+        subject:
+          type: string
+          maxLength: 500
+        authorLogin:
+          type:
+          - string
+          - 'null'
+        committedAt: &id003
+          type: string
+          format: date-time
+        importedAt: *id003
+        url:
+          type: string
+          format: uri
+        visibility:
+          const: PRIVATE
+        sourceVisibility:
+          const: PUBLIC
+        version:
+          const: 1

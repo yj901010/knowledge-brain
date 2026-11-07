@@ -1,0 +1,292 @@
+openapi: 3.1.0
+info:
+  title: Private feedback version retraction and restoration annotations
+  version: 1.0.0
+  description: 'Current Group OWNER annotates a particular immutable feedback version.
+    Only submission author/current OWNER read current/history; peers404 even if marker
+    absent. Author VIEWER can read, removed author denied, OWNER retains work. Retraction
+    is an endorsement-withdrawal annotation, never erasure: original feedback/current/history
+    APIs remain unchanged and visible to authorized author/OWNER. Default no annotation
+    is null/fr0 and creates nothing. Initial RESTORED409. Each feedback revision owns
+    its independent stable UUIDv7/frN marker, full revisions and Outbox. New feedback
+    versions have their own empty marker and do not rewrite prior retractions. Exact
+    same state/reason current no-op stable; stale same-value412. OPEN/CLOSED and nonarchived
+    Study writable, archived/DRAFT readonly. No changes to answer, feedback, resubmission
+    request, grading, private progress or sharing. Existing feedback V1 Protobuf remains
+    immutable; new collaboration.feedback-retraction.v1 / Registry collaboration/feedback-retraction-events/1
+    full snapshots. Local Group->Study->Assignment->Submission locks serialize with
+    feedback edits/lifecycle. Fresh Space authorization precedes tx; concurrent revocation
+    can race admitted operations, later calls recheck.'
+security:
+- browserSession: []
+paths:
+  ? /api/groups/{groupId}/studies/{studyId}/assignments/{assignmentId}/submissions/{submissionId}/feedback/revisions/{feedbackVersion}/retraction
+  : parameters: &id012
+    - name: groupId
+      in: path
+      required: true
+      schema: &id001
+        $ref: assignment-submissions.yaml#/components/schemas/Id
+    - name: studyId
+      in: path
+      required: true
+      schema: *id001
+    - name: assignmentId
+      in: path
+      required: true
+      schema: *id001
+    - name: submissionId
+      in: path
+      required: true
+      schema: *id001
+    - name: feedbackVersion
+      in: path
+      required: true
+      schema: &id013
+        type: integer
+        format: int64
+        minimum: 1
+        maximum: 9223372036854775807
+    get:
+      operationId: getFeedbackVersionRetraction
+      responses:
+        '200':
+          description: Authorized private exact-version retraction annotation/history;
+            original feedback unchanged
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"fr(0|[1-9][0-9]*)"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/View'
+        '400': &id002
+          description: Exact command/valid Unicode/UUIDv7/canonical positive int64
+            target/strong frN/bounded query required
+        '401': &id003
+          description: Singleton secure HTTPS browser credential required
+        '403': &id004
+          description: Registered Group participant required; writes current OWNER
+            and same-origin only
+        '404': &id005
+          description: Scoped Submission/immutable feedback revision unavailable,
+            peer or removed participation
+        '409': &id006
+          description: Archived/DRAFT parents are readonly, or initial RESTORED has
+            no retraction
+        '412': &id007
+          description: Independent retraction version changed; refresh/reconfirm
+        '413': &id008
+          description: Body exceeds20480 bytes
+        '415': &id009
+          description: application/json required for write
+        '428': &id010
+          description: Strong If-Match frN required, fr0 before first marker
+        '503': &id011
+          description: Space authority or storage unavailable
+    put:
+      operationId: annotateFeedbackVersionRetraction
+      parameters:
+      - name: Origin
+        in: header
+        required: true
+        schema:
+          type: string
+      - name: If-Match
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^"fr(0|[1-9][0-9]*)"$
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Input'
+      responses:
+        '200':
+          description: Authorized private exact-version retraction annotation/history;
+            original feedback unchanged
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"fr(0|[1-9][0-9]*)"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Retraction'
+        '400': *id002
+        '401': *id003
+        '403': *id004
+        '404': *id005
+        '409': *id006
+        '412': *id007
+        '413': *id008
+        '415': *id009
+        '428': *id010
+        '503': *id011
+  ? /api/groups/{groupId}/studies/{studyId}/assignments/{assignmentId}/submissions/{submissionId}/feedback/revisions/{feedbackVersion}/retraction/revisions
+  : parameters: *id012
+    get:
+      operationId: getFeedbackVersionRetractionHistory
+      parameters:
+      - name: before
+        in: query
+        schema: *id013
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 5
+      responses:
+        '200':
+          description: Authorized private exact-version retraction annotation/history;
+            original feedback unchanged
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/History'
+        '400': *id002
+        '401': *id003
+        '403': *id004
+        '404': *id005
+        '409': *id006
+        '412': *id007
+        '413': *id008
+        '415': *id009
+        '428': *id010
+        '503': *id011
+components:
+  securitySchemes:
+    browserSession:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest
+  schemas:
+    Retraction:
+      type: object
+      additionalProperties: false
+      required:
+      - retractionId
+      - feedbackId
+      - submissionId
+      - assignmentId
+      - studyId
+      - groupId
+      - spaceId
+      - authorId
+      - actorId
+      - feedbackVersion
+      - submissionVersion
+      - assignmentVersion
+      - version
+      - state
+      - reason
+      - audience
+      - createdAt
+      - updatedAt
+      properties:
+        retractionId: *id001
+        feedbackId: *id001
+        submissionId: *id001
+        assignmentId: *id001
+        studyId: *id001
+        groupId: *id001
+        spaceId: *id001
+        authorId: *id001
+        actorId: *id001
+        feedbackVersion: *id013
+        submissionVersion: *id013
+        assignmentVersion: *id013
+        version: *id013
+        state: &id015
+          enum:
+          - RETRACTED
+          - RESTORED
+        reason: &id016
+          type: string
+          minLength: 1
+          description: Nonblank valid Unicode, no NUL/unpaired surrogate; <=8192 UTF8
+            bytes; render literally
+        audience:
+          const: AUTHOR_AND_OWNER
+        createdAt: &id014
+          type: string
+          format: date-time
+        updatedAt: *id014
+    Input:
+      type: object
+      additionalProperties: false
+      required:
+      - state
+      - reason
+      properties:
+        state: *id015
+        reason: *id016
+    View:
+      type: object
+      additionalProperties: false
+      required:
+      - feedbackId
+      - feedbackVersion
+      - retraction
+      - canWrite
+      properties:
+        feedbackId: *id001
+        feedbackVersion: *id013
+        retraction:
+          oneOf:
+          - $ref: '#/components/schemas/Retraction'
+          - type: 'null'
+        canWrite:
+          type: boolean
+          description: Current OWNER + OPEN/CLOSED Assignment + nonarchived Study;
+            writes recheck
+    Revision:
+      type: object
+      additionalProperties: false
+      required:
+      - revisionId
+      - version
+      - actorId
+      - occurredAt
+      - snapshot
+      properties:
+        revisionId: *id001
+        version: *id013
+        actorId: *id001
+        occurredAt: *id014
+        snapshot:
+          $ref: '#/components/schemas/Retraction'
+    History:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - nextBefore
+      properties:
+        items:
+          type: array
+          maxItems: 10
+          items:
+            $ref: '#/components/schemas/Revision'
+        nextBefore:
+          oneOf:
+          - *id013
+          - type: 'null'

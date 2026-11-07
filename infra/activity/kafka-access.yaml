@@ -1,0 +1,209 @@
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaUser
+metadata:
+  name: brain-activity-projector
+  namespace: brain-events
+  labels:
+    strimzi.io/cluster: brain-kafka
+spec:
+  authentication:
+    type: tls
+  authorization:
+    type: simple
+    acls:
+    - resource:
+        type: topic
+        name: learning.roadmap.v1
+        patternType: literal
+      operations:
+      - Read
+      - Describe
+    - resource:
+        type: topic
+        name: learning.progress.v1
+        patternType: literal
+      operations:
+      - Read
+      - Describe
+    - resource:
+        type: topic
+        name: learning.study-session.v1
+        patternType: literal
+      operations:
+      - Read
+      - Describe
+    - resource:
+        type: topic
+        name: learning.evidence.v1
+        patternType: literal
+      operations:
+      - Read
+      - Describe
+    - resource:
+        type: topic
+        name: learning.concept-evidence.v1
+        patternType: literal
+      operations:
+      - Read
+      - Describe
+    - resource:
+        type: topic
+        name: learning.media-evidence.v1
+        patternType: literal
+      operations:
+      - Read
+      - Describe
+    - resource:
+        type: topic
+        name: learning.evidence-session.v1
+        patternType: literal
+      operations:
+      - Read
+      - Describe
+    - resource:
+        type: topic
+        name: planning.goal.v1
+        patternType: literal
+      operations:
+      - Read
+      - Describe
+    - resource:
+        type: topic
+        name: planning.task.v1
+        patternType: literal
+      operations:
+      - Read
+      - Describe
+    - resource:
+        type: topic
+        name: planning.schedule.v1
+        patternType: literal
+      operations:
+      - Read
+      - Describe
+    - resource:
+        type: topic
+        name: content.bookmark.v1
+        patternType: literal
+      operations:
+      - Read
+      - Describe
+    - resource:
+        type: topic
+        name: content.question.v1
+        patternType: literal
+      operations:
+      - Read
+      - Describe
+    - resource:
+        type: topic
+        name: content.decision.v1
+        patternType: literal
+      operations:
+      - Read
+      - Describe
+    - resource:
+        type: topic
+        name: content.record-concepts.v1
+        patternType: literal
+      operations:
+      - Read
+      - Describe
+    - resource:
+        type: topic
+        name: content.note.v1
+        patternType: literal
+      operations:
+      - Read
+      - Describe
+    - resource:
+        type: topic
+        name: content.daily-note.v1
+        patternType: literal
+      operations:
+      - Read
+      - Describe
+    - resource:
+        type: topic
+        name: content.note-concepts.v1
+        patternType: literal
+      operations:
+      - Read
+      - Describe
+    - resource:
+        type: topic
+        name: content.note-metadata.v1
+        patternType: literal
+      operations:
+      - Read
+      - Describe
+    - resource:
+        type: topic
+        name: content.note-links.v1
+        patternType: literal
+      operations:
+      - Read
+      - Describe
+    - resource:
+        type: topic
+        name: content.note-attachments.v1
+        patternType: literal
+      operations:
+      - Read
+      - Describe
+    - resource:
+        type: topic
+        name: knowledge.claim.v1
+        patternType: literal
+      operations:
+      - Read
+      - Describe
+    - resource:
+        type: topic
+        name: knowledge.claim.v2
+        patternType: literal
+      operations:
+      - Read
+      - Describe
+    - resource:
+        type: group
+        name: activity-
+        patternType: prefix
+      operations:
+      - Read
+      - Describe
+    - resource:
+        type: topic
+        name: integration.github-commit.v1
+        patternType: literal
+      operations:
+      - Read
+      - Describe
+    - resource:
+        type: topic
+        name: learning.github-evidence.v1
+        patternType: literal
+      operations:
+      - Read
+      - Describe
+    - resource:
+        type: topic
+        name: learning.github-evidence-session.v1
+        patternType: literal
+      operations:
+      - Read
+      - Describe
+    - resource:
+        type: topic
+        name: integration.github-issue.v1
+        patternType: literal
+      operations:
+      - Read
+      - Describe
+    - resource:
+        type: topic
+        name: integration.github-pull-request.v1
+        patternType: literal
+      operations:
+      - Read
+      - Describe

@@ -1,0 +1,407 @@
+openapi: 3.1.0
+info:
+  title: Private submission OWNER grades
+  version: 1.0.0
+  description: Registered current OWNER explicitly records integer0..100 score plus
+    nonblank reason for another author's current immutable submitted attempt/instruction
+    version. Self-grading is forbidden, including no-op retries. Author and current
+    OWNER alone read current/history; peers404 even absent, removed members lose access.
+    No actor selector, no public/member feed, no automatic Learning progress, acceptance,
+    pass/fail threshold or knowledge verification. New answers preserve old grades
+    and require explicit review/save. Score0 is a real grade, null means ungraded.
+    OPEN/CLOSED Assignment plus nonarchived Study allows grading; RETIRED/DRAFT parents
+    readonly. Stable UUIDv7, independent strong sgN, stale grade412, stale source409,
+    exact current no-op unchanged. Group->Study->Assignment->Submission local locks;
+    current/full revision/Outbox atomic. Fresh Space authorization precedes transaction;
+    subsequent requests recheck membership. Separate collaboration.submission-grade.v1
+    and collaboration/submission-grade-events/1. V12 adds only Collaboration-owned
+    tables; no dependency or cross-service transaction. No withdrawal, drafts, rubric,
+    automatic grade publication or notifications in this slice. Explicit save publishes
+    immediately to author/current OWNER; corrections preserve prior snapshots.
+security:
+- browserSession: []
+paths:
+  /api/groups/{groupId}/studies/{studyId}/assignments/{assignmentId}/submissions/{submissionId}/grade:
+    parameters:
+    - name: groupId
+      in: path
+      required: true
+      schema:
+        $ref: assignment-submissions.yaml#/components/schemas/Id
+    - name: studyId
+      in: path
+      required: true
+      schema:
+        $ref: assignment-submissions.yaml#/components/schemas/Id
+    - name: assignmentId
+      in: path
+      required: true
+      schema:
+        $ref: assignment-submissions.yaml#/components/schemas/Id
+    - name: submissionId
+      in: path
+      required: true
+      schema:
+        $ref: assignment-submissions.yaml#/components/schemas/Id
+    get:
+      operationId: getSubmissionGrade
+      responses:
+        '200':
+          description: Authorized current grade or immutable history; no automatic
+            private progress or answer changes
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"sg(0|[1-9][0-9]*)"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/View'
+        '400':
+          description: Exact duplicate-free JSON, integer0..100 score, valid Unicode
+            reason<=8192 UTF8 bytes, canonical UUIDv7/source versions, bounded exact
+            query and independent strong sgN tag
+        '401':
+          description: Singleton secure browser credential required
+        '403':
+          description: Registered current participation required; writes current OWNER
+            only, same-origin and no self-grading
+        '404':
+          description: Group/Space/Study/Assignment/Submission unavailable, or actor
+            is neither author nor OWNER
+        '409':
+          description: Reviewed attempt/instruction provenance changed or archived/DRAFT
+            parent is readonly
+        '412':
+          description: Independent grade version changed; explicitly refresh before
+            reapplication
+        '413':
+          description: JSON body exceeds20480 bytes
+        '415':
+          description: application/json required
+        '428':
+          description: If-Match sgN required, sg0 initially
+        '503':
+          description: Space authority or Collaboration storage unavailable
+    put:
+      operationId: recordSubmissionOwnerGrade
+      responses:
+        '200':
+          description: Authorized current grade or immutable history; no automatic
+            private progress or answer changes
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"sg(0|[1-9][0-9]*)"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Grade'
+        '400':
+          description: Exact duplicate-free JSON, integer0..100 score, valid Unicode
+            reason<=8192 UTF8 bytes, canonical UUIDv7/source versions, bounded exact
+            query and independent strong sgN tag
+        '401':
+          description: Singleton secure browser credential required
+        '403':
+          description: Registered current participation required; writes current OWNER
+            only, same-origin and no self-grading
+        '404':
+          description: Group/Space/Study/Assignment/Submission unavailable, or actor
+            is neither author nor OWNER
+        '409':
+          description: Reviewed attempt/instruction provenance changed or archived/DRAFT
+            parent is readonly
+        '412':
+          description: Independent grade version changed; explicitly refresh before
+            reapplication
+        '413':
+          description: JSON body exceeds20480 bytes
+        '415':
+          description: application/json required
+        '428':
+          description: If-Match sgN required, sg0 initially
+        '503':
+          description: Space authority or Collaboration storage unavailable
+      parameters:
+      - name: Origin
+        in: header
+        required: true
+        schema:
+          type: string
+      - name: If-Match
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^"sg(0|[1-9][0-9]*)"$
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Input'
+  /api/groups/{groupId}/studies/{studyId}/assignments/{assignmentId}/submissions/{submissionId}/grade/revisions:
+    parameters:
+    - name: groupId
+      in: path
+      required: true
+      schema:
+        $ref: assignment-submissions.yaml#/components/schemas/Id
+    - name: studyId
+      in: path
+      required: true
+      schema:
+        $ref: assignment-submissions.yaml#/components/schemas/Id
+    - name: assignmentId
+      in: path
+      required: true
+      schema:
+        $ref: assignment-submissions.yaml#/components/schemas/Id
+    - name: submissionId
+      in: path
+      required: true
+      schema:
+        $ref: assignment-submissions.yaml#/components/schemas/Id
+    get:
+      operationId: getSubmissionGradeHistory
+      responses:
+        '200':
+          description: Authorized current grade or immutable history; no automatic
+            private progress or answer changes
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/History'
+        '400':
+          description: Exact duplicate-free JSON, integer0..100 score, valid Unicode
+            reason<=8192 UTF8 bytes, canonical UUIDv7/source versions, bounded exact
+            query and independent strong sgN tag
+        '401':
+          description: Singleton secure browser credential required
+        '403':
+          description: Registered current participation required; writes current OWNER
+            only, same-origin and no self-grading
+        '404':
+          description: Group/Space/Study/Assignment/Submission unavailable, or actor
+            is neither author nor OWNER
+        '409':
+          description: Reviewed attempt/instruction provenance changed or archived/DRAFT
+            parent is readonly
+        '412':
+          description: Independent grade version changed; explicitly refresh before
+            reapplication
+        '413':
+          description: JSON body exceeds20480 bytes
+        '415':
+          description: application/json required
+        '428':
+          description: If-Match sgN required, sg0 initially
+        '503':
+          description: Space authority or Collaboration storage unavailable
+      parameters:
+      - name: before
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+          minimum: 1
+          maximum: 9223372036854775807
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 5
+components:
+  securitySchemes:
+    browserSession:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest
+  schemas:
+    Grade:
+      type: object
+      additionalProperties: false
+      required:
+      - score
+      - gradeId
+      - submissionId
+      - assignmentId
+      - studyId
+      - groupId
+      - spaceId
+      - authorId
+      - graderId
+      - version
+      - submissionVersion
+      - assignmentVersion
+      - reason
+      - audience
+      - createdAt
+      - updatedAt
+      properties:
+        gradeId:
+          $ref: assignment-submissions.yaml#/components/schemas/Id
+        submissionId:
+          $ref: assignment-submissions.yaml#/components/schemas/Id
+        assignmentId:
+          $ref: assignment-submissions.yaml#/components/schemas/Id
+        studyId:
+          $ref: assignment-submissions.yaml#/components/schemas/Id
+        groupId:
+          $ref: assignment-submissions.yaml#/components/schemas/Id
+        spaceId:
+          $ref: assignment-submissions.yaml#/components/schemas/Id
+        authorId:
+          $ref: assignment-submissions.yaml#/components/schemas/Id
+        graderId:
+          $ref: assignment-submissions.yaml#/components/schemas/Id
+        version:
+          type: integer
+          format: int64
+          minimum: 1
+          maximum: 9223372036854775807
+        submissionVersion:
+          type: integer
+          format: int64
+          minimum: 1
+          maximum: 9223372036854775807
+        assignmentVersion:
+          type: integer
+          format: int64
+          minimum: 1
+          maximum: 9223372036854775807
+        reason:
+          type: string
+          minLength: 1
+          description: Nonblank explicit grading reason; valid Unicode without NUL/unpaired
+            surrogates, <=8192 UTF8 bytes, rendered literally.
+        audience:
+          const: AUTHOR_AND_OWNER
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        score:
+          type: integer
+          minimum: 0
+          maximum: 100
+          description: Integer points out of100; zero is a graded result, not absence.
+    Input:
+      type: object
+      additionalProperties: false
+      required:
+      - score
+      - reason
+      - submissionVersion
+      - assignmentVersion
+      properties:
+        reason:
+          type: string
+          minLength: 1
+          description: Explicit nonblank owner comment. Valid Unicode, no NUL or unpaired
+            surrogate; UTF-8<=8192 bytes. Render literally.
+        submissionVersion:
+          type: integer
+          format: int64
+          minimum: 1
+          maximum: 9223372036854775807
+        assignmentVersion:
+          type: integer
+          format: int64
+          minimum: 1
+          maximum: 9223372036854775807
+        score:
+          type: integer
+          minimum: 0
+          maximum: 100
+          description: Integer points out of100; zero is a graded result, not absence.
+    View:
+      type: object
+      additionalProperties: false
+      required:
+      - submissionVersion
+      - assignmentVersion
+      - grade
+      - canWrite
+      properties:
+        submissionVersion:
+          type: integer
+          format: int64
+          minimum: 1
+          maximum: 9223372036854775807
+        assignmentVersion:
+          type: integer
+          format: int64
+          minimum: 1
+          maximum: 9223372036854775807
+        grade:
+          oneOf:
+          - $ref: '#/components/schemas/Grade'
+          - type: 'null'
+        canWrite:
+          type: boolean
+          description: Current OWNER, not the submission author, with OPEN/CLOSED
+            Assignment and nonarchived Study. Source versions identify the currently
+            submitted immutable attempt; writes recheck all rules.
+    Revision:
+      type: object
+      additionalProperties: false
+      required:
+      - revisionId
+      - version
+      - actorId
+      - occurredAt
+      - snapshot
+      properties:
+        revisionId:
+          $ref: assignment-submissions.yaml#/components/schemas/Id
+        version:
+          type: integer
+          format: int64
+          minimum: 1
+          maximum: 9223372036854775807
+        actorId:
+          $ref: assignment-submissions.yaml#/components/schemas/Id
+        occurredAt:
+          type: string
+          format: date-time
+        snapshot:
+          $ref: '#/components/schemas/Grade'
+    History:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - nextBefore
+      properties:
+        items:
+          type: array
+          maxItems: 10
+          items:
+            $ref: '#/components/schemas/Revision'
+        nextBefore:
+          oneOf:
+          - type: integer
+            format: int64
+            minimum: 1
+            maximum: 9223372036854775807
+          - type: 'null'

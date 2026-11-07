@@ -1,0 +1,18 @@
+Retired private Concept archive validation — 2026-10-21
+
+knowledge: 215 passed, 0 failed/error/skipped; backend-validation-1792588505016715000-5f28fc9d
+gateway: 63 passed, 0 failed/error/skipped; backend-validation-1792588603896837600-716af652
+Browser: 13 passed (3 new archive scenarios + 10 existing Concept/Claim regressions); graph-web-validation-1792588743656325800
+Pinned frontend build and TypeScript checks passed: graph-static-build-1792588503370074300
+OpenAPI references resolved: 1468
+Retired 20+2 pagination, authorized Space scoping, private-only storage selection, active-only current GET/changes and default ACTIVE listing passed.
+Reopen/reload rediscovers retired Concepts; seven immutable revisions retain original IDs, actor IDs, titles and descriptions.
+Retired subject links to retired Claim history and exact-number version comparison; no archive mutation requests or active/create draft loss.
+Foreign requests and malformed/repeated/misplaced filters denied. Invalid cursors and mismatched/duplicate histories clear stale data with explicit retry.
+Delayed closed-list and switched-history responses cannot repopulate old data. Real guest revocation clears private UI.
+Literal hostile text does not execute; 390px browser viewport has no horizontal overflow.
+Isolated storage tests preserve original revision rows and byte-identical Outbox entries across archive reads and a fresh store instance.
+V13 partial retired-Concept index observed in deployed Knowledge startup. No canonical data rewrite, Kafka event changes, projection rebuild or checkpoint reset.
+Knowledge and Gateway images imported on both local nodes and rolled out; exact owned temporary build resources removed.
+All 12 application Deployments ready; host HTTPS /graph 200.
+Scope: retired personal Concepts and already-supported explicitly retired Claims; restore and publication are not introduced.

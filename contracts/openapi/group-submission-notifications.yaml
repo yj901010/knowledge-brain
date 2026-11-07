@@ -1,0 +1,557 @@
+openapi: 3.1.0
+info:
+  title: Private Group submission review notifications
+  version: 1.0.0
+  description: Default off, per-Group explicit recipient consent. Only incoming changes
+    after the consent cutoff; disabled intervals are never backfilled. Current membership
+    is checked on every API request. A changed membership version requires new consent
+    and hides prior-epoch inbox entries. OWNER cannot read another recipient inbox.
+    No answers, grades, scores, reasons, files or original envelopes in inbox data.
+    Strong independent gnpN/gnN CAS, explicit read/archive, immutable own audit, no-store.
+    Unknown query/body keys, duplicate queries/JSON/cookies, insecure transport and
+    cross-origin writes are rejected. Opening original uses Collaboration APIs with
+    current authority. No push/mail.
+servers:
+- url: https://localhost:8443
+security:
+- browserSession: []
+paths:
+  /api/groups/{groupId}/notification-preference:
+    parameters:
+    - name: groupId
+      in: path
+      required: true
+      schema: &id001
+        type: string
+        format: uuid
+        pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+    get:
+      operationId: getGroupReviewPreference
+      responses:
+        '200':
+          description: Private current-recipient result
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"gnp[0-9]+"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Preference'
+        '400':
+          description: Invalid singleton query, body or strong version
+        '401':
+          description: Missing or ambiguous session
+        '403':
+          description: Registration or same-origin policy denied
+        '404':
+          description: Current Group participation or own inbox unavailable
+        '503':
+          description: Authority or source unavailable
+    put:
+      operationId: changeGroupReviewPreference
+      responses:
+        '200':
+          description: Private current-recipient result
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"gnp[0-9]+"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Preference'
+        '400':
+          description: Invalid singleton query, body or strong version
+        '401':
+          description: Missing or ambiguous session
+        '403':
+          description: Registration or same-origin policy denied
+        '404':
+          description: Current Group participation or own inbox unavailable
+        '503':
+          description: Authority or source unavailable
+        '412':
+          description: Stale version; inspect current state before retry
+        '428':
+          description: Strong If-Match required
+      parameters:
+      - name: If-Match
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^"gnp(0|[1-9][0-9]{0,18})"$
+      - name: Origin
+        in: header
+        required: true
+        schema:
+          type: string
+          const: https://localhost:8443
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PreferenceChange'
+  /api/groups/{groupId}/notifications:
+    parameters:
+    - name: groupId
+      in: path
+      required: true
+      schema: *id001
+    get:
+      operationId: listOwnGroupReviewNotifications
+      responses:
+        '200':
+          description: Private current-recipient result
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Page'
+        '400':
+          description: Invalid singleton query, body or strong version
+        '401':
+          description: Missing or ambiguous session
+        '403':
+          description: Registration or same-origin policy denied
+        '404':
+          description: Current Group participation or own inbox unavailable
+        '503':
+          description: Authority or source unavailable
+      parameters:
+      - name: state
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - ACTIVE
+          - RETIRED
+          default: ACTIVE
+      - name: read
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - ALL
+          - READ
+          - UNREAD
+          default: ALL
+      - name: after
+        in: query
+        required: false
+        schema:
+          type: string
+          maxLength: 256
+          pattern: ^[A-Za-z0-9_-]+$
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+  /api/groups/{groupId}/notifications/{notificationId}:
+    parameters:
+    - name: groupId
+      in: path
+      required: true
+      schema: *id001
+    - name: notificationId
+      in: path
+      required: true
+      schema: *id001
+    get:
+      operationId: getOwnGroupReviewNotification
+      responses:
+        '200':
+          description: Private current-recipient result
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"gn[0-9]+"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notice'
+        '400':
+          description: Invalid singleton query, body or strong version
+        '401':
+          description: Missing or ambiguous session
+        '403':
+          description: Registration or same-origin policy denied
+        '404':
+          description: Current Group participation or own inbox unavailable
+        '503':
+          description: Authority or source unavailable
+    put:
+      operationId: changeOwnGroupReviewNotificationRead
+      responses:
+        '200':
+          description: Private current-recipient result
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"gn[0-9]+"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notice'
+        '400':
+          description: Invalid singleton query, body or strong version
+        '401':
+          description: Missing or ambiguous session
+        '403':
+          description: Registration or same-origin policy denied
+        '404':
+          description: Current Group participation or own inbox unavailable
+        '503':
+          description: Authority or source unavailable
+        '412':
+          description: Stale version; inspect current state before retry
+        '428':
+          description: Strong If-Match required
+      parameters:
+      - name: If-Match
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^"gn[1-9][0-9]{0,18}"$
+      - name: Origin
+        in: header
+        required: true
+        schema:
+          type: string
+          const: https://localhost:8443
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReadChange'
+    delete:
+      operationId: retireOwnGroupReviewNotification
+      responses:
+        '200':
+          description: Private current-recipient result
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"gn[0-9]+"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notice'
+        '400':
+          description: Invalid singleton query, body or strong version
+        '401':
+          description: Missing or ambiguous session
+        '403':
+          description: Registration or same-origin policy denied
+        '404':
+          description: Current Group participation or own inbox unavailable
+        '503':
+          description: Authority or source unavailable
+        '412':
+          description: Stale version; inspect current state before retry
+        '428':
+          description: Strong If-Match required
+      parameters:
+      - name: If-Match
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^"gn[1-9][0-9]{0,18}"$
+      - name: Origin
+        in: header
+        required: true
+        schema:
+          type: string
+          const: https://localhost:8443
+  /api/groups/{groupId}/notification-preference/revisions:
+    parameters:
+    - name: groupId
+      in: path
+      required: true
+      schema: *id001
+    get:
+      operationId: listGroupReviewPreferenceHistory
+      responses:
+        '200':
+          description: Private current-recipient result
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+          content:
+            application/json:
+              schema:
+                type: array
+                maxItems: 10
+                items:
+                  $ref: '#/components/schemas/PreferenceRevision'
+        '400':
+          description: Invalid singleton query, body or strong version
+        '401':
+          description: Missing or ambiguous session
+        '403':
+          description: Registration or same-origin policy denied
+        '404':
+          description: Current Group participation or own inbox unavailable
+        '503':
+          description: Authority or source unavailable
+      parameters:
+      - name: before
+        in: query
+        required: false
+        schema: &id002
+          type: integer
+          format: int64
+          minimum: 1
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 5
+  /api/groups/{groupId}/notifications/{notificationId}/revisions:
+    parameters:
+    - name: groupId
+      in: path
+      required: true
+      schema: *id001
+    - name: notificationId
+      in: path
+      required: true
+      schema: *id001
+    get:
+      operationId: listOwnGroupReviewNotificationHistory
+      responses:
+        '200':
+          description: Private current-recipient result
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+          content:
+            application/json:
+              schema:
+                type: array
+                maxItems: 10
+                items:
+                  $ref: '#/components/schemas/NotificationRevision'
+        '400':
+          description: Invalid singleton query, body or strong version
+        '401':
+          description: Missing or ambiguous session
+        '403':
+          description: Registration or same-origin policy denied
+        '404':
+          description: Current Group participation or own inbox unavailable
+        '503':
+          description: Authority or source unavailable
+      parameters:
+      - name: before
+        in: query
+        required: false
+        schema: *id002
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 5
+components:
+  securitySchemes:
+    browserSession:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest
+  schemas:
+    Preference:
+      type: object
+      additionalProperties: false
+      required:
+      - groupId
+      - spaceId
+      - recipientId
+      - version
+      - membershipVersion
+      - enabled
+      - enabledAfter
+      - updatedAt
+      properties:
+        groupId: *id001
+        spaceId: *id001
+        recipientId: *id001
+        version: &id003
+          type: integer
+          format: int64
+          minimum: 0
+        membershipVersion: *id002
+        enabled:
+          type: boolean
+        enabledAfter: *id003
+        updatedAt:
+          type:
+          - string
+          - 'null'
+          format: date-time
+    Notice:
+      type: object
+      additionalProperties: false
+      required:
+      - notificationId
+      - groupId
+      - spaceId
+      - recipientId
+      - membershipVersion
+      - version
+      - read
+      - state
+      - sourceEventId
+      - kind
+      - studyId
+      - assignmentId
+      - submissionId
+      - submissionVersion
+      - sourceAggregateId
+      - sourceVersion
+      - sourceOccurredAt
+      - deliveredAt
+      - updatedAt
+      properties:
+        notificationId: *id001
+        groupId: *id001
+        spaceId: *id001
+        recipientId: *id001
+        membershipVersion: *id002
+        version: *id002
+        read:
+          type: boolean
+        state:
+          type: string
+          enum:
+          - ACTIVE
+          - RETIRED
+        sourceEventId: *id001
+        kind:
+          type: string
+          enum:
+          - FEEDBACK
+          - RESUBMISSION_REQUESTED
+          - RESUBMISSION_CANCELLED
+          - GRADE
+          - FEEDBACK_RETRACTED
+          - FEEDBACK_RESTORED
+          - GRADE_RETRACTED
+          - GRADE_RESTORED
+        studyId: *id001
+        assignmentId: *id001
+        submissionId: *id001
+        submissionVersion: *id002
+        sourceAggregateId: *id001
+        sourceVersion: *id002
+        sourceOccurredAt: *id002
+        deliveredAt: &id004
+          type: string
+          format: date-time
+        updatedAt: *id004
+    Page:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - nextAfter
+      properties:
+        items:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/Notice'
+        nextAfter:
+          type:
+          - string
+          - 'null'
+          maxLength: 256
+    NotificationRevision:
+      type: object
+      additionalProperties: false
+      required:
+      - revisionId
+      - version
+      - snapshot
+      properties:
+        revisionId: *id001
+        version: *id002
+        snapshot:
+          $ref: '#/components/schemas/Notice'
+    PreferenceRevision:
+      type: object
+      additionalProperties: false
+      required:
+      - revisionId
+      - version
+      - snapshot
+      properties:
+        revisionId: *id001
+        version: *id002
+        snapshot:
+          $ref: '#/components/schemas/Preference'
+    ReadChange:
+      type: object
+      additionalProperties: false
+      required:
+      - read
+      properties:
+        read:
+          type: boolean
+    PreferenceChange:
+      type: object
+      additionalProperties: false
+      required:
+      - enabled
+      properties:
+        enabled:
+          type: boolean

@@ -1,0 +1,64 @@
+Pinned evidence -> current Source comparison delivery (2026-10-13)
+
+AGENTS.md and PROJECT.md read first. Existing Knowledge ownership, common guest/
+registered principal, private PERSONAL Space authority, immutable Citation pins,
+revisions and event architecture remain compatible. No conflicting decision.
+
+Implemented:
+  In inverse Claim evidence, select an active Citation or historical revision,
+  then choose 현재 출처와 비교. Source metadata is fetched only on this action.
+  Five-field table: pinned/current version, title, URL, citation, license memo;
+  exact values and whitespace, explicit empty/null labels, 동일/다름 status.
+  Current metadata means the button-triggered successful read, not automatic
+  polling. It does not replace a pin or change verification/Claim/Citation data.
+  HTTPS Source GET uses existing fresh CONCEPT_READ and no-store. Browser checks
+  exact Source/Space identity, PRIVATE ACTIVE state, bounded safe metadata,
+  version, dates and independent srcN ETag. Current/historical pin keys isolate
+  requests, eight-second aborts and generations reject stale/closed responses.
+  503/malformed reads clear only the comparison; Source retirement/404 retains
+  pins/history. 401/403 clears private parent surfaces. No external Source URL
+  content fetch, automatic write, re-pin, dependency or browser storage added.
+
+Validation:
+  Complete isolated tsc --noEmit, unchanged pinned package-lock: passed.
+  Static Job graph-static-build-1791899246931626700: Complete; Next/TypeScript export, notices and
+  generated CSP passed. Java 25 Gateway init image build exit 0.
+  Focused browser Job graph-web-validation-1791899408: Complete; 1 passed, 0 failed.
+  Full --public Job graph-web-validation-1791899488: Complete; 24 passed, 0 failed in the same run.
+  New actual API/browser scenario: identical five fields then five differences;
+  raw text/whitespace and escaped HTML/URL metadata; unchanged Citation/Claim and
+  immutable history after Source edits; no UI writes or external requests;
+  actual re-pin and history switches choose the correct historical Source IDs;
+  malformed Source ID/Space/URL/ETag and 503 clear current data with retry;
+  held reads cannot overwrite Citation/revision/Claim switches or closed detail/
+  evidence; real Source retirement preserves pins; real delayed GET after guest
+  revocation clears private state; no JS/CSP errors or browser storage; 390px fit.
+  Existing 23 Note/Concept/Alias/Claim/Source/Citation/usage/evidence/public
+  workflows also passed. Existing test reviewer was granted/revoked by runner.
+  Desktop/mobile table screenshots inspected:
+    .local/graph-ui-results/evidence-comparison.png
+    .local/graph-ui-results/evidence-comparison-mobile.png
+  Focus/full logs and proofs: .local/evidence-comparison-focused-validation.txt,
+  .local/evidence-comparison-full-validation.txt and matching proof JSON.
+
+Contracts and deployment:
+  Existing personal-sources.yaml and claim-citations.yaml reused. No Java API,
+  endpoint, migration, topic/schema/ACL, event or canonical model change.
+  All six published Knowledge Protobuf SHA256 values unchanged. Backend tests
+  were not rerun for this UI-only change; prior baseline remains recorded.
+  Gateway image: knowledge-brain/gateway-service:local-481b14bdd40403e0
+  Matching imports Complete on both k3d nodes before Gateway-only rollout.
+  Knowledge was not redeployed. All eight brain-apps Deployments Ready.
+  Host https://localhost:8443/graph returned 200 with project CA/hostname
+  verification and CSP. Proof: .local/evidence-comparison-deployment-proof.json
+  and .local/evidence-comparison-https-proof.json.
+
+Cleanup:
+  Current Gateway builder UID/labels, Service/NetworkPolicy selectors and source
+  ConfigMap ownership verified before deleting only owned temporary artifacts.
+  Deployed image and readiness verified, absence confirmed afterward.
+  .local/evidence-comparison-build-cleanup.json. Existing validation/static Job
+  24h TTL and owned ConfigMap cleanup retained. No cluster/PVC/global kubeconfig
+  change, Git initialization, commit or push.
+
+Feature guide: docs/evidence-comparison.md.

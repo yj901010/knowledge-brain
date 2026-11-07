@@ -1,0 +1,252 @@
+openapi: 3.1.0
+info:
+  title: Identity Common Browser Session API
+  version: 1.1.0
+servers:
+- url: https://localhost:8443
+  description: Common local HTTPS Gateway, via Kubernetes port-forward; trust local
+    CA
+paths:
+  /api/identity/guest-session:
+    post:
+      operationId: createOrRestoreGuestSession
+      description: 'No cookie creates one guest and Outbox atomically. A valid existing
+        cookie restores the same principal without another event. Explicit start with
+        an invalid or expired cookie creates a fresh guest; registered account Spaces
+        stay preserved. No token appears in the JSON body. Space provisioning is asynchronous.
+        Responses use Cache-Control: no-store. HTTPS is required.'
+      security: []
+      parameters:
+      - &id001
+        name: Origin
+        in: header
+        required: true
+        schema:
+          type: string
+          format: uri
+        description: Exact configured HTTPS browser origin. Missing, null, duplicate
+          and other origins are rejected; cross-site Sec-Fetch-Site is rejected.
+      requestBody: &id002
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              maxProperties: 0
+      responses:
+        '201':
+          description: Guest created; credential expires after 180 days
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GuestPrincipal'
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+              description: Secure host-only browser cookie; only issuance exposes
+                the credential
+        '200':
+          description: Existing guest restored; cookie lifetime is not extended
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GuestPrincipal'
+        '400':
+          description: Invalid request or HTTPS required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Missing, malformed, expired, retired or revoked credential
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Request not permitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Authentication or persistence unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    get:
+      operationId: getGuestSession
+      security:
+      - guestCookie: []
+      responses:
+        '200':
+          description: 'Current active guest or registered common principal; Cache-Control:
+            no-store'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GuestPrincipal'
+        '400':
+          description: Invalid request or HTTPS required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Missing, malformed, expired, retired or revoked credential
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Request not permitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Authentication or persistence unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/identity/guest-session/revoke:
+    post:
+      operationId: revokeGuestCredential
+      description: Revokes the presented browser credential immediately and expires
+        its cookie. Personal Space data is retained. A guest with no registered recovery
+        loses access after revocation.
+      security:
+      - guestCookie: []
+      parameters:
+      - *id001
+      requestBody: *id002
+      responses:
+        '204':
+          description: Credential revoked and cookie expired
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+        '400':
+          description: Invalid request or HTTPS required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Missing, malformed, expired, retired or revoked credential
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Request not permitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Authentication or persistence unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /internal/identity/guest-introspection:
+    post:
+      operationId: introspectGuestCredential
+      description: Internal HTTPS endpoint restricted by network policy and a separate
+        service credential. Only Identity queries its credential database. No positive
+        cache is used for revocation.
+      security:
+      - serviceBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - token
+              properties:
+                token:
+                  type: string
+                  pattern: ^[A-Za-z0-9_-]{43}$
+              additionalProperties: false
+      responses:
+        '200':
+          description: Active verified application principal; no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GuestPrincipal'
+        '400':
+          description: Invalid request or HTTPS required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Missing, malformed, expired, retired or revoked credential
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Request not permitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Authentication or persistence unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      servers:
+      - url: https://identity-service.brain-apps.svc:8080
+        description: Internal only; not routed by Gateway
+components:
+  securitySchemes:
+    guestCookie:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest
+      description: Opaque 256-bit browser credential; Secure, HttpOnly, SameSite=Lax,
+        Path=/, no Domain; SHA-256 stored by Identity.
+    serviceBearer:
+      type: http
+      scheme: bearer
+      description: Separate infrastructure secret for Space-to-Identity introspection.
+        Browser tokens are never accepted here.
+  schemas:
+    GuestPrincipal:
+      type: object
+      required:
+      - principalId
+      - kind
+      - expiresAt
+      properties:
+        principalId:
+          type: string
+          format: uuid
+        kind:
+          type: string
+          enum:
+          - GUEST
+          - REGISTERED
+        expiresAt:
+          type: string
+          format: date-time
+      additionalProperties: false
+    Error:
+      type: object
+      required:
+      - error
+      properties:
+        error:
+          type: string
+      additionalProperties: false

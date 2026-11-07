@@ -1,0 +1,17 @@
+Retired private Note archive validation — 2026-10-22
+
+content: 143 passed, 0 failed/error/skipped; backend-validation-1792669071749892900-c4f9aca1
+gateway: 69 passed, 0 failed/error/skipped; backend-validation-1792669072252133700-514997f8
+Browser: 14 passed (3 archive scenarios + 6 restoration and 5 editor/retirement/library/Journal/Markdown regressions); graph-web-validation-1792669684993119400
+Pinned frontend build and TypeScript checks passed: graph-static-build-1792669160195620400
+OpenAPI: 54 documents parsed, 1427 local references resolved.
+Real 20+2 archive pagination, repeated titles distinguished by UUID, default/explicit ACTIVE lists and fresh Space authorization passed.
+Ordinary and Daily Notes can be rediscovered after reload; seven immutable revisions retain exact title/Markdown, revision ID, actor and occurrence time.
+Archive reading issues no writes, retains active editor draft and does not reactivate retired Notes or change Daily binding.
+Historical Markdown source/preview is safe, makes no automatic external image request, and fits 390px width.
+Invalid scope/head/actor/version/cursor and duplicate history pages rejected; failed pages clear data and allow explicit retry.
+Late switched history/closed list cannot restore stale data. Revoked history and list reads clear private UI. Foreign reads denied.
+Real PostgreSQL archive reads and store restart preserved revision and Outbox counts; retained Daily date binding and retired item/write denial passed.
+V12 partial retired-Note index observed in deployed Content startup. No canonical rewrite, event contract change, projection rebuild or checkpoint reset.
+Content/Gateway exact images imported on both nodes and rolled out. Both current builders and the superseded Gateway builder cleaned with ownership checks.
+All 12 application Deployments ready; host HTTPS /graph 200.

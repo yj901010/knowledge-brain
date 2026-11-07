@@ -1,0 +1,141 @@
+{{- if .Values.restrictGuestApiIngress }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ .Release.Name }}-api
+  {{- with .Values.resourceAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: {{ .Release.Name }}
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: space-service
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: gateway-service
+{{- if or (eq .Release.Name "integration-service") (eq .Release.Name "learning-service") (eq .Release.Name "planning-service") (eq .Release.Name "content-service") (eq .Release.Name "knowledge-service") }}
+        - podSelector:
+            matchLabels:
+              brain-activity-rebuild: 'true'
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: activity-service
+{{- end }}
+{{- if or (eq .Release.Name "space-service") (eq .Release.Name "planning-service") (eq .Release.Name "collaboration-service") }}
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: notification-service
+{{- end }}
+{{- if eq .Release.Name "integration-service" }}
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: learning-service
+{{- end }}
+{{- if eq .Release.Name "collaboration-service" }}
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: learning-service
+{{- end }}
+{{- if eq .Release.Name "learning-service" }}
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: collaboration-service
+{{- end }}
+{{- if eq .Release.Name "space-service" }}
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: integration-service
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: collaboration-service
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: planning-service
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: activity-service
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: learning-service
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: knowledge-service
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: brain-query-service
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: content-service
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: media-service
+{{- end }}
+{{- if eq .Release.Name "content-service" }}
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: learning-service
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: brain-query-service
+        - podSelector:
+            matchLabels:
+              brain-note-rebuild: 'true'
+{{- end }}
+{{- if eq .Release.Name "media-service" }}
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: collaboration-service
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: learning-service
+{{- end }}
+{{- if eq .Release.Name "knowledge-service" }}
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: brain-query-service
+        - podSelector:
+            matchLabels:
+              brain-public-rebuild: 'true'
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: learning-service
+        - podSelector:
+            matchLabels:
+              brain-network-rebuild: 'true'
+{{- end }}
+{{- if or (eq .Release.Name "media-service") (eq .Release.Name "knowledge-service") }}
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: content-service
+{{- end }}
+{{- if eq .Release.Name "knowledge-service" }}
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: brain-data
+          podSelector:
+            matchLabels:
+              brain-public-rebuild: 'true'
+{{- end }}
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: brain-data
+          podSelector:
+            matchLabels:
+              brain-guest-api-validation: 'true'
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: brain-observability
+          podSelector:
+            matchLabels:
+              brain-guest-api-validation: 'true'
+      ports:
+        - protocol: TCP
+          port: 8080
+{{- end }}

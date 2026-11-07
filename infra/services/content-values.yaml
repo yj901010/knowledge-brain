@@ -1,0 +1,97 @@
+replicaCount: 2
+image:
+  repository: ''
+  tag: ''
+  pullPolicy: IfNotPresent
+resources:
+  requests:
+    cpu: 250m
+    memory: 384Mi
+  limits:
+    cpu: '1'
+    memory: 768Mi
+env:
+- name: BRAIN_CONTENT_PERSISTENCE_ENABLED
+  value: 'true'
+- name: BRAIN_CONTENT_API_ENABLED
+  value: 'true'
+- name: BRAIN_CONTENT_DATABASE_URL
+  value: jdbc:postgresql://brain-postgres.brain-data.svc:5432/brain_content
+- name: BRAIN_CONTENT_DATABASE_PASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: brain-content-db
+      key: password
+- name: BRAIN_CONTENT_DATABASE_MAXIMUM_POOL_SIZE
+  value: '10'
+- name: BRAIN_CONTENT_SPACE_ORIGIN
+  value: https://space-service.brain-apps.svc:8080
+- name: BRAIN_CONTENT_SPACE_TRUST_FILE
+  value: /space-trust/ca.crt
+- name: BRAIN_CONTENT_SPACE_AUTHORIZATION_KEY
+  valueFrom:
+    secretKeyRef:
+      name: brain-content-space-authorization
+      key: key
+- name: SERVER_SSL_ENABLED
+  value: 'true'
+- name: SERVER_SSL_CERTIFICATE
+  value: file:/api-tls/tls.crt
+- name: SERVER_SSL_CERTIFICATE_PRIVATE_KEY
+  value: file:/api-tls/tls.key
+- name: SERVER_FORWARD_HEADERS_STRATEGY
+  value: NONE
+- name: MANAGEMENT_ENDPOINT_HEALTH_GROUP_READINESS_INCLUDE
+  value: readinessState,contentDatabase
+- name: BRAIN_CONTENT_ATTACHMENTS_ENABLED
+  value: 'true'
+- name: BRAIN_CONTENT_MEDIA_ORIGIN
+  value: https://media-service.brain-apps.svc:8080
+- name: BRAIN_CONTENT_MEDIA_TRUST_FILE
+  value: /space-trust/ca.crt
+- name: BRAIN_CONTENT_MEDIA_AUTHORIZATION_KEY
+  valueFrom:
+    secretKeyRef:
+      name: brain-content-media-authorization
+      key: key
+- name: BRAIN_CONTENT_SNAPSHOT_ENABLED
+  value: 'true'
+- name: BRAIN_CONTENT_SNAPSHOT_KEY
+  valueFrom:
+    secretKeyRef:
+      name: brain-content-search-snapshot
+      key: key
+- name: BRAIN_CONTENT_CONCEPTS_ENABLED
+  value: 'true'
+- name: BRAIN_CONTENT_KNOWLEDGE_ORIGIN
+  value: https://knowledge-service.brain-apps.svc:8080
+- name: BRAIN_CONTENT_KNOWLEDGE_TRUST_FILE
+  value: /space-trust/ca.crt
+- name: BRAIN_CONTENT_KNOWLEDGE_AUTHORIZATION_KEY
+  valueFrom:
+    secretKeyRef:
+      name: brain-content-knowledge-authorization
+      key: key
+- name: BRAIN_CONTENT_ACTIVITY_EXPORT_ENABLED
+  value: 'true'
+- name: BRAIN_CONTENT_ACTIVITY_EXPORT_KEY
+  valueFrom:
+    secretKeyRef:
+      name: brain-content-activity-export
+      key: key
+probeScheme: HTTPS
+restrictGuestApiIngress: true
+extraVolumeMounts:
+- name: api-tls
+  mountPath: /api-tls
+  readOnly: true
+- name: space-trust
+  mountPath: /space-trust
+  readOnly: true
+extraVolumes:
+- name: api-tls
+  secret:
+    secretName: brain-content-api-tls
+- name: space-trust
+  secret:
+    secretName: brain-guest-api-trust

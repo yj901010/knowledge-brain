@@ -1,0 +1,160 @@
+Private Schedule reminder settings validation, 2026-10-18
+
+{
+  "date": "2026-10-18",
+  "scope": "canonical private reminder settings and audit; actual Notification delivery is subsequent work",
+  "jobs": {
+    "backend": "backend-validation-1792292657620771300",
+    "planning": "backend-validation-1792292513000147300",
+    "focusedBrowser": "graph-web-validation-1792292782",
+    "browser": "graph-web-validation-1792292837",
+    "registry": "reminder-contract-validation-1792292443",
+    "cdc": "planning-cdc-bootstrap-1792292661"
+  },
+  "backend": {
+    "tests": 587,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 31
+  },
+  "planningActualOwnPostgresAndFiveKafkaTopicsTests": 78,
+  "gatewayTests": 41,
+  "activityActualStorageAndTenTopicKafkaTests": 21,
+  "browserTests": 67,
+  "focusedBrowserTests": 3,
+  "registeredReminderClaimChecks": 2,
+  "registryReminderSha256": "df72e35e10b66581722a2c61ee85d951af7ef647dbe84d7785b7cdf7b7f43142",
+  "unchangedPlanningSchemaHashes": {
+    "goal": "643ed1f2566750ffc0bb21b63d2837ad8aaa625d0fe1ed3d2ca21a85cc6391b3",
+    "task": "844707c3cbe6339cc44de5499f37198bf315953db5a71c9f7720403cddff78c3",
+    "schedule": "3e5b1e083bc344d027a080382b418f7a7981a0fdec45b44fe4e29fc40d035ee2",
+    "recurrence": "83a708bd0104d92ce8a17e4b9ba244d950a0c96820f7da32264ed713cd975962"
+  },
+  "unchangedLearningSchemaHashes": {
+    "association": "1e210a4b741051d23b1e560384c6b9adfde008ccc91b28594495c846fec034a7",
+    "media": "570c5ed12f35a119b9bda059c98a2fea913e19cf329adaa964b96de97f1bbc52",
+    "note": "432a3664007de5f39da77d077b745c534147c8dc50be424dab4cd04e56ccce2b",
+    "concept": "defd2827328024b6fee71e56a3a40c650f335f0359d03dcf62ef0d6a2b31ef04",
+    "progress": "ef3bf592594564efa67c9ddd1f3b9f3dddb7f6cc5e6fc7d20943464f013c1113",
+    "study": "98b45509343000736c25510aa59fb5cd814a9f2672de5e9dcdd242a2cf55a90e",
+    "roadmap": "a2c1db67ceded3c5c965b92797b2caa0e7224aeb71386e71899d2edd4db5e1a9"
+  },
+  "openapiReferences": 1265,
+  "newOperations": [
+    "listPrivateReminderSettings",
+    "createPrivateReminderSetting",
+    "previewPrivateReminderSetting",
+    "getPrivateReminderSetting",
+    "updatePrivateReminderSetting",
+    "retirePrivateReminderSetting",
+    "listPrivateReminderRevisions"
+  ],
+  "planningValidatorFiveExactReadOnlyTopics": true,
+  "activityKeepsTenExactReadOnlyTopics": true,
+  "reminderProducerExactAcl": true,
+  "cdcCanonicalSelectDenials": 11,
+  "cdcOtherDatabaseConnectDenials": 12,
+  "readyDeployments": 11,
+  "runningConnectors": [
+    "space-outbox",
+    "planning-outbox",
+    "knowledge-outbox",
+    "media-outbox",
+    "content-outbox",
+    "learning-outbox",
+    "identity-outbox"
+  ],
+  "images": {
+    "planning": "knowledge-brain/planning-service:local-89f396264843549f",
+    "activity": "knowledge-brain/activity-service:local-43ff4e0c7d4e4131",
+    "gateway": "knowledge-brain/gateway-service:local-7eb5fa3f792b660c"
+  },
+  "runtime": {
+    "browserJob": "graph-web-validation-1792292837",
+    "image": "knowledge-brain/planning-service:local-89f396264843549f",
+    "spaceId": "01a14cfc-14a0-75be-ada1-2dccb8c2630d",
+    "recurrenceId": "01a14cfc-2c30-7671-96e1-83ecbd82a343",
+    "scheduleId": "01a14cfc-2c39-7921-ad8b-28cd5e5288f7",
+    "reminderId": "01a14cfc-4444-72e0-99e3-a146a4575852",
+    "oldPod": "c72a3275-d98a-42cc-8fb0-1411ced60ec2",
+    "newPod": "9fa76bbd-8271-4f5e-8e23-ab9de97d880c",
+    "exactPinsAndRevisionIdsSurviveRestart": true,
+    "originalCreateRetryReturnsV1": true,
+    "staleSourceConfirmationHasNoPartialMutation": true,
+    "explicitRefreshPinsCurrentSourceVersion": true,
+    "seriesArchivalLeavesReminderPinsIntact": true,
+    "reminderRetirementAfterScheduleRetirement": true,
+    "currentRetirementRetryAddsNoRevision": true,
+    "originalRetryAfterSourceAndReminderRetirement": true,
+    "sourceAndEarlierChildUnchangedByReminderOperations": true,
+    "finalVersions": [
+      4,
+      3,
+      2,
+      1
+    ]
+  },
+  "ownedBuilderSetsRemoved": 2,
+  "hostHttpsVerified": true
+}
+
+Full backend reactor: 587 tests, zero failures/errors, 31 unchanged environment
+gated skips (556 passed). Planning's 78 tests use own PostgreSQL and all five
+scoped Kafka topics, zero skips. Activity's 21 use own Inbox/ClickHouse and ten
+original Kafka streams, zero skips. Gateway's 41 tests also run without skips.
+New tests exercise elapsed UTC minutes across both DST transitions; exact source
+pins, zero/seven-day bounds and year-zero denial; no-op and preview/key rollback;
+immutable same-Space own Schedule FK, foreign/missing/retired source denial;
+concurrent identical creation and competing edits; controlled Outbox failures
+rolling back all canonical mutations/key reservation; full create replay after
+source/setting retirement and new actor; 20+3 cursor filters and exclusive version
+history; exact JSON/strict duplicate detection, trailing fields, fractional and
+overflow integer denial; independent rmN, fresh authority, TLS, Origin, no-store,
+empty GET bodies and bounded exact Gateway routes/queries/key forwarding.
+Three actual Reminder events carry exact committed Outbox bytes and complete
+source/time/actor/trace/schema headers through Debezium to scoped Kafka.
+
+Three new deployed browser scenarios and the full 67-test suite pass with CA
+verification, no TLS bypass. They cover read-only DST preview; bounded inputs;
+stale preview without reserved keys; original replay/409; independent source and
+setting edits/no-op, source-version conflict and explicit re-pin; retirement after
+source archival; unchanged canonical Schedule facts and exact preserved histories;
+20+3 pages, cross-filter/Space cursors and actual foreign principal denial; lost
+create reply with one key/one canonical result; source conflict retaining draft;
+independent unsaved Schedule draft, escaped markup, zero private browser storage;
+mobile 390px fit, 503 clearing, late closed replies and actual session revocation.
+Desktop/mobile screenshots inspected. Two real Keycloak registered claims preserve
+Reminder identity, guest source pins and guest actor history; registered retirement
+records the new principal while retaining original pins. Existing Knowledge,
+public contribution, Note/Media, Learning, Planning and activity browsers pass.
+
+After the full browser pass, restarted only Planning. Exact Reminder and Schedule
+snapshots, immutable revision IDs, moved current source and original series pins
+survive. Original creation replay returns v1. Old source confirmation returns412
+without any mutation; explicit new source preview produces a fresh pinned version.
+Recurrence bulk archival leaves stored Reminder pins intact. The Reminder can then
+be retired despite its Schedule being retired. Current retirement retry creates
+no revision; original creation retry still replays v1. Reminder operations never
+rewrite Schedule history or the earlier active recurrence child. Runtime tokens
+remain in memory and are not written into these proof files.
+
+Registry source SHA256 exactly matches immutable planning/reminder-events/v1 with
+FULL validity/FULL_TRANSITIVE compatibility. Existing four Planning and seven
+Learning v1 source hashes are unchanged. New topic has one local partition, literal
+producer ACL and fifth read-only verifier topic; Activity retains exact original
+ten read-only streams/group. CDC validates eleven canonical table SELECT denials,
+twelve other-owner DB connection denials and one Outbox-only publication. All seven
+Connectors/tasks RUNNING and eleven app Deployments Ready; host HTTPS Graph/MinIO
+return200, anonymous Reminder GET401. Existing logical ownership, private defaults,
+own DB/local ACID, Outbox/CDC, UUIDv7 and service boundaries remain unchanged.
+
+The two exact current image builders' successful init, deployed image, source-CM
+owner UIDs, Service selectors and NetworkPolicy selectors were checked before
+removing their temporary resources. Images were imported on both local nodes.
+No source facts/PVCs/tables/topics, CDC slots, connector offsets or immutable
+event contracts were deleted/reset. No dependency, external dataset or AI added.
+
+Implemented scope is reminder settings/preview/mutation/audit only. Active is not
+sent/delivered/read. No automatic scheduler or actual Notification/OS/email/push
+delivery is claimed; the visible UI says automatic delivery is not yet available.
+Central observability deployment and the requested visual redesign remain separate.

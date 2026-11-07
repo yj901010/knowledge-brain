@@ -1,0 +1,579 @@
+openapi: 3.1.0
+info:
+  title: Private Space Concept Claim API
+  version: 1.2.0
+  description: Knowledge owns private typed Claims and immutable revisions, with fresh Space authorization
+    for guest and registered principals. Independent clN ETags protect writes. Responses are no-store.
+    All private Claims remain DRAFT; explicit retired discovery preserves history without restoring
+    or publishing data.
+servers:
+- url: https://localhost:8443
+security:
+- sessionCookie: []
+paths:
+  /api/spaces/{spaceId}/concepts/{subjectConceptId}/claims:
+    parameters:
+    - $ref: '#/components/parameters/SpaceId'
+    - $ref: '#/components/parameters/SubjectConceptId'
+    get:
+      operationId: listPersonalConceptClaims
+      description: 'List PRIVATE DRAFT Claims in UUIDv7 ascending order with an exclusive after cursor.
+        state defaults to ACTIVE: subject, predicate and Concept object must remain active private
+        Concepts in the same Space. RETIRED lists only explicitly retired Claims and allows a retired
+        private subject/predicate/object; hidden ACTIVE Claims are excluded. Unknown, foreign or public
+        subjects return 404. Only state, after and limit are accepted; repeated keys are invalid.
+        This is read-only discovery; individual current GET/PUT/DELETE retain their active-only semantics.'
+      parameters:
+      - name: after
+        in: query
+        schema:
+          $ref: '#/components/schemas/UuidV7'
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      - name: state
+        in: query
+        schema:
+          type: string
+          enum:
+          - ACTIVE
+          - RETIRED
+          default: ACTIVE
+      responses:
+        '200':
+          description: Authorized private Claim page
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/NoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Page'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/Unavailable'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+    post:
+      operationId: createPersonalConceptClaim
+      description: Create or replace a PRIVATE DRAFT Claim with an active same-Space subject and predicate,
+        and a Concept or typed scalar object. Only CONCEPT requires an active same-Space object Concept.
+        Supports transitions between kinds while retaining immutable history and prior evidence pins.
+        Exact canonical active triples are unique. Independent cl ETags apply to edits; body limit
+        is 16384 bytes.
+      parameters:
+      - $ref: '#/components/parameters/Origin'
+      requestBody:
+        $ref: '#/components/requestBodies/Edit'
+      responses:
+        '201':
+          description: Created Claim with independent strong ETag "cl1"
+          headers:
+            ETag:
+              $ref: '#/components/headers/ClaimETag'
+            Cache-Control:
+              $ref: '#/components/headers/NoStore'
+            Location:
+              description: Created Claim canonical API path
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Claim'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/Unavailable'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '413':
+          $ref: '#/components/responses/TooLarge'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+  /api/spaces/{spaceId}/concepts/{subjectConceptId}/claims/{claimId}:
+    parameters:
+    - $ref: '#/components/parameters/SpaceId'
+    - $ref: '#/components/parameters/SubjectConceptId'
+    - $ref: '#/components/parameters/ClaimId'
+    get:
+      operationId: getPersonalConceptClaim
+      description: Read one ACTIVE PRIVATE DRAFT Claim under the matching active subject and predicate.
+        A CONCEPT object must also remain active/private; scalar objects require no object Concept.
+        Unknown, foreign, public, mismatched or retired objects return 404. No query parameters.
+      responses:
+        '200':
+          $ref: '#/components/responses/Claim'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/Unavailable'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+    put:
+      operationId: updatePersonalConceptClaim
+      description: Create or replace a PRIVATE DRAFT Claim with an active same-Space subject and predicate,
+        and a Concept or typed scalar object. Only CONCEPT requires an active same-Space object Concept.
+        Supports transitions between kinds while retaining immutable history and prior evidence pins.
+        Exact canonical active triples are unique. Independent cl ETags apply to edits; body limit
+        is 16384 bytes.
+      parameters:
+      - $ref: '#/components/parameters/Origin'
+      - $ref: '#/components/parameters/IfMatch'
+      requestBody:
+        $ref: '#/components/requestBodies/Edit'
+      responses:
+        '200':
+          $ref: '#/components/responses/Claim'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/Unavailable'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '412':
+          $ref: '#/components/responses/PreconditionFailed'
+        '413':
+          $ref: '#/components/responses/TooLarge'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '428':
+          $ref: '#/components/responses/PreconditionRequired'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+    delete:
+      operationId: retirePersonalConceptClaim
+      description: Retire an ACTIVE PRIVATE DRAFT Claim using its exact independent clN ETag. All
+        current referenced Concepts must be ACTIVE PRIVATE in the same Space and are locked in global
+        UUID order before locking the Claim. Retain its identity, triple, history and ClaimRetired
+        outbox snapshot. No destructive deletion.
+      parameters:
+      - $ref: '#/components/parameters/Origin'
+      - $ref: '#/components/parameters/IfMatch'
+      responses:
+        '204':
+          description: Claim RETIRED with incremented independent Claim version
+          headers:
+            ETag:
+              $ref: '#/components/headers/ClaimETag'
+            Cache-Control:
+              $ref: '#/components/headers/NoStore'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/Unavailable'
+        '412':
+          $ref: '#/components/responses/PreconditionFailed'
+        '428':
+          $ref: '#/components/responses/PreconditionRequired'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /api/spaces/{spaceId}/concepts/{subjectConceptId}/claims/{claimId}/revisions:
+    parameters:
+    - $ref: '#/components/parameters/SpaceId'
+    - $ref: '#/components/parameters/SubjectConceptId'
+    - $ref: '#/components/parameters/ClaimId'
+    get:
+      operationId: listPersonalConceptClaimRevisions
+      description: List retained immutable Claim snapshots in descending Claim version order. Authorized
+        Space, immutable subject and Claim identity must match, including when the Claim or any referenced
+        Concept is RETIRED. Unknown, foreign, public or mismatched subject/Claim returns 404. before
+        is an exclusive positive version cursor; only before and limit are accepted and repeated keys
+        are invalid. Default 5; maximum 10 revisions.
+      parameters:
+      - name: before
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 9223372036854775807
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 5
+      responses:
+        '200':
+          description: Authorized retained Claim revision history
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/NoStore'
+          content:
+            application/json:
+              schema:
+                type: array
+                maxItems: 10
+                items:
+                  $ref: '#/components/schemas/Revision'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/Unavailable'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest
+      description: Secure HttpOnly host cookie for the common guest/registered session principal
+  parameters:
+    SpaceId:
+      name: spaceId
+      in: path
+      required: true
+      description: Owning PERSONAL PRIVATE Space with fresh authority checks
+      schema:
+        $ref: '#/components/schemas/UuidV7'
+    ClaimId:
+      name: claimId
+      in: path
+      required: true
+      description: Immutable same-Space Claim identity under the matching subject
+      schema:
+        $ref: '#/components/schemas/UuidV7'
+    Origin:
+      name: Origin
+      in: header
+      required: true
+      description: Exactly one configured browser origin; if present Sec-Fetch-Site must be same-origin
+      schema:
+        type: string
+        example: https://localhost:8443
+    IfMatch:
+      name: If-Match
+      in: header
+      required: true
+      description: One strong independent Claim version ETag, for example "cl3"; weak/list/wildcard/Concept/Alias/reference
+        ETags are invalid
+      schema:
+        type: string
+        pattern: ^"cl[1-9][0-9]*"$
+    SubjectConceptId:
+      name: subjectConceptId
+      in: path
+      required: true
+      description: Immutable subject Concept identity in the authorized PRIVATE PERSONAL Space
+      schema:
+        $ref: '#/components/schemas/UuidV7'
+  headers:
+    ClaimETag:
+      description: Strong independent Claim version ETag, for example "cl1"
+      schema:
+        type: string
+        pattern: ^"cl[1-9][0-9]*"$
+    NoStore:
+      schema:
+        type: string
+        const: no-store
+  requestBodies:
+    Edit:
+      required: true
+      description: Strict JSON object; duplicate keys, trailing tokens and unknown fields are invalid
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Edit'
+  responses:
+    Claim:
+      description: Authorized active private Claim with independent strong version ETag
+      headers:
+        ETag:
+          $ref: '#/components/headers/ClaimETag'
+        Cache-Control:
+          $ref: '#/components/headers/NoStore'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Claim'
+    BadRequest:
+      description: Invalid canonical UUIDv7, bounded query, strict bounded JSON, CONCEPT object or
+        If-Match syntax
+      content: &id001
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: Missing, duplicate, expired or revoked session credential
+      content: *id001
+    Forbidden:
+      description: TLS/origin/fetch-site/role denied
+      content: *id001
+    Unavailable:
+      description: Space, subject, predicate, object or Claim unknown, foreign, public, inaccessible
+        or unavailable for this operation
+      content: *id001
+    Conflict:
+      description: The same authorized Space already has an ACTIVE Claim with this exact subject/predicate/object
+        triple, or an existing Claim version cannot increment beyond 9223372036854775807
+      content: *id001
+    PreconditionFailed:
+      description: Claim version differs; reload the current Claim before saving
+      content: *id001
+    TooLarge:
+      description: JSON body exceeds the bounded request size
+      content: *id001
+    UnsupportedMediaType:
+      description: application/json required
+      content: *id001
+    PreconditionRequired:
+      description: If-Match is missing
+      content: *id001
+    BadGateway:
+      description: Gateway cannot reach Knowledge
+      content: *id001
+    ServiceUnavailable:
+      description: Persistence or Space/Identity authority unavailable; no partial mutation
+      content: *id001
+    GatewayTimeout:
+      description: Gateway complete-response timeout
+      content: *id001
+  schemas:
+    UuidV7:
+      type: string
+      format: uuid
+      pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+    Edit:
+      type: object
+      additionalProperties: false
+      required:
+      - predicateConceptId
+      - object
+      description: Strict JSON at most 16384 UTF-8 bytes. Exactly predicateConceptId and object. Every
+        object is one of the five exact tagged union shapes; duplicate keys and trailing tokens are
+        invalid.
+      properties:
+        predicateConceptId: &id002
+          $ref: '#/components/schemas/UuidV7'
+        object:
+          $ref: '#/components/schemas/ClaimObject'
+    Claim:
+      type: object
+      additionalProperties: false
+      required:
+      - claimId
+      - spaceId
+      - subjectConceptId
+      - predicateConceptId
+      - object
+      - visibility
+      - state
+      - version
+      - verificationState
+      - createdAt
+      - updatedAt
+      properties:
+        claimId: *id002
+        spaceId: *id002
+        subjectConceptId: *id002
+        predicateConceptId: *id002
+        object:
+          $ref: '#/components/schemas/ClaimObject'
+        visibility:
+          const: PRIVATE
+        state: &id005
+          type: string
+          enum:
+          - ACTIVE
+          - RETIRED
+        version: &id004
+          type: integer
+          minimum: 1
+          maximum: 9223372036854775807
+        verificationState:
+          const: DRAFT
+        createdAt: &id003
+          type: string
+          format: date-time
+        updatedAt: *id003
+    Page:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - nextAfter
+      properties:
+        items:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/Claim'
+        nextAfter:
+          description: Last returned Claim UUIDv7 when another visible page exists, otherwise null
+          anyOf:
+          - $ref: '#/components/schemas/UuidV7'
+          - type: 'null'
+    Revision:
+      type: object
+      additionalProperties: false
+      required:
+      - revisionId
+      - claimId
+      - subjectConceptId
+      - predicateConceptId
+      - object
+      - version
+      - state
+      - verificationState
+      - actorId
+      - occurredAt
+      properties:
+        revisionId: *id002
+        claimId: *id002
+        subjectConceptId: *id002
+        predicateConceptId: *id002
+        object:
+          $ref: '#/components/schemas/ClaimObject'
+        version: *id004
+        state: *id005
+        verificationState:
+          const: DRAFT
+        actorId: *id002
+        occurredAt: *id003
+    Error:
+      type: object
+      required:
+      - error
+      properties:
+        error:
+          type: string
+    ConceptObject:
+      type: object
+      additionalProperties: false
+      required:
+      - type
+      - conceptId
+      properties:
+        type:
+          const: CONCEPT
+        conceptId: *id002
+    ClaimObject:
+      description: Exact tagged union. NUMBER and BOOLEAN values are JSON strings to preserve precision
+        and canonical text. Null and additional fields are forbidden. Scalar values do not create
+        Concept nodes.
+      oneOf:
+      - type: object
+        additionalProperties: false
+        required:
+        - type
+        - conceptId
+        properties:
+          type:
+            const: CONCEPT
+          conceptId:
+            $ref: '#/components/schemas/UuidV7'
+      - type: object
+        additionalProperties: false
+        required:
+        - type
+        - value
+        properties:
+          type:
+            const: STRING
+          value:
+            type: string
+            minLength: 1
+            maxLength: 1000
+            description: Nonempty after Unicode strip; at most 1000 Unicode code points. NUL and unpaired
+              surrogates are rejected.
+      - type: object
+        additionalProperties: false
+        required:
+        - type
+        - value
+        properties:
+          type:
+            const: NUMBER
+          value:
+            type: string
+            maxLength: 128
+            pattern: ^-?(0|[1-9][0-9]*)(\.[0-9]+)?$
+            description: Plain decimal text; at most 38 significant/integer digits and 18 fractional
+              places after normalization. No exponent. Trailing zeros stripped; negative zero becomes
+              0.
+      - type: object
+        additionalProperties: false
+        required:
+        - type
+        - value
+        properties:
+          type:
+            const: DATE
+          value:
+            type: string
+            format: date
+            pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+            description: Valid Gregorian YYYY-MM-DD, years 0001 through 9999.
+      - type: object
+        additionalProperties: false
+        required:
+        - type
+        - value
+        properties:
+          type:
+            const: BOOLEAN
+          value:
+            type: string
+            enum:
+            - 'true'
+            - 'false'

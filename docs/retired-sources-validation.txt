@@ -1,0 +1,19 @@
+Retired private Source archive validation — 2026-10-21
+
+knowledge: 219 passed, 0 failed/error/skipped; backend-validation-1792589207034103100-5ffbd301
+gateway: 64 passed, 0 failed/error/skipped; backend-validation-1792589342411883100-f9c75e51
+Browser: 11 passed (3 new archive scenarios + 8 existing Source/Citation/Concept regressions); graph-web-validation-1792589490748985400
+Pinned frontend build and TypeScript checks passed: graph-static-build-1792589205604840200
+OpenAPI references resolved: 1468
+Retired 20+2 pagination, duplicate titles with distinct IDs, authorized Space scoping, default ACTIVE listing and active-only current GET/changes passed.
+Reopen/reload rediscovery retained seven Source revisions with original IDs, actor IDs, nullable URLs, exact citation and license notes.
+Retired Source opens effective active citations with unchanged version-pinned Source and exact numeric Claim facts. Selected citation history remains readable after Claim retirement.
+Archive browsing issued no mutations, preserved independent active/new Source drafts, fetched no external URL, and wrote no browser storage.
+Foreign requests and malformed/repeated/misplaced filters denied; wrong Space/state/visibility, invalid URLs/fields/cursors and mismatched/duplicate histories rejected with stale-data clearing and explicit retry.
+Delayed closed-list and switched-history responses cannot restore old snapshots; real session revocation through the nested citation panel clears private UI.
+Escaped hostile text remains inert; safe links require explicit navigation; 390px browser viewport has no horizontal overflow.
+Isolated storage tests preserve original Source revisions, Citation rows/pins/history and byte-identical Outbox entries across archive reads and a fresh store instance.
+V14 partial retired-Source index observed in deployed Knowledge startup; no canonical data rewrite, event changes, projection rebuild or checkpoint reset.
+Knowledge and Gateway exact images imported on both nodes and rolled out; owned temporary build resources removed.
+All 12 application Deployments ready; host HTTPS /graph 200.
+Scope: retired private Source rediscovery and existing active citation/known history browsing. Restore, publication and retired Citation discovery remain outside this feature.

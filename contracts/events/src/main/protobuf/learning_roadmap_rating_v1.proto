@@ -1,0 +1,15 @@
+syntax = "proto3";
+package learning.roadmap_rating.v1;
+option java_package = "io.knowledgebrain.contracts.learning.roadmaprating.v1";
+option java_multiple_files = true;
+message RoadmapRatingEnvelopeV1 {
+ string event_id = 1; string event_type = 2; uint32 event_version = 3;
+ int64 occurred_at_epoch_millis = 4; string producer = 5; string aggregate_type = 6;
+ string aggregate_id = 7; string space_id = 8; string actor_id = 9;
+ string trace_id = 10; bytes payload = 11;
+}
+message RoadmapRatingChangedV1 {
+ string rating_id = 1; string roadmap_id = 2; uint64 roadmap_version = 3;
+ string principal_id = 4; uint64 version = 5; string state = 6; uint32 score = 7;
+ string revision_id = 8; string updated_at = 9;
+}

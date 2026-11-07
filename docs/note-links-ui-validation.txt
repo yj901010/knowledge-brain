@@ -1,0 +1,16 @@
+Canonical Wiki Link/Backlink UI validation - 2026-10-09
+AGENTS.md and PROJECT.md checked before implementation; no architectural conflict.
+Pinned Next/TypeScript static export and CSP build PASS.
+Gateway Ready=1: knowledge-brain/gateway-service:local-645ec52c2130dc52.
+Builder gateway-image-build-1791509719; both imports gateway-image-import-1791509750-0/-1 succeeded on agent-0/server-0 before rollout.
+Content backend-validation-1791509722: 64 total, 58 passed, 6 optional fixture tests skipped; zero failures/errors. Canonical NoteLinks integration and Wiki parser tests passed.
+Browser graph-web-validation-1791509788: 5 passed (links/search/graph/editor/public).
+Real Content data: 23 outgoing references, first 20 plus remaining 3; 21 incoming source Notes paged with grouped occurrence counts.
+PASS unresolved, ambiguous and retired statuses; retired targets cannot be opened.
+PASS immutable binding across rename; target canonical title/body; backlink source navigation.
+PASS simulated 503 clears private lists, retry recovers; actual revoked session clears private parent view.
+Existing private graph/search, editor conflict/history and public contribution/reference tests passed.
+Trusted HTTPS CA; no TLS bypass. Temporary public reviewer test role retired.
+Desktop/mobile screenshots inspected; horizontal overflow check passed. Inspector keeps existing internal scroll for long link lists.
+No API/schema/event/dependency/service ownership changes. Standard same-Space Content authorization retained.
+Owned builder resources cleaned after verified rollout; test Jobs retained with existing TTL.

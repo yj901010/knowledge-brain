@@ -1,0 +1,102 @@
+openapi: 3.1.0
+info: {title: Private Group creation, version: 1.0.0}
+servers: [{url: 'https://localhost:8443'}]
+security: [{browserSession: []}]
+paths:
+  /api/groups:
+    get:
+      summary: List my Group creation requests, filtered by fresh Space permissions
+      description: nextAfter scans candidates, so an empty or short page may still have a nextAfter cursor.
+      parameters:
+        - {name: after, in: query, schema: {type: string, format: uuid}}
+        - {name: limit, in: query, schema: {type: integer, minimum: 1, maximum: 100, default: 20}}
+      responses:
+        '200': {description: No-store page, content: {application/json: {schema: {$ref: '#/components/schemas/Page'}}}}
+        '401': {description: Session required}
+        '403': {description: Registered account required}
+        '503': {description: Authorization or persistence unavailable}
+    post:
+      summary: Create PRIVATE Group and provision creator OWNER Space; safe same-key replay
+      parameters:
+        - {name: Origin, in: header, required: true, schema: {type: string, const: 'https://localhost:8443'}}
+        - {name: Idempotency-Key, in: header, required: true, schema: {type: string, pattern: '^[0-9a-f]{32}$'}}
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/Settings'}}}}
+      responses:
+        '200': {description: Active Group, no-store, content: {application/json: {schema: {$ref: '#/components/schemas/Group'}}}}
+        '400': {description: Invalid strict JSON, unknown fields, duplicate keys or trailing input}
+        '401': {description: Session required}
+        '403': {description: Registered account or same origin required}
+        '409': {description: Same request key reused with different settings}
+        '413': {description: Body exceeds 65536 bytes}
+        '503': {description: Pending request may be durable; retry exact request or completion}
+  /api/groups/{groupId}:
+    parameters: [{$ref: '#/components/parameters/GroupId'}]
+    get:
+      summary: Read my Group request using current principal and Space permissions
+      responses:
+        '200': {description: No-store Group with ETag gr1 or gr2, content: {application/json: {schema: {$ref: '#/components/schemas/Group'}}}}
+        '404': {description: Group unavailable}
+  /api/groups/{groupId}/complete:
+    parameters: [{$ref: '#/components/parameters/GroupId'}]
+    post:
+      summary: Resume a pending creation, or idempotently return the authorized active Group
+      parameters: [{name: Origin, in: header, required: true, schema: {type: string, const: 'https://localhost:8443'}}]
+      requestBody: {required: true, content: {application/json: {schema: {type: object, additionalProperties: false, maxProperties: 0}}}}
+      responses:
+        '200': {description: No-store active Group, content: {application/json: {schema: {$ref: '#/components/schemas/Group'}}}}
+        '404': {description: Group unavailable}
+        '503': {description: Retry later, no duplicate Group or membership}
+  /api/groups/{groupId}/revisions:
+    parameters: [{$ref: '#/components/parameters/GroupId'}]
+    get:
+      summary: Read immutable creation revisions after current permission check
+      parameters:
+        - {name: before, in: query, schema: {type: integer, minimum: 1}}
+        - {name: limit, in: query, schema: {type: integer, minimum: 1, maximum: 10, default: 10}}
+      responses:
+        '200': {description: No-store descending history, content: {application/json: {schema: {type: object, required: [items, nextBefore], properties: {items: {type: array, maxItems: 10, items: {$ref: '#/components/schemas/Revision'}}, nextBefore: {type: [integer, 'null']}}}}}}
+        '404': {description: Group unavailable}
+components:
+  securitySchemes:
+    browserSession: {type: apiKey, in: cookie, name: __Host-brain_guest, description: Secure HttpOnly opaque common principal credential}
+  parameters:
+    GroupId: {name: groupId, in: path, required: true, schema: {type: string, format: uuid, pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$'}}
+  schemas:
+    Settings:
+      type: object
+      additionalProperties: false
+      required: [title, description]
+      properties:
+        title: {type: string, minLength: 1, maxLength: 200, description: Nonblank literal Unicode; no control characters}
+        description: {type: string, description: Literal UTF-8 text up to 32768 bytes, no NUL or unpaired surrogate}
+    Group:
+      type: object
+      required: [groupId, creatorPrincipalId, title, description, state, spaceId, version, createdAt, updatedAt, visibility]
+      properties:
+        groupId: {type: string, format: uuid}
+        creatorPrincipalId: {type: string, format: uuid}
+        title: {type: string}
+        description: {type: string}
+        state: {enum: [PENDING, ACTIVE]}
+        spaceId: {type: [string, 'null'], format: uuid}
+        version: {type: integer, enum: [1, 2]}
+        createdAt: {type: string, format: date-time}
+        updatedAt: {type: string, format: date-time}
+        visibility: {const: PRIVATE}
+    Page:
+      type: object
+      required: [items, nextAfter]
+      properties:
+        items: {type: array, maxItems: 100, items: {$ref: '#/components/schemas/Group'}}
+        nextAfter: {type: [string, 'null'], format: uuid}
+    Revision:
+      type: object
+      required: [version, state, spaceId, actorId, occurredAt, title, description]
+      properties:
+        version: {type: integer, enum: [1, 2]}
+        state: {enum: [PENDING, ACTIVE]}
+        spaceId: {type: [string, 'null'], format: uuid}
+        actorId: {type: string, format: uuid}
+        occurredAt: {type: string, format: date-time}
+        title: {type: string}
+        description: {type: string}

@@ -1,0 +1,487 @@
+openapi: 3.1.0
+info:
+  title: Private Schedule reminder settings
+  version: 1.0.0
+  description: Planning-owned settings only; no scheduler, ReminderDue, notification
+    or delivery/read status exists yet. Common guest/registered browser cookie with
+    fresh existing SCHEDULE_READ/SCHEDULE_WRITE authority in PERSONAL/PRIVATE Space.
+    Preview POST is same-origin read-only with no key. Input pins an explicitly inspected
+    active same-Space Schedule revision and 0..10080 elapsed UTC minutes before start.
+    Preview hash binds Space, exact input, all pinned source and resolved reminder
+    labels. Create/update recheck under own Schedule row lock; 412 never consumes
+    a create key. Source moves/retirement never silently rewrite stored settings;
+    explicitly re-preview and save for a new pin. Known retired settings/history remain
+    readable, and retirement works after source retirement. Schedule link is immutable;
+    use another setting for another Schedule. Active does not mean delivered. Repeated
+    distinct keys may deliberately create independent settings. Strong rmN If-Match
+    protects update/retirement; stale is 412, missing 428. Same-current retirement
+    retry is a no-op; stale original ETag remains 412. Current no-op does not emit
+    revision/event. Entire source/revision/Outbox commits in Planning-local ACID.
+    GET/DELETE have no bodies; exact singleton query names; all responses no-store.
+    Original create retry binds input and preview hash and returns original v1, independently
+    of later Schedule/Reminder/Task/actor changes.
+servers:
+- url: https://localhost:8443
+security:
+- browserSession: []
+paths:
+  /api/spaces/{spaceId}/reminders:
+    parameters:
+    - &id013
+      name: spaceId
+      in: path
+      required: true
+      schema: &id014
+        type: string
+        format: uuid
+        pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+    get:
+      operationId: listPrivateReminderSettings
+      parameters:
+      - name: state
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - ACTIVE
+          - RETIRED
+          default: ACTIVE
+      - name: scheduleId
+        in: query
+        required: false
+        schema:
+          type: string
+          default: ALL
+          description: ALL or exact Schedule UUIDv7, including retired Schedule
+      - name: after
+        in: query
+        required: false
+        schema:
+          type: string
+          maxLength: 256
+          description: Opaque positional cursor bound to Space/state/schedule filter
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      responses:
+        '200':
+          description: Canonical private result; no dispatch/delivery is implied
+          headers: &id001
+            Cache-Control:
+              description: Always no-store
+              schema:
+                type: string
+                const: no-store
+            ETag:
+              description: Independent strong rmN; reminder version only
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Page'
+        '400': &id002
+          description: Invalid exact JSON, bounded integer, UUIDv7, query or independent
+            ETag
+        '401': &id003
+          description: Missing, ambiguous, expired or revoked session
+        '403': &id004
+          description: Same-origin, role or route denied
+        '404': &id005
+          description: Private Space, Reminder or active Schedule unavailable
+        '409': &id006
+          description: Creation key represents different intent
+        '412': &id007
+          description: Reminder, Schedule version or preview changed
+        '413': &id008
+          description: Input exceeds 256 KiB
+        '415': &id009
+          description: JSON required
+        '428': &id010
+          description: If-Match required
+        '502': &id011
+          description: Authority unavailable
+        '503': &id012
+          description: Service unavailable
+    post:
+      operationId: createPrivateReminderSetting
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^[0-9a-f]{32}$
+      responses:
+        '201':
+          description: Canonical private result; no dispatch/delivery is implied
+          headers: *id001
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reminder'
+        '400': *id002
+        '401': *id003
+        '403': *id004
+        '404': *id005
+        '409': *id006
+        '412': *id007
+        '413': *id008
+        '415': *id009
+        '428': *id010
+        '502': *id011
+        '503': *id012
+        '200':
+          description: Identical original request replays immutable v1 after later
+            edits/retirement/account claim
+          headers: *id001
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reminder'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Write'
+  /api/spaces/{spaceId}/reminders/preview:
+    parameters:
+    - *id013
+    post:
+      operationId: previewPrivateReminderSetting
+      parameters: []
+      responses:
+        '200':
+          description: Canonical private result; no dispatch/delivery is implied
+          headers: *id001
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Preview'
+        '400': *id002
+        '401': *id003
+        '403': *id004
+        '404': *id005
+        '409': *id006
+        '412': *id007
+        '413': *id008
+        '415': *id009
+        '428': *id010
+        '502': *id011
+        '503': *id012
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Input'
+  /api/spaces/{spaceId}/reminders/{reminderId}:
+    parameters:
+    - *id013
+    - &id016
+      name: reminderId
+      in: path
+      required: true
+      schema: *id014
+    get:
+      operationId: getPrivateReminderSetting
+      parameters: []
+      responses:
+        '200':
+          description: Canonical private result; no dispatch/delivery is implied
+          headers: *id001
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reminder'
+        '400': *id002
+        '401': *id003
+        '403': *id004
+        '404': *id005
+        '409': *id006
+        '412': *id007
+        '413': *id008
+        '415': *id009
+        '428': *id010
+        '502': *id011
+        '503': *id012
+    put:
+      operationId: updatePrivateReminderSetting
+      parameters:
+      - &id015
+        name: If-Match
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^"rm[1-9][0-9]{0,18}"$
+      responses:
+        '200':
+          description: Canonical private result; no dispatch/delivery is implied
+          headers: *id001
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reminder'
+        '400': *id002
+        '401': *id003
+        '403': *id004
+        '404': *id005
+        '409': *id006
+        '412': *id007
+        '413': *id008
+        '415': *id009
+        '428': *id010
+        '502': *id011
+        '503': *id012
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Write'
+    delete:
+      operationId: retirePrivateReminderSetting
+      parameters:
+      - *id015
+      responses:
+        '204':
+          description: Canonical private result; no dispatch/delivery is implied
+          headers: *id001
+        '400': *id002
+        '401': *id003
+        '403': *id004
+        '404': *id005
+        '409': *id006
+        '412': *id007
+        '413': *id008
+        '415': *id009
+        '428': *id010
+        '502': *id011
+        '503': *id012
+  /api/spaces/{spaceId}/reminders/{reminderId}/revisions:
+    parameters:
+    - *id013
+    - *id016
+    get:
+      operationId: listPrivateReminderRevisions
+      parameters:
+      - name: before
+        in: query
+        required: false
+        schema: &id017
+          type: integer
+          format: int64
+          minimum: 1
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 5
+      responses:
+        '200':
+          description: Canonical private result; no dispatch/delivery is implied
+          headers: *id001
+          content:
+            application/json:
+              schema:
+                type: array
+                maxItems: 10
+                items:
+                  $ref: '#/components/schemas/Revision'
+        '400': *id002
+        '401': *id003
+        '403': *id004
+        '404': *id005
+        '409': *id006
+        '412': *id007
+        '413': *id008
+        '415': *id009
+        '428': *id010
+        '502': *id011
+        '503': *id012
+components:
+  securitySchemes:
+    browserSession:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest
+  schemas:
+    Input:
+      type: object
+      additionalProperties: false
+      required:
+      - scheduleId
+      - scheduleVersion
+      - minutesBefore
+      properties:
+        scheduleId: *id014
+        scheduleVersion: *id017
+        minutesBefore:
+          type: integer
+          minimum: 0
+          maximum: 10080
+    SchedulePin:
+      type: object
+      additionalProperties: false
+      required:
+      - scheduleId
+      - version
+      - title
+      - startsAt
+      - endsAt
+      - timeZone
+      - startsLocal
+      - endsLocal
+      - startsOffset
+      - endsOffset
+      properties:
+        scheduleId: *id014
+        version: *id017
+        title:
+          type: string
+          maxLength: 200
+        startsAt: &id018
+          type: string
+          format: date-time
+        endsAt: *id018
+        timeZone:
+          type: string
+          maxLength: 64
+        startsLocal:
+          type: string
+        endsLocal:
+          type: string
+        startsOffset:
+          type: string
+        endsOffset:
+          type: string
+    Preview:
+      type: object
+      additionalProperties: false
+      required:
+      - spaceId
+      - input
+      - schedule
+      - remindsAt
+      - remindsLocal
+      - remindsOffset
+      - previewHash
+      properties:
+        spaceId: *id014
+        input: &id019
+          $ref: '#/components/schemas/Input'
+        schedule: &id020
+          $ref: '#/components/schemas/SchedulePin'
+        remindsAt: *id018
+        remindsLocal: &id021
+          type: string
+        remindsOffset: &id022
+          type: string
+        previewHash: &id023
+          type: string
+          pattern: ^[0-9a-f]{64}$
+    Reminder:
+      type: object
+      additionalProperties: false
+      required:
+      - reminderId
+      - spaceId
+      - input
+      - schedule
+      - remindsAt
+      - remindsLocal
+      - remindsOffset
+      - previewHash
+      - visibility
+      - state
+      - version
+      - createdAt
+      - updatedAt
+      properties:
+        reminderId: *id014
+        spaceId: *id014
+        input: *id019
+        schedule: *id020
+        remindsAt: *id018
+        remindsLocal: *id021
+        remindsOffset: *id022
+        previewHash: *id023
+        visibility:
+          type: string
+          enum:
+          - PRIVATE
+        state:
+          type: string
+          enum:
+          - ACTIVE
+          - RETIRED
+        version: *id017
+        createdAt: *id018
+        updatedAt: *id018
+    Write:
+      type: object
+      additionalProperties: false
+      required:
+      - input
+      - previewHash
+      properties:
+        input:
+          $ref: '#/components/schemas/Input'
+        previewHash: *id023
+    Revision:
+      type: object
+      additionalProperties: false
+      required:
+      - revisionId
+      - reminderId
+      - version
+      - actorId
+      - occurredAt
+      - snapshot
+      properties:
+        revisionId: *id014
+        reminderId: *id014
+        version: *id017
+        actorId: *id014
+        occurredAt: *id018
+        snapshot:
+          $ref: '#/components/schemas/Reminder'
+    Page:
+      type: object
+      additionalProperties: false
+      required:
+      - spaceId
+      - state
+      - scheduleFilter
+      - items
+      - nextAfter
+      properties:
+        spaceId: *id014
+        state:
+          type: string
+          enum:
+          - ACTIVE
+          - RETIRED
+        scheduleFilter:
+          type: string
+        items:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/Reminder'
+        nextAfter:
+          type:
+          - string
+          - 'null'
+          maxLength: 256

@@ -1,0 +1,21 @@
+PASS Note-to-Concept immutable Activity history and local Kubernetes validation.
+Full backend:723 total,705 passed,0 failures/errors,18 unchanged environment-gated exclusions.
+Content134/134 own PostgreSQL and10 actual Kafka contracts; Activity41/41 own PostgreSQL,
+ClickHouse and17 actual Kafka streams. Full browser94/94; focused2/2; two real registered
+Space claims preserve association IDs, revision history and original guest actor/activity.
+Ordered immutable link/Concept snapshots, independent association and body versions, original
+revision IDs, reordering with stable IDs, empty detach, re-add with new ID and Note archive.
+Actual25 association versions paginated20+5; archive404 retains timeline and Content audit;
+no inferred Note/Concept titles, body writes, owner hydration or new event versions.
+Explicit current c-version ETag; independent historical view; sibling draft preserved;
+390px fit; malformed, delayed and revoked response isolation; foreign Space404.
+Actual Activity restart and two complete three-owner pooled canonical replays preserve16
+original Note/Daily/association events, seven association snapshots, full source bodies,
+audit IDs/actors and fixed archived journal date/timezone bindings. No source/Inbox/ClickHouse,
+PVC/topic/CDC slot/checkpoint reset. Active replay guard rejects a second Job before mutation.
+All10 Content Protobuf schemas unchanged; all OpenAPI references resolved; only one literal
+Read/Describe topic added to the existing Activity group. Content connector unchanged.
+All12 app Deployments Ready, all8 Connectors/tasks RUNNING. Exact imports on both nodes;
+four owned builder resource sets removed, including the earlier failed test-compile build.
+Verified HTTPS graph200, anonymous private401, internal export403. Evidence in
+.local/note-concept-activity-proof.json and related runtime/contract/cleanup proofs.

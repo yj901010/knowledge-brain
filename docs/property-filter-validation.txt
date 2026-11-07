@@ -1,0 +1,16 @@
+Exact property value filtering validation — 2026-10-22
+
+content: 162 passed, 0 failed/error/skipped; backend-validation-1792672748662207700-b80bc05e
+gateway: 73 passed, 0 failed/error/skipped; backend-validation-1792672748714676800-c9b4dbdf
+Browser: 14 passed (3 filter scenarios + 11 property/tag/metadata/activity/library/retirement regressions); graph-web-validation-1792673288309769800
+Pinned frontend build and TypeScript checks passed: graph-static-build-1792672876727395800
+OpenAPI: 54 documents parsed, 1450 local references resolved.
+Exact scalar equality and whole STRING_LIST element membership run before keyset pagination; real 20+2 results exclude nonmatches, retired and removed assignments.
+Exact 38-digit decimals and equivalent decimal spellings; false, dates, case/whitespace/literal characters and empty strings/list items validated.
+Draft condition changes leave applied result and next-page condition unchanged; apply, clear and refresh behave explicitly and preserve independent Note editor drafts.
+Malformed typed conditions, duplicate/unknown query keys, invalid UTF-8, NUL and oversized input denied; fresh authorization, foreign-space denial and no-store verified.
+Stale condition responses cannot replace new results. Mismatching payload and read failures clear results and support explicit retry; revoked access clears private UI.
+Mobile width, no browsing writes and no local/session storage passed; existing property/tag/library/metadata/retirement regressions passed.
+Real PostgreSQL/Kafka and Gateway suites passed. No new dependency, event contract or migration; deployed Content schema remains V13.
+Content/Gateway exact source-hash images imported on both nodes and rolled out; both owned temporary builders cleaned.
+All 12 application Deployments ready; verified host HTTPS /graph 200.

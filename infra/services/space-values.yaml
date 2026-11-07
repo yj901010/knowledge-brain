@@ -1,0 +1,141 @@
+replicaCount: 2
+image:
+  repository: ''
+  tag: ''
+  pullPolicy: IfNotPresent
+resources:
+  requests:
+    cpu: 250m
+    memory: 384Mi
+  limits:
+    cpu: '1'
+    memory: 768Mi
+env:
+- name: SPRING_PROFILES_ACTIVE
+  value: consumer
+- name: BRAIN_SPACE_PERSISTENCE_ENABLED
+  value: 'true'
+- name: BRAIN_SPACE_CONSUMER_ENABLED
+  value: 'true'
+- name: BRAIN_SPACE_DATABASE_URL
+  value: jdbc:postgresql://brain-postgres.brain-data.svc:5432/brain_space
+- name: BRAIN_SPACE_DATABASE_PASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: brain-space-db
+      key: password
+- name: BRAIN_SPACE_DATABASE_MAXIMUM_POOL_SIZE
+  value: '10'
+- name: BRAIN_SPACE_KAFKA_BOOTSTRAP_SERVERS
+  value: brain-kafka-kafka-bootstrap.brain-events.svc:9093
+- name: SERVER_SSL_ENABLED
+  value: 'true'
+- name: SERVER_SSL_CERTIFICATE
+  value: file:/api-tls/tls.crt
+- name: SERVER_SSL_CERTIFICATE_PRIVATE_KEY
+  value: file:/api-tls/tls.key
+- name: BRAIN_SPACE_API_ENABLED
+  value: 'true'
+- name: BRAIN_SPACE_IDENTITY_ORIGIN
+  value: https://identity-service.brain-apps.svc:8080
+- name: BRAIN_SPACE_IDENTITY_TRUST_FILE
+  value: /identity-trust/ca.crt
+- name: BRAIN_SPACE_IDENTITY_INTROSPECTION_KEY
+  valueFrom:
+    secretKeyRef:
+      name: brain-guest-introspection
+      key: key
+- name: BRAIN_SPACE_CONTENT_AUTHORIZATION_ENABLED
+  value: 'true'
+- name: BRAIN_SPACE_CONTENT_AUTHORIZATION_KEY
+  valueFrom:
+    secretKeyRef:
+      name: brain-content-space-authorization
+      key: key
+- name: BRAIN_SPACE_MEDIA_AUTHORIZATION_ENABLED
+  value: 'true'
+- name: BRAIN_SPACE_MEDIA_AUTHORIZATION_KEY
+  valueFrom:
+    secretKeyRef:
+      name: brain-media-space-authorization
+      key: key
+- name: BRAIN_SPACE_QUERY_AUTHORIZATION_ENABLED
+  value: 'true'
+- name: BRAIN_SPACE_QUERY_AUTHORIZATION_KEY
+  valueFrom:
+    secretKeyRef:
+      name: brain-query-space-authorization
+      key: key
+- name: BRAIN_SPACE_KNOWLEDGE_AUTHORIZATION_ENABLED
+  value: 'true'
+- name: BRAIN_SPACE_KNOWLEDGE_AUTHORIZATION_KEY
+  valueFrom:
+    secretKeyRef:
+      name: brain-knowledge-space-authorization
+      key: key
+- name: BRAIN_SPACE_LEARNING_AUTHORIZATION_ENABLED
+  value: 'true'
+- name: BRAIN_SPACE_LEARNING_AUTHORIZATION_KEY
+  valueFrom:
+    secretKeyRef:
+      name: brain-learning-space-authorization
+      key: key
+- name: BRAIN_SPACE_NOTIFICATION_AUTHORIZATION_ENABLED
+  value: 'true'
+- name: BRAIN_SPACE_NOTIFICATION_AUTHORIZATION_KEY
+  valueFrom:
+    secretKeyRef:
+      name: brain-notification-space-authorization
+      key: key
+- name: BRAIN_SPACE_GROUP_AUTHORIZATION_ENABLED
+  value: 'true'
+- name: BRAIN_SPACE_GROUP_AUTHORIZATION_KEY
+  valueFrom:
+    secretKeyRef:
+      name: brain-collaboration-space-authorization
+      key: key
+- name: BRAIN_SPACE_GROUP_MEMBERSHIP_ENABLED
+  value: 'true'
+- name: BRAIN_SPACE_GROUP_MEMBERSHIP_BROWSER_ORIGIN
+  value: https://localhost:8443
+- name: BRAIN_SPACE_GROUP_MEMBERSHIP_INVITATION_KEY
+  valueFrom:
+    secretKeyRef:
+      name: brain-group-invitation-key
+      key: key
+- name: BRAIN_SPACE_GROUP_REVIEW_AUTHORIZATION_ENABLED
+  value: 'true'
+- name: BRAIN_SPACE_GROUP_REVIEW_AUTHORIZATION_KEY
+  valueFrom:
+    secretKeyRef:
+      name: brain-notification-group-authorization
+      key: key
+- name: BRAIN_SPACE_INTEGRATION_AUTHORIZATION_ENABLED
+  value: 'true'
+- name: BRAIN_SPACE_INTEGRATION_AUTHORIZATION_KEY
+  valueFrom:
+    secretKeyRef:
+      name: brain-integration-space-authorization
+      key: key
+extraVolumeMounts:
+- name: kafka
+  mountPath: /kafka
+  readOnly: true
+- name: api-tls
+  mountPath: /api-tls
+  readOnly: true
+- name: identity-trust
+  mountPath: /identity-trust
+  readOnly: true
+extraVolumes:
+- name: kafka
+  secret:
+    secretName: brain-space-kafka
+- name: api-tls
+  secret:
+    secretName: brain-space-api-tls
+- name: identity-trust
+  secret:
+    secretName: brain-guest-api-trust
+probeScheme: HTTPS
+restrictGuestApiIngress: true

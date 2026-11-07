@@ -1,0 +1,106 @@
+{
+  "checkedAt": "2026-11-01",
+  "scope": "Official unmodified observability images and Gateway OpenTelemetry API; no dataset added",
+  "transport": "OTLP HTTP/protobuf; application ingest requires mutual TLS",
+  "components": [
+    {
+      "name": "OpenTelemetry Java agent",
+      "version": "2.33.1",
+      "image": "ghcr.io/open-telemetry/opentelemetry-operator/autoinstrumentation-java:2.33.1@sha256:6886169e41415eedcaa04d67485592022026eab5b33e2c83ce86561a72f15452",
+      "installedJarSha256": "e43a270df53c6f423e0ab157be9c27ccc01d5dc3232e162fe54777573db2f149",
+      "license": "Apache-2.0",
+      "source": "https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/tag/v2.33.1",
+      "sourceLicense": "https://github.com/open-telemetry/opentelemetry-java-instrumentation/blob/v2.33.1/LICENSE",
+      "retainedLicense": "observability/otel-agent.LICENSE.txt",
+      "licenseSha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+    },
+    {
+      "name": "OpenTelemetry Java API and transitive context",
+      "version": "1.67.0",
+      "artifact": "io.opentelemetry:opentelemetry-api:1.67.0",
+      "license": "Apache-2.0",
+      "source": "https://github.com/open-telemetry/opentelemetry-java/releases/tag/v1.67.0",
+      "sourceLicense": "https://github.com/open-telemetry/opentelemetry-java/blob/v1.67.0/LICENSE",
+      "retainedLicense": "observability/otel-api.LICENSE.txt",
+      "licenseSha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+    },
+    {
+      "name": "OpenTelemetry Collector contrib",
+      "version": "0.164.0",
+      "image": "otel/opentelemetry-collector-contrib:0.164.0@sha256:340c9ca6a36617084c6661bdc4f0fe92b7cda5a805d61673ec8db375fddc522b",
+      "license": "Apache-2.0",
+      "source": "https://github.com/open-telemetry/opentelemetry-collector-contrib/releases/tag/v0.164.0",
+      "sourceLicense": "https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/v0.164.0/LICENSE",
+      "retainedLicense": "observability/otel-collector.LICENSE.txt",
+      "licenseSha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+    },
+    {
+      "name": "Prometheus",
+      "version": "3.15.1",
+      "image": "prom/prometheus:v3.15.1@sha256:fa3302279710be2f21a8301ec17a8b4f2301fd829bd113839b3b6b02b6f191a2",
+      "license": "Apache-2.0",
+      "source": "https://github.com/prometheus/prometheus/releases/tag/v3.15.1",
+      "sourceLicense": "https://github.com/prometheus/prometheus/blob/v3.15.1/LICENSE",
+      "retainedLicense": "observability/prometheus.LICENSE.txt",
+      "licenseSha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+    },
+    {
+      "name": "Alertmanager",
+      "version": "0.34.2",
+      "image": "prom/alertmanager:v0.34.2@sha256:39d8bb3966c694a124428a3a88fbcffd40bd069129ecd47c059f8a3f17c55f3b",
+      "license": "Apache-2.0",
+      "source": "https://github.com/prometheus/alertmanager/releases/tag/v0.34.2",
+      "sourceLicense": "https://github.com/prometheus/alertmanager/blob/v0.34.2/LICENSE",
+      "retainedLicense": "observability/alertmanager.LICENSE.txt",
+      "licenseSha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+    },
+    {
+      "name": "Grafana OSS",
+      "version": "13.3.0",
+      "image": "grafana/grafana:13.3.0@sha256:488984b716c0862639f91a698adbe2862677a5a07bad42da5f03f3030883b205",
+      "license": "AGPL-3.0-only",
+      "source": "https://github.com/grafana/grafana/releases/tag/v13.3.0",
+      "sourceLicense": "https://github.com/grafana/grafana/blob/v13.3.0/LICENSE",
+      "retainedLicense": "observability/grafana.LICENSE.txt",
+      "licenseSha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+    },
+    {
+      "name": "Loki",
+      "version": "3.7.9",
+      "image": "grafana/loki:3.7.9@sha256:0db216b630ae1f348a1584c67f3cead8b4c1fc839169a39501db664744158e28",
+      "license": "AGPL-3.0-only",
+      "source": "https://github.com/grafana/loki/releases/tag/v3.7.9",
+      "sourceLicense": "https://github.com/grafana/loki/blob/v3.7.9/LICENSE",
+      "retainedLicense": "observability/loki.LICENSE.txt",
+      "licenseSha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+    },
+    {
+      "name": "Tempo",
+      "version": "2.10.10",
+      "image": "grafana/tempo:2.10.10@sha256:12b0820f13ffa10ce956b6e9acc3b03f3cffded99109be6cc09d106fe56e5d38",
+      "license": "AGPL-3.0-only",
+      "source": "https://github.com/grafana/tempo/releases/tag/v2.10.10",
+      "sourceLicense": "https://github.com/grafana/tempo/blob/v2.10.10/LICENSE",
+      "retainedLicense": "observability/tempo.LICENSE.txt",
+      "versionReason": "Maintained2.x release retains the single-binary local-store topology; no unapproved3.x architectural migration",
+      "licenseSha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+    }
+  ],
+  "reusedComponents": [
+    {
+      "name": "Python observer",
+      "version": "3.13.7-alpine",
+      "image": "python:3.13.7-alpine@sha256:9ba6d8cbebf0fb6546ae71f2a1c14f6ffd2fdab83af7fa5669734ef30ad48844",
+      "review": "Existing Python/stdlib license review and image notices apply"
+    },
+    {
+      "name": "Kafka exporter",
+      "version": "1.9.0",
+      "image": "Existing pinned Strimzi1.2.0-kafka4.3.1 image",
+      "license": "Apache-2.0",
+      "review": "Existing Strimzi/Kafka image remains unchanged"
+    }
+  ],
+  "commercialUse": "Apache-2.0 and AGPL-3.0 permit commercial use, subject to their respective conditions; no trademark license is implied",
+  "redistribution": "Retain licenses, applicable NOTICE files and bundled third-party/OS notices. For AGPL binaries preserve/provide the corresponding source and license terms; modifications served over a network must offer corresponding source to remote users as required by section13. Official images are unmodified; source references are retained. Public redistribution still requires complete image/SBOM/notice/source compliance review. No downstream license conclusion is inferred for unrelated platform code."
+}

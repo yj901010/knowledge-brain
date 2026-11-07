@@ -1,0 +1,25 @@
+Canonical snapshot / search rebuild validation - 2026-10-07
+Java 25; source image tag local-970c79081655b290
+Architecture: Content own canonical DB via scoped REST; no foreign SQL, no synthetic events.
+Full regression Job backend-validation-1791378869: 148 tests, failures=0 errors=0 skipped=0; BUILD SUCCESS.
+Completed brain-apps/note-search-rebuild-1791379139
+PASS canonical snapshot indexed; notes=876
+PASS captured Kafka tail replayed and durable group checkpoint committed
+Completed brain-data/note-projection-validation-1791379021
+PASS internal snapshot rejects browser/invalid credentials and is absent from Gateway
+PASS lost derived index rebuilt from canonical snapshots and concurrent create/update/retire Kafka tail
+PASS PRIVATE active text/version restored, retired notes excluded and canonical history preserved
+Completed brain-apps/note-search-rebuild-1791379329-preflight
+PASS canonical snapshot HTTPS preflight, cookie rejection and page bounds
+Completed brain-apps/note-search-rebuild-1791379329
+PASS canonical snapshot indexed; notes=878
+PASS captured Kafka tail replayed and durable group checkpoint committed
+content-service: Ready 1/1; knowledge-brain/content-service:local-970c79081655b290
+brain-query-service: Ready 1/1; knowledge-brain/brain-query-service:local-970c79081655b290
+Paused recovery snapshot after 876 canonical notes; concurrent authorized update/create/retire completed before replay resumed.
+Normal repeat restored 878 canonical notes and consumer readiness.
+Initial operator Jobs hit NetworkPolicy startup connection refusal; bounded retry fixed transport setup.
+The first pagination test assumed UUID creation always exceeds an existing future UUID; test now uses explicit bounds.
+No canonical note deletion/PVC deletion. Retired tombstones retain versions but erase indexed private text.
+Actual 7-day retention expiry was not simulated; recovery reads all canonical records independent of retained old events.
+End-user search authorization/API and graph/Note-to-Concept remain pending.

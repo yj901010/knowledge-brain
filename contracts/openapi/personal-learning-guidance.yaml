@@ -1,0 +1,218 @@
+openapi: 3.1.0
+info:
+  title: Deterministic Private Personal Learning Guidance
+  version: 1.0.0
+  description: >-
+    Read-only Learning-owned GRAPH_PROGRESS_V1 guidance over one coherent current
+    immutable roadmap revision and active-node manual progress snapshot. Fresh
+    ROADMAP_READ authorization uses the existing PRIVATE PERSONAL Space capability
+    and common guest/registered principal. This endpoint never changes progress,
+    sessions, evidence, graph versions, revisions or Outbox and has no cache,
+    migration, event, public/group alias or cross-owner database access.
+servers:
+  - url: https://localhost:8443
+security:
+  - sessionCookie: []
+paths:
+  /api/spaces/{spaceId}/roadmaps/{roadmapId}/learning-guidance:
+    parameters:
+      - name: spaceId
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/UuidV7'
+      - name: roadmapId
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/UuidV7'
+    get:
+      operationId: readPersonalLearningGuidance
+      description: >-
+        Exact GET only, with no query parameters, body, actor override or collection
+        ETag. Reads current saved ACTIVE graph and manual progress in one Learning
+        database statement. Missing progress is nonpersistent NOT_STARTED/pr0.
+        COMPLETED nodes are excluded from suggestions/waiting but remain in basis.
+        Direct incoming unfinished PREREQUISITE_OF/REQUIRED_FOR sources block guidance;
+        RECOMMENDED_BEFORE is soft ordering only. PART_OF/OPTIONAL_FOR/RELATED_TO
+        imply no progress or priority. Suggestions sort IN_PROGRESS first, then
+        fewer unique unfinished recommended sources, then UUID string ascending.
+        Waiting rows and predecessors sort by UUID string; kinds sort alphabetically.
+        Multiple relation kinds for one predecessor are retained without double
+        counting. A completed direct predecessor satisfies an edge regardless of
+        that predecessor's own unmet prerequisites. Sessions/time/notes/evidence
+        never infer completion or priority. Manual progress remains unrestricted.
+      parameters: []
+      responses:
+        '200':
+          description: Current private deterministic guidance and exact version basis
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Guidance'
+        '400':
+          $ref: '#/components/responses/Invalid'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/Missing'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest
+      description: Existing secure common browser credential; guest or registered principal.
+  responses:
+    Invalid:
+      description: Invalid/noncanonical UUIDv7, any query parameter or GET request body
+      headers:
+        Cache-Control:
+          schema:
+            const: no-store
+    Unauthorized:
+      description: Current common browser identity unavailable
+      headers:
+        Cache-Control:
+          schema:
+            const: no-store
+    Forbidden:
+      description: Current PRIVATE PERSONAL Space read authority denied
+      headers:
+        Cache-Control:
+          schema:
+            const: no-store
+    Missing:
+      description: Space or current ACTIVE roadmap unavailable to this principal
+      headers:
+        Cache-Control:
+          schema:
+            const: no-store
+    Unavailable:
+      description: Fresh authorization/database unavailable or corrupt canonical graph/progress basis
+      headers:
+        Cache-Control:
+          schema:
+            const: no-store
+  schemas:
+    UuidV7:
+      type: string
+      format: uuid
+      pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$'
+    ProgressVersion:
+      type: integer
+      format: int64
+      minimum: 0
+      description: Existing independent prN; zero is missing nonpersistent NOT_STARTED.
+    Basis:
+      type: object
+      additionalProperties: false
+      required: [nodeId, status, progressVersion]
+      properties:
+        nodeId:
+          $ref: '#/components/schemas/UuidV7'
+        status:
+          enum: [NOT_STARTED, IN_PROGRESS, COMPLETED]
+        progressVersion:
+          $ref: '#/components/schemas/ProgressVersion'
+    Predecessor:
+      type: object
+      additionalProperties: false
+      required: [nodeId, title, status, progressVersion, kinds]
+      properties:
+        nodeId:
+          $ref: '#/components/schemas/UuidV7'
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        status:
+          enum: [NOT_STARTED, IN_PROGRESS]
+        progressVersion:
+          $ref: '#/components/schemas/ProgressVersion'
+        kinds:
+          type: array
+          minItems: 1
+          maxItems: 2
+          uniqueItems: true
+          description: Alphabetically sorted retained kinds for this unique predecessor.
+          items:
+            enum: [PREREQUISITE_OF, REQUIRED_FOR, RECOMMENDED_BEFORE]
+    GuidanceNode:
+      type: object
+      additionalProperties: false
+      required: [nodeId, title, status, progressVersion, unmetRecommendedCount, requiredPredecessors, recommendedPredecessors]
+      properties:
+        nodeId:
+          $ref: '#/components/schemas/UuidV7'
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        status:
+          enum: [NOT_STARTED, IN_PROGRESS]
+        progressVersion:
+          $ref: '#/components/schemas/ProgressVersion'
+        unmetRecommendedCount:
+          type: integer
+          minimum: 0
+          maximum: 99
+          description: Unique unfinished direct RECOMMENDED_BEFORE sources.
+        requiredPredecessors:
+          type: array
+          maxItems: 99
+          description: Unfinished direct sources of PREREQUISITE_OF/REQUIRED_FOR, grouped by UUID.
+          items:
+            $ref: '#/components/schemas/Predecessor'
+        recommendedPredecessors:
+          type: array
+          maxItems: 99
+          description: Unfinished direct RECOMMENDED_BEFORE sources, grouped by UUID.
+          items:
+            $ref: '#/components/schemas/Predecessor'
+    Guidance:
+      type: object
+      additionalProperties: false
+      required: [roadmapId, spaceId, visibility, roadmapVersion, algorithm, basis, suggestions, waiting]
+      description: >-
+        Basis includes every current active node, in UUID string order. Suggestions
+        plus waiting contain at most100 unfinished nodes; all predecessor kinds
+        across both lists represent at most500 current edges. Suggestions have
+        empty requiredPredecessors; waiting has nonempty requiredPredecessors.
+      properties:
+        roadmapId:
+          $ref: '#/components/schemas/UuidV7'
+        spaceId:
+          $ref: '#/components/schemas/UuidV7'
+        visibility:
+          const: PRIVATE
+        roadmapVersion:
+          type: integer
+          format: int64
+          minimum: 1
+          description: Exact current immutable rmN revision used by this response.
+        algorithm:
+          const: GRAPH_PROGRESS_V1
+        basis:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/Basis'
+        suggestions:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/GuidanceNode'
+        waiting:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/GuidanceNode'

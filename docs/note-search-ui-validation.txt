@@ -1,0 +1,16 @@
+Private Note search UI local validation - 2026-10-09
+Pinned Next export/TypeScript/CSP build PASS
+Gateway Ready=1: knowledge-brain/gateway-service:local-da2965f9b1b6e756
+Both node imports succeeded: gateway-image-import-1791509272-0/-1; agent-0/server-0.
+Job PASS: backend-validation-1791509106 namespace=brain-data
+Job PASS: graph-web-validation-1791509437 namespace=brain-data
+Job PASS: graph-web-validation-1791509453 namespace=brain-data
+Backend: 38 total, 37 passed, 1 skipped; zero failures/errors. Real OpenSearch search storage and API passed.
+Browser --public: 4 passed (graph/editor/search/public). Browser --login: 4 passed (graph/editor/search/login).
+Search PASS: title/body; own 21 hits versus foreign Space exclusion; 20+1 pagination; bounded graph selection; canonical reopen/retirement; failure clearing/recovery; pending response cancellation; real revocation.
+Registered PASS: claimed Note search, scoped totals and Space-switch query/hit clearing.
+Existing graph, versioned editor/history, public contribution/review/merge and private references passed.
+Trusted HTTPS CA; no bypass. Temporary reviewer grant retired. Desktop/mobile screenshots inspected; no horizontal overflow.
+Initial search test interceptor mishandled denied Graph response; fixed test and both suites rerun successfully.
+No backend/schema/event/dependency/architecture changes. Standard analyzer, eventual consistency and 1000-result API window retained.
+Owned Gateway builder Pod/service/ConfigMap/NetworkPolicy cleanup requested after verified rollout.

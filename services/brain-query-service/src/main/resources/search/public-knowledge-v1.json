@@ -1,0 +1,1 @@
+{"mappings": {"dynamic": "strict", "properties": {"entityId": {"type": "keyword"}, "spaceId": {"type": "keyword"}, "kind": {"type": "keyword"}, "visibility": {"type": "keyword"}, "state": {"type": "keyword"}, "snapshotHash": {"type": "keyword"}, "canonicalVersion": {"type": "long"}, "title": {"type": "text"}, "text": {"type": "text"}}}}

@@ -1,0 +1,158 @@
+{
+  "checkedAt": "2026-11-06T11:00:42.45239916Z",
+  "scanner": "Trivy 0.76.2",
+  "image": "docker.io/knowledge-brain/gateway-service@sha256:ba671628a576d36313e7d1fe3a0fa618e50f227768bace5cc8ad46ad94a9db23",
+  "reportSha256": "24603f9e63f4ee03c09068ca6d93f0433eb32abbff471a6cf7946cb2ee75838a",
+  "releaseGate": "BLOCKED",
+  "counts": {
+    "HIGH": 12,
+    "CRITICAL": 4
+  },
+  "findings": [
+    {
+      "target": ".local/delivery/gateway.tar (ubuntu 26.04)",
+      "id": "CVE-2026-109518",
+      "package": "apt",
+      "installed": "3.2.0",
+      "fixedAccordingToScanner": "3.2.1ubuntu0.1",
+      "severity": "HIGH",
+      "advisory": "https://avd.aquasec.com/nvd/cve-2026-109518"
+    },
+    {
+      "target": ".local/delivery/gateway.tar (ubuntu 26.04)",
+      "id": "CVE-2026-109518",
+      "package": "libapt-pkg7.0",
+      "installed": "3.2.0",
+      "fixedAccordingToScanner": "3.2.1ubuntu0.1",
+      "severity": "HIGH",
+      "advisory": "https://avd.aquasec.com/nvd/cve-2026-109518"
+    },
+    {
+      "target": ".local/delivery/gateway.tar (ubuntu 26.04)",
+      "id": "CVE-2026-111497",
+      "package": "libbrotli1",
+      "installed": "1.2.0-3build1",
+      "fixedAccordingToScanner": "1.2.0-3ubuntu0.1",
+      "severity": "HIGH",
+      "advisory": "https://avd.aquasec.com/nvd/cve-2026-111497"
+    },
+    {
+      "target": "Java",
+      "id": "CVE-2026-65182",
+      "package": "org.apache.tomcat.embed:tomcat-embed-core",
+      "installed": "11.0.24",
+      "fixedAccordingToScanner": "11.0.25, 10.1.58, 9.0.121",
+      "severity": "CRITICAL",
+      "advisory": "https://avd.aquasec.com/nvd/cve-2026-65182"
+    },
+    {
+      "target": "Java",
+      "id": "CVE-2026-65637",
+      "package": "org.apache.tomcat.embed:tomcat-embed-core",
+      "installed": "11.0.24",
+      "fixedAccordingToScanner": "11.0.25, 10.1.59, 9.0.121",
+      "severity": "CRITICAL",
+      "advisory": "https://avd.aquasec.com/nvd/cve-2026-65637"
+    },
+    {
+      "target": "Java",
+      "id": "CVE-2026-65905",
+      "package": "org.apache.tomcat.embed:tomcat-embed-core",
+      "installed": "11.0.24",
+      "fixedAccordingToScanner": "11.0.25, 10.1.58, 9.0.121",
+      "severity": "CRITICAL",
+      "advisory": "https://avd.aquasec.com/nvd/cve-2026-65905"
+    },
+    {
+      "target": "Java",
+      "id": "CVE-2026-68525",
+      "package": "org.apache.tomcat.embed:tomcat-embed-core",
+      "installed": "11.0.24",
+      "fixedAccordingToScanner": "11.0.25, 10.1.58, 9.0.121",
+      "severity": "CRITICAL",
+      "advisory": "https://avd.aquasec.com/nvd/cve-2026-68525"
+    },
+    {
+      "target": "Java",
+      "id": "CVE-2026-89407",
+      "package": "tools.jackson.core:jackson-core",
+      "installed": "3.1.5",
+      "fixedAccordingToScanner": "3.1.7, 3.2.2",
+      "severity": "HIGH",
+      "advisory": "https://avd.aquasec.com/nvd/cve-2026-89407"
+    },
+    {
+      "target": "Java",
+      "id": "CVE-2026-89425",
+      "package": "tools.jackson.core:jackson-core",
+      "installed": "3.1.5",
+      "fixedAccordingToScanner": "3.1.7, 3.2.3",
+      "severity": "HIGH",
+      "advisory": "https://avd.aquasec.com/nvd/cve-2026-89425"
+    },
+    {
+      "target": "Java",
+      "id": "CVE-2026-68497",
+      "package": "tools.jackson.core:jackson-databind",
+      "installed": "3.1.5",
+      "fixedAccordingToScanner": "3.2.2, 3.1.6",
+      "severity": "HIGH",
+      "advisory": "https://avd.aquasec.com/nvd/cve-2026-68497"
+    },
+    {
+      "target": "Java",
+      "id": "CVE-2026-91776",
+      "package": "tools.jackson.core:jackson-databind",
+      "installed": "3.1.5",
+      "fixedAccordingToScanner": "3.1.7, 3.2.3",
+      "severity": "HIGH",
+      "advisory": "https://avd.aquasec.com/nvd/cve-2026-91776"
+    },
+    {
+      "target": "Java",
+      "id": "CVE-2026-91777",
+      "package": "tools.jackson.core:jackson-databind",
+      "installed": "3.1.5",
+      "fixedAccordingToScanner": "3.1.7, 3.2.3",
+      "severity": "HIGH",
+      "advisory": "https://avd.aquasec.com/nvd/cve-2026-91777"
+    },
+    {
+      "target": "usr/bin/pebble",
+      "id": "CVE-2026-111943",
+      "package": "stdlib",
+      "installed": "v1.26.7",
+      "fixedAccordingToScanner": "1.26.10, 1.27.3",
+      "severity": "HIGH",
+      "advisory": "https://avd.aquasec.com/nvd/cve-2026-111943"
+    },
+    {
+      "target": "usr/bin/pebble",
+      "id": "CVE-2026-78667",
+      "package": "stdlib",
+      "installed": "v1.26.7",
+      "fixedAccordingToScanner": "1.26.9, 1.27.2",
+      "severity": "HIGH",
+      "advisory": "https://avd.aquasec.com/nvd/cve-2026-78667"
+    },
+    {
+      "target": "usr/bin/pebble",
+      "id": "CVE-2026-78669",
+      "package": "stdlib",
+      "installed": "v1.26.7",
+      "fixedAccordingToScanner": "1.26.9, 1.27.2",
+      "severity": "HIGH",
+      "advisory": "https://avd.aquasec.com/nvd/cve-2026-78669"
+    },
+    {
+      "target": "usr/bin/pebble",
+      "id": "CVE-2026-97031",
+      "package": "stdlib",
+      "installed": "v1.26.7",
+      "fixedAccordingToScanner": "1.26.9, 1.27.2",
+      "severity": "HIGH",
+      "advisory": "https://avd.aquasec.com/nvd/cve-2026-97031"
+    }
+  ],
+  "exploitabilityValidated": false
+}

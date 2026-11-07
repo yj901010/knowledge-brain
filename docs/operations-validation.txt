@@ -1,0 +1,31 @@
+Current-stack operational validation — verified2026-11-07 KST
+
+10-minute closed-loop in-cluster HTTPS profile:2 fresh private actors,8 Notes,2/4/8 readers,1-second reader period.
+2,640 reads and60 CAS writes;0 unexpected outcomes; both actors31 unique Activity versions; fresh revocation/isolation.
+Slowest phase/route p95=714.61ms; write p95=20.23ms. Fixed ten-step mix, small fixtures, no Java/cache A/B or production SLA claim.
+All13 JVMs/14 apps/10 connector/tasks sampled healthy throughout. Reader statuses include expected foreign404s.
+
+New authenticated encrypted bundle:20261107-current-stack-02;6,690,844,867 bytes;39 pinned runtime images.
+Eight managed namespaces including current Argo/local GitOps;13 cold volumes;18,304 regular-file hashes.
+All14 PostgreSQL DBs/292 tables matched exact counts and ordered-row hashes before application startup.
+Target:knowledge-brain-restore-261107c8;API6760;target UID=21cf1af6-254d-4b25-8870-b47706066a99
+Source UID=ee84ca44-bb83-4712-a572-10169a6e2542
+All43 captured workloads restored;79 Registry bytes/rules and10 RUNNING connector/tasks verified.
+Real old Keycloak password login, stable private IDs, originalv2/v1, Concept link, sealed binary SHA256, old guest cookie and foreign denial passed.
+Restored public search passed; isolatedv3 traversed real Outbox/Connect/Kafka/Activity; stalev2 rejected.
+Argo probe Synced/Healthy and Valkey Ready. Source originalv2 retained while clone wrotev3.
+Clone stopped/retained. Source43 workload UIDs/specs,13 PVC UID/specs, original kubeconfig and five trusted-CA HTTPS forwards retained.
+Final source:14 apps/13 JVMs/10 connector/tasks, monitoring Ready,0 firing alerts; original fixture inspected again.
+
+15 recovery regression checks passed. Actual discovered defects corrected without discarding evidence:
+- Backup inventory now includes existing GitOps CRDs/Applications/RBAC and freezes its reconciler first.
+- A missing382-byte Tempo runtime layer stopped attempt01 before data freeze. Same immutable image/local fetch restored exact bytes; all selected image content is now checked before backup.
+- First clone b7 matched all13 volume hashes but table-result ordering differed in brain_knowledge. PostgreSQL-only diagnosis proved every exact count/hash row identical. Normalization sorts table-result rows only; changed/missing/duplicate content or DBs still fail. Old target remains stopped; no frozen-resume safety gate was bypassed.
+- Source return explicitly reconciles real Kafka PodSets, not stale Kafka Ready conditions.
+- Browser failure call logs stay private; Registry verifier mounts only its reader credential and pinned Python image.
+
+Bundle source kit predates the table-order checker correction. Use the separately encrypted current operator kit documented in the runbook; no original bundle/file was overwritten.
+Separate operator kit authenticated: 3,920,884 encrypted bytes; 2,546 exported source files matched their originals at extraction; all 15 tests passed from the extracted copy. Final result records postdate that source snapshot. Private proof/hash index: .local/operations-evidence-index.json.
+No domain/API/event/schema/service/image-version change, automatic public sharing, external upload, retention deletion, schedule or V1 AI.
+Host-disk backup protects against Docker reset, not loss of the same Windows disk. No off-host copy, online PITR, site-level HA or production RTO/RPO claimed.
+Detailed sanitized/private operator evidence: .local/operations-recovery and .local/operations-load. Whole V1 remains active.

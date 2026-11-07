@@ -1,0 +1,3 @@
+package io.knowledgebrain.gateway;
+import org.junit.jupiter.api.Test;import static org.junit.jupiter.api.Assertions.*;
+class StudyRoadmapRouteTest {@Test void explicitBindingRoutesNeverExposeInternalCapability(){String id="01900000-0000-7000-8000-000000000001",root="/api/groups/"+id+"/studies/"+id+"/roadmap";for(String verb:new String[]{"GET","PUT","DELETE"})assertEquals("collaboration",GatewayRoute.select(verb,root).service());assertNotNull(GatewayRoute.select("GET",root+"/revisions"));assertNull(GatewayRoute.select("POST",root));assertNull(GatewayRoute.select("POST","/internal/learning/group-roadmap-reference"));assertNull(GatewayRoute.select("GET",root+"/progress"));}}

@@ -1,0 +1,95 @@
+Evidence/StudySession association validation, 2026-10-15
+
+Learning owns an independent optional relationship for all NOTE/CONCEPT/MEDIA
+evidence. Existing evidence/session/progress/Roadmap records and Protobuf v1
+contracts are unchanged. Same-node current session version is pinned explicitly;
+later edits/moves/retirement do not alter the pin or imply progress/completion.
+
+{
+  "jobs": {
+    "backend": "backend-validation-1792069972",
+    "learningKafka": "backend-validation-1792069662",
+    "browser": "graph-web-validation-1792070206",
+    "focusedBrowser": "graph-web-validation-1792070128",
+    "registry": "learning-tracking-contract-validation-1792069539",
+    "cdc": "learning-cdc-bootstrap-1792069975"
+  },
+  "backend": {
+    "tests": 478,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 31
+  },
+  "learningKafka": {
+    "tests": 75,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "browserTests": 43,
+  "focusedBrowserTests": 3,
+  "registeredAllVariantClaimMarkers": 2,
+  "schemaHashes": {
+    "association": "1e210a4b741051d23b1e560384c6b9adfde008ccc91b28594495c846fec034a7",
+    "media": "570c5ed12f35a119b9bda059c98a2fea913e19cf329adaa964b96de97f1bbc52",
+    "note": "432a3664007de5f39da77d077b745c534147c8dc50be424dab4cd04e56ccce2b",
+    "concept": "defd2827328024b6fee71e56a3a40c650f335f0359d03dcf62ef0d6a2b31ef04",
+    "progress": "ef3bf592594564efa67c9ddd1f3b9f3dddb7f6cc5e6fc7d20943464f013c1113",
+    "study": "98b45509343000736c25510aa59fb5cd814a9f2672de5e9dcdd242a2cf55a90e"
+  },
+  "images": {
+    "learning": "knowledge-brain/learning-service:local-4beb0edb63fc9f7f",
+    "gateway": "knowledge-brain/gateway-service:local-9e8bf634f574d670"
+  },
+  "readyServices": 9,
+  "connectorRunning": true,
+  "exactTopicAclsVerified": true,
+  "ownedBuildResourcesRemoved": 2,
+  "hostGatewayAndMinioHttpsVerified": true,
+  "contracts": {
+    "localOpenapiReferences": 1197,
+    "uniqueTypedOperations": 9,
+    "originalFiveSchemaHashesUnchanged": true
+  }
+}
+
+Real PostgreSQL tests cover all variants, no-write virtual es0 and empty history,
+independent strong ETags, no-op/stale/concurrent first writers, atomic revision and
+Outbox, original evidence/session snapshots and progress/duration invariance,
+same-node/version constraints, foreign/typed-ID isolation, archived evidence/node/
+session unlink with retained known history and retired-root write denial. A real
+isolated V5-to-V6 migration preserves old IDs, snapshots, request fingerprints,
+original retries and exact committed Outbox bytes before adding an independent link.
+
+Real Kafka compares the exact three committed link/re-pin/unlink payload bytes,
+stable UUIDv7 event/revision/link IDs, historical session versions/times/durations,
+null-equivalent UNLINKED fields and actor/Space/trace/schema metadata. The new topic
+and exact ACLs were reconciled before the first association event. All six Registry
+v1 contents and FULL validity/FULL_TRANSITIVE compatibility verified; original five
+hashes remain immutable. Outbox-only publication and twelve canonical/twelve
+other-owner CDC denials verified without slot/offset reset. Connector/task RUNNING.
+
+Focused browser uses real owner APIs, Notes/Concepts/sealed TLS MinIO files and
+canonical sessions. All typed default/read/write/no-op/history boundaries, exact
+pins through session edits and evidence/session/root retirement, same-node filtering
+with actual 20+2 source session pages, 5+3 association history, lost committed PUT
+followed by explicit latest inspection/restart, real edit/unlink 412 with confirmation
+reset, unchanged sibling drafts, current source comparison and retired source pins
+are covered. All three detail panels link independently. Held closed responses and
+malformed scope never restore stale data; actual revoked session clears all panels.
+Desktop/mobile screenshots inspected, 390px width fits and no JavaScript errors.
+Two actual Keycloak registrations retain all three association IDs/full snapshots
+across Space claim, then registered unlink/edit authority remains independent.
+Full browser suite validates the same final deployed Learning/Gateway images.
+
+The full reactor skips 31 environment-gated checks; the separate Learning run enables
+all 75 Learning tests including real TLS Kafka, with zero skips/failures/errors.
+Only two exact owned successful builders and their artifact Services/NetworkPolicies/
+source ConfigMaps were removed after Pod UID/labels, selectors, source owner refs,
+init exit code, both-node image imports and current deployment image checks.
+No user data, database, PVC, CDC slot or broker offset was removed or reset.
+
+No additional dependency/dataset/license. Central telemetry stack/exporter, Activity
+timeline, public/group Roadmaps, ratings/ranking, Planning/Collaboration/GitHub and
+visual redesign remain separate next work. Readiness/counters and trace propagation
+are included; this proof does not claim the entire platform is complete.

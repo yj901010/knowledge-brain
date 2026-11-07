@@ -1,0 +1,584 @@
+openapi: 3.1.0
+info:
+  title: Public Roadmap Ratings and Deterministic Ranking
+  version: 1.0.0
+  description: 'Registered principal: one stable rating per public Roadmap; 1..5 integer
+    stars, edit/soft retirement/reactivation with immutable history. The original
+    CREATE proposer may not rate; reviewers receive no special rating privileges.
+    Private/unpublished Roadmaps cannot be rated. Strong rr0 means no rating; later
+    rrN survives withdrawal. PUT requires current public roadmapVersion and If-Match;
+    stale roadmap=409, stale rating=412. Exact no-op checks version first and emits
+    no revision/event. GET/DELETE require empty bodies, strict singleton declared
+    queries, PUT strict JSON only/2048-byte cap. Public guests see only aggregate
+    scores/ranking; personal rating/history only the current registered actor. Current-version
+    ACTIVE votes only, older revision votes remain privately inspectable and must
+    be explicitly re-pinned. RATING: exact average DESC NULLS LAST, count DESC, UUID
+    ASC. RATING_COUNT: count DESC, exact average DESC NULLS LAST, UUID ASC. RECENT:
+    canonical graph updated_at DESC, UUID ASC; votes never bump graph freshness. Each
+    top100 maximum query is one Learning-owned PostgreSQL statement snapshot, not
+    a durable rank or paginated list. Verification remains REVIEWED independently;
+    no usage/completion claims or AI.'
+security:
+- browserSession: []
+paths:
+  /api/public/spaces/{spaceId}/roadmap-rankings:
+    parameters:
+    - name: spaceId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    get:
+      operationId: rankPublicRoadmaps
+      parameters:
+      - name: sort
+        in: query
+        required: false
+        schema:
+          enum:
+          - RATING
+          - RATING_COUNT
+          - RECENT
+          default: RATING
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      responses:
+        '200':
+          description: Freshly authorized owner-domain result.
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ranking'
+        '400':
+          description: Invalid strict JSON/query/body/score/tag
+          headers: &id001
+            Cache-Control:
+              schema:
+                const: no-store
+        '401':
+          description: Session missing or invalid
+          headers: *id001
+        '403':
+          description: Registered account / same-origin required; original publisher
+            cannot rate
+          headers: *id001
+        '404':
+          description: Published public roadmap / Space unavailable
+          headers: *id001
+        '409':
+          description: Public graph version changed; inspect latest graph
+          headers: *id001
+        '412':
+          description: Rating version changed
+          headers: *id001
+        '413':
+          description: Rating body exceeds 2048 bytes
+          headers: *id001
+        '415':
+          description: JSON required
+          headers: *id001
+        '428':
+          description: Strong rrN If-Match required
+          headers: *id001
+        '503':
+          description: Authority/database unavailable
+          headers: *id001
+  /api/public/spaces/{spaceId}/roadmaps/{roadmapId}/ratings:
+    parameters:
+    - name: spaceId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    - name: roadmapId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    get:
+      operationId: publicRoadmapRatingSummary
+      parameters: []
+      responses:
+        '200':
+          description: Freshly authorized owner-domain result.
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Summary'
+        '400':
+          description: Invalid strict JSON/query/body/score/tag
+          headers: *id001
+        '401':
+          description: Session missing or invalid
+          headers: *id001
+        '403':
+          description: Registered account / same-origin required; original publisher
+            cannot rate
+          headers: *id001
+        '404':
+          description: Published public roadmap / Space unavailable
+          headers: *id001
+        '409':
+          description: Public graph version changed; inspect latest graph
+          headers: *id001
+        '412':
+          description: Rating version changed
+          headers: *id001
+        '413':
+          description: Rating body exceeds 2048 bytes
+          headers: *id001
+        '415':
+          description: JSON required
+          headers: *id001
+        '428':
+          description: Strong rrN If-Match required
+          headers: *id001
+        '503':
+          description: Authority/database unavailable
+          headers: *id001
+  /api/public/spaces/{spaceId}/roadmaps/{roadmapId}/my-rating:
+    parameters:
+    - name: spaceId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    - name: roadmapId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    get:
+      operationId: myRoadmapRating
+      parameters: []
+      responses:
+        '200':
+          description: Freshly authorized owner-domain result.
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"rr(0|[1-9][0-9]*)"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Mine'
+        '400':
+          description: Invalid strict JSON/query/body/score/tag
+          headers: *id001
+        '401':
+          description: Session missing or invalid
+          headers: *id001
+        '403':
+          description: Registered account / same-origin required; original publisher
+            cannot rate
+          headers: *id001
+        '404':
+          description: Published public roadmap / Space unavailable
+          headers: *id001
+        '409':
+          description: Public graph version changed; inspect latest graph
+          headers: *id001
+        '412':
+          description: Rating version changed
+          headers: *id001
+        '413':
+          description: Rating body exceeds 2048 bytes
+          headers: *id001
+        '415':
+          description: JSON required
+          headers: *id001
+        '428':
+          description: Strong rrN If-Match required
+          headers: *id001
+        '503':
+          description: Authority/database unavailable
+          headers: *id001
+    put:
+      operationId: saveMyRoadmapRating
+      parameters:
+      - &id002
+        name: If-Match
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^"rr(0|[1-9][0-9]{0,18})"$
+      responses:
+        '200':
+          description: Freshly authorized owner-domain result.
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"rr(0|[1-9][0-9]*)"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Mine'
+        '400':
+          description: Invalid strict JSON/query/body/score/tag
+          headers: *id001
+        '401':
+          description: Session missing or invalid
+          headers: *id001
+        '403':
+          description: Registered account / same-origin required; original publisher
+            cannot rate
+          headers: *id001
+        '404':
+          description: Published public roadmap / Space unavailable
+          headers: *id001
+        '409':
+          description: Public graph version changed; inspect latest graph
+          headers: *id001
+        '412':
+          description: Rating version changed
+          headers: *id001
+        '413':
+          description: Rating body exceeds 2048 bytes
+          headers: *id001
+        '415':
+          description: JSON required
+          headers: *id001
+        '428':
+          description: Strong rrN If-Match required
+          headers: *id001
+        '503':
+          description: Authority/database unavailable
+          headers: *id001
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - roadmapVersion
+              - score
+              properties:
+                roadmapVersion: &id003
+                  type: integer
+                  format: int64
+                  minimum: 1
+                score: &id004
+                  type: integer
+                  minimum: 1
+                  maximum: 5
+    delete:
+      operationId: retireMyRoadmapRating
+      parameters:
+      - *id002
+      responses:
+        '200':
+          description: Freshly authorized owner-domain result.
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"rr(0|[1-9][0-9]*)"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Mine'
+        '400':
+          description: Invalid strict JSON/query/body/score/tag
+          headers: *id001
+        '401':
+          description: Session missing or invalid
+          headers: *id001
+        '403':
+          description: Registered account / same-origin required; original publisher
+            cannot rate
+          headers: *id001
+        '404':
+          description: Published public roadmap / Space unavailable
+          headers: *id001
+        '409':
+          description: Public graph version changed; inspect latest graph
+          headers: *id001
+        '412':
+          description: Rating version changed
+          headers: *id001
+        '413':
+          description: Rating body exceeds 2048 bytes
+          headers: *id001
+        '415':
+          description: JSON required
+          headers: *id001
+        '428':
+          description: Strong rrN If-Match required
+          headers: *id001
+        '503':
+          description: Authority/database unavailable
+          headers: *id001
+  /api/public/spaces/{spaceId}/roadmaps/{roadmapId}/my-rating/revisions:
+    parameters:
+    - name: spaceId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    - name: roadmapId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    get:
+      operationId: myRoadmapRatingRevisions
+      parameters:
+      - name: before
+        in: query
+        required: false
+        schema: *id003
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 5
+      responses:
+        '200':
+          description: Freshly authorized owner-domain result.
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                type: array
+                maxItems: 10
+                items:
+                  $ref: '#/components/schemas/Revision'
+        '400':
+          description: Invalid strict JSON/query/body/score/tag
+          headers: *id001
+        '401':
+          description: Session missing or invalid
+          headers: *id001
+        '403':
+          description: Registered account / same-origin required; original publisher
+            cannot rate
+          headers: *id001
+        '404':
+          description: Published public roadmap / Space unavailable
+          headers: *id001
+        '409':
+          description: Public graph version changed; inspect latest graph
+          headers: *id001
+        '412':
+          description: Rating version changed
+          headers: *id001
+        '413':
+          description: Rating body exceeds 2048 bytes
+          headers: *id001
+        '415':
+          description: JSON required
+          headers: *id001
+        '428':
+          description: Strong rrN If-Match required
+          headers: *id001
+        '503':
+          description: Authority/database unavailable
+          headers: *id001
+components:
+  securitySchemes:
+    browserSession:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest
+  schemas:
+    Id:
+      type: string
+      format: uuid
+      pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+    Rating:
+      type: object
+      additionalProperties: false
+      required:
+      - ratingId
+      - spaceId
+      - roadmapId
+      - principalId
+      - roadmapVersion
+      - score
+      - state
+      - version
+      - updatedAt
+      properties:
+        ratingId:
+          $ref: '#/components/schemas/Id'
+        spaceId:
+          $ref: '#/components/schemas/Id'
+        roadmapId:
+          $ref: '#/components/schemas/Id'
+        principalId:
+          $ref: '#/components/schemas/Id'
+        roadmapVersion: *id003
+        score: *id004
+        state:
+          enum:
+          - ACTIVE
+          - RETIRED
+        version: *id003
+        updatedAt: &id006
+          type: string
+          format: date-time
+    Mine:
+      type: object
+      additionalProperties: false
+      required:
+      - spaceId
+      - roadmapId
+      - currentRoadmapVersion
+      - canRate
+      - rating
+      properties:
+        spaceId:
+          $ref: '#/components/schemas/Id'
+        roadmapId:
+          $ref: '#/components/schemas/Id'
+        currentRoadmapVersion: *id003
+        canRate:
+          type: boolean
+        rating:
+          anyOf:
+          - $ref: '#/components/schemas/Rating'
+          - type: 'null'
+    Summary:
+      type: object
+      additionalProperties: false
+      required:
+      - spaceId
+      - roadmapId
+      - roadmapVersion
+      - ratingCount
+      - scoreSum
+      - averageScore
+      - starCounts
+      properties:
+        spaceId:
+          $ref: '#/components/schemas/Id'
+        roadmapId:
+          $ref: '#/components/schemas/Id'
+        roadmapVersion: *id003
+        ratingCount: &id005
+          type: integer
+          format: int64
+          minimum: 0
+        scoreSum: *id005
+        averageScore: &id007
+          type:
+          - string
+          - 'null'
+          description: Exact average rounded HALF_UP to two decimals, e.g. 4.33; null
+            when count=0. Ranking uses the unrounded rational average.
+        starCounts:
+          type: array
+          minItems: 5
+          maxItems: 5
+          items: *id005
+          description: Counts for 1,2,3,4,5 stars, in that order; current-version
+            ACTIVE votes only.
+    Revision:
+      type: object
+      additionalProperties: false
+      required:
+      - revisionId
+      - version
+      - actorId
+      - occurredAt
+      - snapshot
+      properties:
+        revisionId:
+          $ref: '#/components/schemas/Id'
+        version: *id003
+        actorId:
+          $ref: '#/components/schemas/Id'
+        occurredAt: *id006
+        snapshot:
+          $ref: '#/components/schemas/Rating'
+    Ranked:
+      type: object
+      additionalProperties: false
+      required:
+      - rank
+      - roadmapId
+      - title
+      - roadmapVersion
+      - verification
+      - updatedAt
+      - ratingCount
+      - scoreSum
+      - averageScore
+      properties:
+        rank:
+          type: integer
+          minimum: 1
+          maximum: 100
+        roadmapId:
+          $ref: '#/components/schemas/Id'
+        title:
+          type: string
+          maxLength: 200
+        roadmapVersion: *id003
+        verification:
+          const: REVIEWED
+        updatedAt: *id006
+        ratingCount: *id005
+        scoreSum: *id005
+        averageScore: *id007
+    Ranking:
+      type: object
+      additionalProperties: false
+      required:
+      - spaceId
+      - sort
+      - limit
+      - generatedAt
+      - items
+      properties:
+        spaceId:
+          $ref: '#/components/schemas/Id'
+        sort:
+          enum:
+          - RATING
+          - RATING_COUNT
+          - RECENT
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 100
+        generatedAt: *id006
+        items:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/Ranked'

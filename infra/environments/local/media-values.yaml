@@ -1,0 +1,78 @@
+replicaCount: 1
+image:
+  repository: knowledge-brain/media-service
+  tag: ''
+  pullPolicy: Never
+  digest: sha256:a96fb2b9c639de1113de48dd049e6545240950d0d070620c60bf263a392eff38
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: '1'
+    memory: 768Mi
+env:
+- name: BRAIN_MEDIA_PERSISTENCE_ENABLED
+  value: 'true'
+- name: BRAIN_MEDIA_API_ENABLED
+  value: 'true'
+- name: BRAIN_MEDIA_DATABASE_URL
+  value: jdbc:postgresql://brain-postgres.brain-data.svc:5432/brain_media
+- name: BRAIN_MEDIA_DATABASE_PASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: brain-media-db
+      key: password
+- name: BRAIN_MEDIA_DATABASE_MAXIMUM_POOL_SIZE
+  value: '3'
+- name: BRAIN_MEDIA_SPACE_ORIGIN
+  value: https://space-service.brain-apps.svc:8080
+- name: BRAIN_MEDIA_SPACE_TRUST_FILE
+  value: /space-trust/ca.crt
+- name: BRAIN_MEDIA_SPACE_AUTHORIZATION_KEY
+  valueFrom:
+    secretKeyRef:
+      name: brain-media-space-authorization
+      key: key
+- name: BRAIN_MEDIA_CONTENT_AUTHORIZATION_KEY
+  valueFrom:
+    secretKeyRef:
+      name: brain-content-media-authorization
+      key: key
+- name: BRAIN_MEDIA_STORAGE_ORIGIN
+  value: https://brain-minio.brain-data.svc:9000
+- name: BRAIN_MEDIA_STORAGE_PUBLIC_ORIGIN
+  value: https://localhost:9443
+- name: BRAIN_MEDIA_STORAGE_TRUST_FILE
+  value: /space-trust/ca.crt
+- name: BRAIN_MEDIA_STORAGE_ACCESS_KEY
+  valueFrom:
+    secretKeyRef:
+      name: brain-media-storage
+      key: accessKey
+- name: BRAIN_MEDIA_STORAGE_SECRET_KEY
+  valueFrom:
+    secretKeyRef:
+      name: brain-media-storage
+      key: secretKey
+- name: BRAIN_MEDIA_BROWSER_ORIGIN
+  value: https://localhost:8443
+- name: SERVER_SSL_ENABLED
+  value: 'true'
+- name: SERVER_SSL_CERTIFICATE
+  value: file:/api-tls/tls.crt
+- name: SERVER_SSL_CERTIFICATE_PRIVATE_KEY
+  value: file:/api-tls/tls.key
+- name: SERVER_FORWARD_HEADERS_STRATEGY
+  value: NONE
+- name: MANAGEMENT_ENDPOINT_HEALTH_GROUP_READINESS_INCLUDE
+  value: readinessState,mediaDatabase,mediaStorage
+- name: BRAIN_MEDIA_DOMAIN_FILES_ENABLED
+  value: 'true'
+- name: BRAIN_MEDIA_DOMAIN_AUTHORIZATION_KEY
+  valueFrom:
+    secretKeyRef:
+      name: brain-collaboration-media-authorization
+      key: key
+deploymentStrategy:
+  type: Recreate

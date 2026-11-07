@@ -1,0 +1,128 @@
+openapi: 3.1.0
+info:
+  title: Media owner Learning reference read
+  version: 1.0.0
+servers:
+- url: https://media-service.brain-apps.svc:8080
+paths:
+  /api/spaces/{spaceId}/media/{mediaId}/learning-reference:
+    parameters:
+    - name: spaceId
+      in: path
+      required: true
+      schema: &id001
+        type: string
+        format: uuid
+        pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+    - name: mediaId
+      in: path
+      required: true
+      schema: *id001
+    get:
+      operationId: checkLearningMediaReference
+      description: Metadata-only owner read over verified TLS, never proxied by Gateway.
+        No query or body. Independently checks fresh Media read authorization with
+        the same common cookie. AVAILABLE requires immutable sealed MinIO object version.
+        No object key, storage version, upload policy, credentials or signed URL returned;
+        no storage read. Learning verifies actor equality and expected Media version.
+      security:
+      - sessionCookie: []
+      responses:
+        '200':
+          description: Authorized AVAILABLE same-Space sealed Media metadata
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                - spaceId
+                - mediaId
+                - principalId
+                - version
+                - filename
+                - mimeType
+                - byteSize
+                - sha256
+                - state
+                - visibility
+                properties:
+                  spaceId: *id001
+                  mediaId: *id001
+                  principalId: *id001
+                  version:
+                    type: integer
+                    format: int64
+                    minimum: 1
+                  filename:
+                    type: string
+                    minLength: 1
+                    maxLength: 200
+                  mimeType:
+                    type: string
+                    enum:
+                    - application/pdf
+                    - application/octet-stream
+                    - image/png
+                    - image/jpeg
+                    - image/gif
+                    - image/webp
+                  byteSize:
+                    type: integer
+                    format: int64
+                    minimum: 1
+                    maximum: 10485760
+                  sha256:
+                    type: string
+                    pattern: ^[0-9a-f]{64}$
+                  state:
+                    const: AVAILABLE
+                  visibility:
+                    const: PRIVATE
+        '400':
+          description: Invalid UUIDv7 or non-empty body/query
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '401':
+          description: Common browser credential unavailable
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '403':
+          description: Origin or current Space role denied
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '404':
+          description: Private Space or Media unavailable
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '409':
+          description: Media upload is not complete.
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '503':
+          description: Owner authorization/reference check or persistence unavailable;
+            no partial write
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest

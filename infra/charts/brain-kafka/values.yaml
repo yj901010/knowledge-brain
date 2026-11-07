@@ -1,0 +1,25 @@
+clusterName: brain-kafka
+kafkaExporter:
+  enabled: false
+kafkaVersion: "4.3.1"
+metadataVersion: "4.3-IV0"
+replicationFactor: 3
+minInSyncReplicas: 2
+storageClass: ""
+controllers:
+  replicas: 3
+  storage: 20Gi
+  heap: 512m
+  resources:
+    requests: {cpu: 250m, memory: 768Mi}
+    limits: {cpu: "1", memory: 1Gi}
+brokers:
+  replicas: 3
+  storage: 100Gi
+  heap: 1g
+  resources:
+    requests: {cpu: 500m, memory: 1536Mi}
+    limits: {cpu: "2", memory: 2Gi}
+entityOperatorResources:
+  requests: {cpu: 100m, memory: 256Mi}
+  limits: {cpu: 500m, memory: 512Mi}

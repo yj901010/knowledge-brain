@@ -1,0 +1,18 @@
+Group shared roadmap links validation — 2026-10-23
+
+learning: 116 passed; 0 existing conditional checks skipped; backend-validation-1792754263562362200-aa7f2b4d
+space: 63 passed; 4 existing conditional checks skipped; backend-validation-1792754266852179500-9d85b7fd
+gateway: 89 passed; 0 existing conditional checks skipped; backend-validation-1792754277962498500-07d75f58
+Browser: 3 scenarios passed; graph-web-validation-1792754790685038700
+Actual Keycloak registrations verified public graph preview, explicit checkbox, pinned source identity/version, committed response-loss retry, MEMBER and VIEWER reads, owner-only writes, stale If-Match, retirement audit, member removal and private roadmap/progress/evidence isolation.
+A simulated source-version conflict clears the inspected graph and confirmation. Mobile overflow and browser storage checks passed. Existing Group creation and invitation/member/leave flows passed again.
+An initial membership regression raced its role-change request (its text assertion also matched the VIEWER action button). The test now awaits the actual committed PUT response before refreshing participation; all three scenarios passed together afterward.
+Learning integration tests verify public source changes do not mutate pinned graphs; concurrent duplicate attaches serialize to one link/event; concurrent retirements have one winner; stale source/If-Match and foreign/private IDs fail; Outbox failures roll back link and revision changes.
+Actual Learning CDC delivered both full graph/link snapshots byte-for-byte from Outbox with trace/schema headers; partition seek replay produced already-seen stable event IDs. No new downstream projector is introduced; future consumers must deduplicate eventId and apply increasing aggregate versions.
+Dedicated Space GROUP_ROADMAP actions freshly check registered PRIVATE GROUP membership: OWNER/MEMBER/VIEWER read, OWNER writes. Existing PERSONAL learning actions still reject Group Spaces. No cross-service SQL/FK or distributed transaction.
+V10 adds Group link/current revision storage with Learning-owned public graph FKs. Published Group roadmap Protobuf is a new immutable artifact with FULL validity and FULL_TRANSITIVE compatibility. Kafka topic/producer and validator ACLs were Ready before canonical writers.
+Learning CDC account cannot SELECT link, link revision, personal roadmap or node_progress tables; Outbox remains readable. All nine existing CDC connector/tasks are RUNNING.
+OpenAPI: 58 documents, 1548 local/relative references resolve. Pinned Next/TypeScript static export passed.
+Space, Learning and Gateway exact images imported on both k3d nodes and rolled out. Actual module/shared event contract source bytes match build archives. Three owned temporary builder sets removed.
+All 13 application Deployments Ready; trusted host HTTPS /graph and /graph/groups return 200 with no-store/CSP.
+No new dependency, external dataset, AI, automatic personal sharing, group progress, editable Group graphs or public publication. Study/Course/Assignment/Discussion/Submission remain subsequent work.

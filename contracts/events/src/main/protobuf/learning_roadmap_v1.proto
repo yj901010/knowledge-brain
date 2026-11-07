@@ -1,0 +1,41 @@
+syntax = "proto3";
+package knowledgebrain.learning.roadmap.v1;
+option java_package = "io.knowledgebrain.contracts.learning.roadmap.v1";
+option java_multiple_files = true;
+message RoadmapEventEnvelopeV1 {
+  string event_id = 1;
+  string event_type = 2;
+  uint32 event_version = 3;
+  int64 occurred_at_epoch_millis = 4;
+  string producer = 5;
+  string aggregate_type = 6;
+  string aggregate_id = 7;
+  string space_id = 8;
+  string actor_id = 9;
+  string trace_id = 10;
+  bytes payload = 11;
+}
+// One complete canonical Roadmap revision. PRIVATE snapshots require scoped readers.
+// Retired snapshots retain audit content; projections must hide retired roadmaps.
+message RoadmapChangedPayloadV1 {
+  string roadmap_id = 1;
+  string revision_id = 2;
+  uint64 version = 3;
+  string state = 4;
+  string visibility = 5;
+  string title = 6;
+  string description = 7;
+  repeated RoadmapNodeV1 nodes = 8;
+  repeated RoadmapEdgeV1 edges = 9;
+}
+message RoadmapNodeV1 {
+  string node_id = 1;
+  string title = 2;
+  string description = 3;
+}
+message RoadmapEdgeV1 {
+  string edge_id = 1;
+  string kind = 2;
+  string source_node_id = 3;
+  string target_node_id = 4;
+}

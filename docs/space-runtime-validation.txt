@@ -1,0 +1,41 @@
+2026-10-06 local k3d-knowledge-brain; Java 25, real PostgreSQL and mTLS Kafka.
+Authority: AGENTS.md + PROJECT.md checked; no service ownership/architecture conflict.
+
+space-cdc-bootstrap-1791288992: COMPLETE; own Outbox SELECT, membership denial,
+12 other database connection denials, publication contains only owned Outbox.
+space-contract-validation-1791288993: COMPLETE; version 1, FULL validity,
+FULL_TRANSITIVE compatibility, SHA256
+36398d424891f711ef3e2da6655dfb9ddc1d2309eddfd8a745d1ededf583312b.
+space-connector-config-1791289208: COMPLETE; connector and task RUNNING.
+brain-connect Helm revision 2: Ready, Identity + Space credentials/ACLs/topics.
+
+Jib built knowledge-brain/space-service:local-2746cebe092a3824.
+space-image-import-1791289415-0: agent COMPLETE.
+space-image-import-1791289554-0: server COMPLETE, verified archive checksum.
+OCI image digest 3ce446696f682ba1c4c2fd8262f956c7e31c42412d93c2f7dfc6767a480c4379.
+Space Helm revision 2: Ready 1/1, non-root read-only root filesystem.
+Actual application logs show CREATED outcomes with UUIDv7 Space/event IDs and traces.
+Temporary image-serving Pod/Service/ConfigMap/NetworkPolicy removed after import.
+
+backend-validation-1791289879: BUILD SUCCESS; all 13 services, 53 tests,
+zero failures/errors/skips. Real Identity CDC source rollback absence and readonly
+write denial passed. Space verifies PRIVATE + OWNER, other-principal denial,
+concurrent replay, changed-input rejection, same-principal deduplication and complete
+transaction rollback on Outbox failure. Deployed consumer processed 10 actual
+Kafka guest events. Validation group re-opened without offset acknowledgement;
+fresh Store returned durable duplicates, one Outbox per Space remained, and
+Space CDC output bytes, key, schema/event/trace headers matched owned Outbox.
+
+backend-validation-1791290013: BUILD SUCCESS; Space 14 tests, no failures/errors/skips.
+Local restart exposed surge readiness deadlock with one Kafka partition; fixed
+local deploymentStrategy to Recreate. Replacement Space Pod became Ready 1/1.
+Base deployment remains rolling; service/event/database architecture is unchanged.
+
+backend-validation-1791290095: COMPLETE + BUILD SUCCESS, run after replacement
+Pod became Ready. Space 14 tests passed with zero failures/errors/skips, including
+the same 10 Kafka guest events, durable replay and byte-exact Space CDC output.
+Both Helm charts linted successfully; Python helpers compile successfully.
+
+No public/browser principal API or registered claiming is implemented yet.
+This is local recovery/integration evidence, not exactly-once delivery, production
+HA, completed OpenTelemetry infrastructure or GHCR/Argo CD delivery evidence.

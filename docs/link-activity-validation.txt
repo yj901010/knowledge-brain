@@ -1,0 +1,24 @@
+PASS immutable Wiki Link Activity and local Kubernetes validation.
+Full backend:737 total,719 passed,0 failures/errors,18 unchanged environment-gated exclusions.
+Content136/136 own PostgreSQL and10 Kafka contracts; Activity53/53 own PostgreSQL,
+ClickHouse and19 actual Kafka streams. Full browser98/98; focused2/2; two real registered
+Space claims retain canonical outgoing links and original guest event IDs/actor/history.
+All four resolution states, repeated occurrences, original target tokens/labels/fragments,
+requested/bound immutable IDs, source retirement empty snapshot, independent link/body versions,
+UTF-16 offsets and private foreign target handling; malformed/overflow/duplicate bounds rejected.
+Actual26 source link versions use20-row history pages; all205 current occurrences checked across
+three canonical ordinal pages without inventing ETags. Mixed-version pages fail with retry,
+historical/current facts stay separate, escaped HTML does not load, unsaved drafts preserved,
+390px fit, delayed responses discarded and revocation clears private UI.
+Actual Activity restart and two complete pooled three-owner canonical replays preserve33
+original activities including16 Wiki Link snapshots, every event ID, body/revision and offset.
+No source/Inbox/ClickHouse/PVC/topic/CDC slot/checkpoint reset. Existing replay guard rejects
+a second Job before mutation. All10 Content Protobuf schemas unchanged; all OpenAPI refs resolve.
+One literal Read/Describe topic added; Content connector unchanged.12 apps Ready,8 connectors
+and tasks RUNNING. Exact image imports on both nodes; three owned builder resource sets removed.
+Verified HTTPS graph200, anonymous private401 and internal export403.
+Evidence:.local/link-activity-proof.json and runtime/contract/cleanup proofs.
+
+Measured complete canonical recoveries:
+activity-timeline-replay-1792415040: 462.0 seconds; 106577 original events (learning=24526, planning=7284, content=74767).
+activity-timeline-replay-1792415540: 471.0 seconds; 106577 original events (learning=24526, planning=7284, content=74767).

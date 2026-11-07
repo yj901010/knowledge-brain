@@ -1,0 +1,16 @@
+Tag AND property conditions validation — 2026-10-22
+
+content: 172 passed, 0 failed/error/skipped; backend-validation-1792674760304203600-ed912cf5
+gateway: 77 passed, 0 failed/error/skipped; backend-validation-1792674760804919100-461163b5
+Browser: 20 passed (3 combined tag scenarios + 17 range/exact/property/tag/metadata/activity/library/retirement regressions); graph-web-validation-1792675047428247400
+Pinned frontend build and TypeScript checks passed: graph-static-build-1792674771888218200
+OpenAPI: 54 documents parsed, 1450 local references resolved.
+Tag membership AND property presence/value/range apply before keyset pagination; real 20+2 intersection results preserve exact decimals and exclude wrong tag/value, retired and removed membership.
+Unused tag empty results, unknown/foreign tag denial, all five exact value types, dates and decimal ranges validated. Every page reauthorizes and remains no-store.
+25-tag catalog keyset pages, independent chosen/applied tags and value/editor drafts, condition-specific clearing and mobile width passed.
+Invalid tag query keys, empty/duplicate/malformed IDs, mixed exact/range and wrong route conditions rejected before upstream.
+Malformed tag catalog, mismatching response tagId, stale previous tag reads, explicit recovery and revoked catalog access clear/recover only the appropriate state.
+No browsing writes and no browser storage; all 17 existing search, metadata, library and retirement regressions passed.
+Real PostgreSQL/Kafka and Gateway suites passed. Existing V3/V13 lookup indexes, no new dependency, event contract or migration; deployed Content schema remains V13.
+Content/Gateway exact source-hash images imported on both nodes and rolled out; both owned temporary builders cleaned.
+All 12 application Deployments ready; verified host HTTPS /graph 200.

@@ -1,0 +1,11 @@
+syntax="proto3";
+package knowledgebrain.media.v1;
+option java_package="io.knowledgebrain.contracts.media.v1";
+option java_multiple_files=true;
+message MediaEventEnvelopeV1 {
+ string event_id=1;string event_type=2;uint32 event_version=3;int64 occurred_at_epoch_millis=4;
+ string producer=5;string aggregate_type=6;string aggregate_id=7;string space_id=8;string actor_id=9;string trace_id=10;bytes payload=11;
+}
+message MediaChangedPayloadV1 {
+ string media_id=1;uint64 version=2;string state=3;string filename=4;string mime_type=5;uint64 byte_size=6;string sha256=7;string visibility=8;
+}

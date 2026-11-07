@@ -1,0 +1,43 @@
+syntax = "proto3";
+package knowledgebrain.knowledge.qualifier.v2;
+option java_package = "io.knowledgebrain.contracts.knowledge.qualifier.v2";
+option java_multiple_files = true;
+
+// Independently published as knowledge/qualifier-events-v2 version 1 (event version 2).
+// Existing Concept, Alias, Claim and Source event versions remain immutable.
+message EventEnvelopeV2 {
+  string event_id = 1;
+  string event_type = 2;
+  uint32 event_version = 3;
+  int64 occurred_at_epoch_millis = 4;
+  string producer = 5;
+  string aggregate_type = 6;
+  string aggregate_id = 7;
+  string space_id = 8;
+  string actor_id = 9;
+  string trace_id = 10;
+  bytes payload = 11;
+}
+
+// Complete PRIVATE condition snapshot. Values use canonical text (exact decimals).
+// Retained Claim revision pins never follow later triple edits automatically.
+// Consumers deduplicate event_id and order by qualifier_id/version.
+// Literal values are exact canonical text. Inapplicable Concept IDs are empty.
+message ClaimQualifierChangedPayloadV2 {
+ string qualifier_id = 1;
+ string claim_id = 2;
+ string subject_concept_id = 3;
+ string claim_revision_id = 4;
+ uint64 claim_version = 5;
+ string claim_predicate_concept_id = 6;
+ string claim_object_concept_id = 7;
+ string predicate_concept_id = 8;
+ string value_type = 9;
+ string value_text = 10;
+ string revision_id = 11;
+ uint64 version = 12;
+ string state = 13;
+ string visibility = 14;
+  string claim_object_type = 15;
+  string claim_object_value = 16;
+}

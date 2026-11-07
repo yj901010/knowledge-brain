@@ -1,0 +1,51 @@
+{
+  "reviewedAt": "2026-11-06",
+  "scope": "unmodified dev-only browser checks; not imported into product bundles",
+  "dependencies": [
+    {
+      "package": "@axe-core/playwright",
+      "version": "4.14.0",
+      "license": "MPL-2.0",
+      "tarball": "https://registry.npmjs.org/@axe-core/playwright/-/playwright-4.14.0.tgz",
+      "integrity": "sha512-SGUhG5PIHd2eMdpgBF2PyQLOhX+qyDR2PT4cmoS4Qk2ak+jX/rrSvst9l0PGv5WTHolKpUMvVmoHpr4cZgf1RQ==",
+      "tarSha256": "0d16690e81a9c80f653920da310010bd530b3e2bffe18d299769113848b40bdf",
+      "source": {
+        "url": "git+https://github.com/dequelabs/axe-core-npm.git",
+        "type": "git"
+      },
+      "licenses": {
+        "axe-core-playwright-LICENSE": "812e9d96e900a093ae4d1d3f22c5f82f568a0a0461c3007a99d00573d41c5461"
+      }
+    },
+    {
+      "package": "axe-core",
+      "version": "4.14.0",
+      "license": "MPL-2.0",
+      "tarball": "https://registry.npmjs.org/axe-core/-/axe-core-4.14.0.tgz",
+      "integrity": "sha512-9WTZxEjsZ7b13TH8JPmbV2z8CHbl80/2hm3XPEG4JgNdQLK81IBRXmSxHfMAOkSqQeRxT/0dwNDz2GOm3zzpcQ==",
+      "tarSha256": "2277b0a3ef47af9b52497faa3e71598e86e0a0e5e6eb295207a5657ede4709af",
+      "source": {
+        "url": "https://github.com/dequelabs/axe-core.git",
+        "type": "git"
+      },
+      "licenses": {
+        "axe-core-LICENSE": "af175b9d96ee93c21a036152e1b905b0b95304d4ae8c2c921c7609100ba8df7e",
+        "axe-core-LICENSE-3RD-PARTY.txt": "4f8563870d0fca38bbc3e00b6f670cb7fa9f380ba9f26a7f7d1184a6b18b1653"
+      }
+    }
+  ],
+  "frontendMaintenance": {
+    "package": "next",
+    "previous": "16.4.0",
+    "version": "16.4.5",
+    "license": "MIT",
+    "licenseSource": "https://raw.githubusercontent.com/vercel/next.js/v16.4.5/license.md",
+    "licenseSha256": "ee765244e2d59f5234d474f62e0766fa0c8b99af967fdd4c0cb8dcb0c76ea224",
+    "advisories": [
+      "https://github.com/vercel/next.js/security/advisories/GHSA-2464-fhr4-w9xw",
+      "https://github.com/vercel/next.js/security/advisories/GHSA-p3m5-59mp-jv5r",
+      "https://github.com/vercel/next.js/security/advisories/GHSA-673q-mjm6-r5xr"
+    ],
+    "scope": "same minor maintenance; static export remains; no exploitability assertion"
+  }
+}

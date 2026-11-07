@@ -1,0 +1,224 @@
+openapi: 3.1.0
+info:
+  title: Personal Adoption of a Published Roadmap
+  version: 1.0.0
+  description: Guest and registered Personal Space members may explicitly adopt the
+    currently inspected public version. Fresh destination ROADMAP_WRITE and source
+    PUBLIC_ROADMAP_READ authorization must resolve the same principal. Learning atomically
+    creates a complete PRIVATE editable graph with fresh IDs, immutable provenance
+    and both existing RoadmapCreated and new RoadmapAdopted Outbox events. One copy
+    per (destination Space, source Roadmap, source version), independent of actor
+    identity; repeated/concurrent requests return the same immutable provenance without
+    new writes, including after a source update, claim or personal retirement. First
+    adoption of a stale version is 409. POST has strict three-field JSON <=2048 bytes,
+    no query, HTTPS/same Origin. No user-supplied title/graph/personal IDs/actor.
+    No automatic sync, republishing, review-state inheritance, progress copying or
+    public usage statistics. A newer version is a separate explicit adoption with
+    fresh progress. Own provenance GET includes retired graphs; ordinary private roadmaps
+    return adoption=null. No public provenance or adopter listing endpoint. Source
+    nodes/edges map to original personal IDs even after private edits/retirement;
+    never reassign old progress. Existing private learning/evidence APIs apply.
+security:
+- browserSession: []
+paths:
+  /api/spaces/{spaceId}/roadmap-adoptions:
+    parameters:
+    - name: spaceId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    post:
+      operationId: adoptPublishedRoadmap
+      parameters:
+      - name: Origin
+        in: header
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdoptInput'
+      responses:
+        '201':
+          description: New private graph and provenance committed.
+          headers:
+            Cache-Control: &id001
+              schema:
+                const: no-store
+            Location:
+              schema:
+                type: string
+              description: Private roadmap resource
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Adoption'
+        '200':
+          description: Previously adopted version; exact original provenance, even
+            if private graph changed or retired.
+          headers:
+            Cache-Control: *id001
+            Location:
+              schema:
+                type: string
+              description: Private roadmap resource
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Adoption'
+        '400': &id003
+          description: Invalid strict JSON, UUIDv7, version, duplicate/unknown fields
+            or any query
+          headers: &id002
+            Cache-Control: *id001
+        '401': &id004
+          description: Missing/invalid session
+          headers: *id002
+        '403': &id005
+          description: Same origin or destination write permission required
+          headers: *id002
+        '404': &id006
+          description: Destination Personal Space or published source unavailable
+          headers: *id002
+        '409':
+          description: Source version or principal changed; inspect latest before
+            first adoption
+          headers: *id002
+        '413':
+          description: JSON exceeds 2048 bytes
+          headers: *id002
+        '415':
+          description: JSON required
+          headers: *id002
+        '503': &id007
+          description: Authority/persistence unavailable
+          headers: *id002
+  /api/spaces/{spaceId}/roadmaps/{roadmapId}/adoption:
+    parameters:
+    - name: spaceId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    - name: roadmapId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    get:
+      operationId: getPersonalRoadmapOrigin
+      responses:
+        '200':
+          description: Private immutable source or null for directly created roadmap.
+          headers:
+            Cache-Control: *id001
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Source'
+        '400': *id003
+        '401': *id004
+        '403': *id005
+        '404': *id006
+        '503': *id007
+components:
+  securitySchemes:
+    browserSession:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest
+  schemas:
+    Id:
+      type: string
+      format: uuid
+      pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+    AdoptInput:
+      type: object
+      additionalProperties: false
+      required:
+      - sourceSpaceId
+      - sourceRoadmapId
+      - sourceVersion
+      properties:
+        sourceSpaceId:
+          $ref: '#/components/schemas/Id'
+        sourceRoadmapId:
+          $ref: '#/components/schemas/Id'
+        sourceVersion:
+          type: integer
+          format: int64
+          minimum: 1
+    Mapping:
+      type: object
+      additionalProperties: false
+      required:
+      - sourceId
+      - personalId
+      properties:
+        sourceId:
+          $ref: '#/components/schemas/Id'
+        personalId:
+          $ref: '#/components/schemas/Id'
+    Adoption:
+      type: object
+      additionalProperties: false
+      required:
+      - adoptionId
+      - spaceId
+      - roadmapId
+      - sourceSpaceId
+      - sourceRoadmapId
+      - sourceVersion
+      - sourceTitle
+      - actorId
+      - createdAt
+      - nodes
+      - edges
+      properties:
+        adoptionId:
+          $ref: '#/components/schemas/Id'
+        spaceId:
+          $ref: '#/components/schemas/Id'
+        roadmapId:
+          $ref: '#/components/schemas/Id'
+        sourceSpaceId:
+          $ref: '#/components/schemas/Id'
+        sourceRoadmapId:
+          $ref: '#/components/schemas/Id'
+        sourceVersion:
+          type: integer
+          format: int64
+          minimum: 1
+        sourceTitle:
+          type: string
+          minLength: 1
+          maxLength: 200
+        actorId:
+          $ref: '#/components/schemas/Id'
+        createdAt:
+          type: string
+          format: date-time
+        nodes:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/Mapping'
+        edges:
+          type: array
+          maxItems: 500
+          items:
+            $ref: '#/components/schemas/Mapping'
+    Source:
+      type: object
+      additionalProperties: false
+      required:
+      - adoption
+      properties:
+        adoption:
+          oneOf:
+          - $ref: '#/components/schemas/Adoption'
+          - type: 'null'

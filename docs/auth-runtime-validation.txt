@@ -1,0 +1,38 @@
+2026-10-06 local authentication/storage runtime validation
+PostgreSQL 17.11, Keycloak 26.8.0, Apicurio Registry 3.3.3.
+PASS PostgreSQL: 13 owner logins and 156 denied cross-database connections.
+PASS Keycloak/Registry local readiness and Keycloak TLS certificate verification.
+
+All owner logins and cross-database denial checks passed.
+
+PASS token issued: registry-publisher
+PASS token issued: registry-reader
+PASS token issued: registry-unprivileged
+PASS anonymous read rejected 401
+PASS unprivileged read rejected 403
+PASS readonly write rejected 403
+PASS publisher Protobuf registration 200
+PASS readonly content read SHA256=5c4f8406180f4ad0dab9324958235c06d037a169f151aa79e5f9cceb5cc2bf1c
+ARTIFACT_ID=platform-auth-smoke-1791285345396
+
+PASS token issued: registry-publisher
+PASS token issued: registry-reader
+PASS token issued: registry-unprivileged
+PASS restart persistence content SHA256=5c4f8406180f4ad0dab9324958235c06d037a169f151aa79e5f9cceb5cc2bf1c
+
+NAME                                     READY   STATUS      RESTARTS   AGE
+brain-keycloak-5c45fb78d-wgc7x           1/1     Running     0          6m13s
+brain-postgres-0                         1/1     Running     0          7m45s
+brain-postgres-isolation-test-twncd      0/1     Completed   0          5m39s
+registry-auth-restart-validation-ndd2p   0/1     Completed   0          34s
+registry-auth-validation-tl526           0/1     Completed   0          112s
+
+NAME                                           READY   STATUS    RESTARTS   AGE
+brain-kafka-brokers-0                          1/1     Running   0          11m
+brain-kafka-controllers-1                      1/1     Running   0          11m
+brain-kafka-entity-operator-66bf5b99b9-h9rx2   2/2     Running   0          10m
+brain-registry-598dc86657-42k7g                1/1     Running   0          85s
+strimzi-cluster-operator-5b7cf875f4-mg2fk      1/1     Running   0          12m
+
+NOT RUN: multi-replica HA, token audience/signature negative fixtures, wrong Kafka CA/ACL fixtures, public browser login, compatibility rules, backups, rotation, end-to-end outbox CDC or performance.
+Python 3.13.7-alpine was used only in short-lived validation Jobs. Python PSF-2.0 license reviewed at https://docs.python.org/3/license.html ; image OS/bundled notices require their own redistribution inventory.

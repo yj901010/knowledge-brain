@@ -1,0 +1,572 @@
+openapi: 3.1.0
+info:
+  title: Group Courses and Ordered Study Curriculum
+  version: 1.0.0
+  description: Collaboration owns Course, ordered same-Group Study references and
+    immutable full revisions. Space is the fresh current role authority; OWNER writes,
+    MEMBER/VIEWER read. DRAFT -> ACTIVE -> COMPLETED, RETIRED irreversible. Curriculum
+    editable only DRAFT, max50 unique nonarchived current same-Group/Space Study IDs.
+    Selection pins Study version/title; later source changes never rewrite past Course
+    snapshots. Start requires nonempty curriculum with nonarchived current sources,
+    but changes no Study/personal progress. Group -> Course -> Study locks serialize
+    edits/start/Study retirement. Metadata remains editable until retirement. Creation
+    key is Group+creator scoped with immutable original title/description, returns
+    current snapshot on exact retry after restart/edit/archive; changed intent409.
+    Mutations require independent strong coN; no-op still requires current version.
+    Current snapshot, local curriculum, immutable revision and Outbox atomic. PRIVATE
+    Group-only; no personal progress/evidence/Note/Submission publication. Existing
+    CDC emits collaboration.course.v1 with collaboration/course-events/1; deduplicate
+    stable eventId and apply increasing aggregate versions. Catalog20/max100, full
+    revision history3/max5 to fit bounded2MiB Gateway. No enrollment or per-person
+    completion policy added.
+security:
+- browserSession: []
+paths:
+  /api/groups/{groupId}/courses:
+    parameters:
+    - &id011
+      name: groupId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    get:
+      operationId: listGroupCourses
+      responses:
+        '200':
+          description: Fresh current Group-authorized Course result
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Page'
+        '400': &id001
+          description: Invalid exact input/UUIDv7/key/query/strong ETag
+        '401': &id002
+          description: Secure singleton browser session required
+        '403': &id003
+          description: Registered current role required, OWNER writes, same-origin
+            HTTPS
+        '404': &id004
+          description: Group/Space/Course/Study unavailable or wrong parent
+        '409': &id005
+          description: Changed creation intent, archived source, fixed started curriculum,
+            empty start or invalid lifecycle
+        '412': &id006
+          description: Stale Course version
+        '413': &id007
+          description: Body exceeds65536 bytes
+        '415': &id008
+          description: JSON required
+        '428': &id009
+          description: Course If-Match required
+        '503': &id010
+          description: Space authorization or Collaboration storage unavailable
+      parameters:
+      - name: after
+        in: query
+        required: false
+        schema:
+          $ref: '#/components/schemas/Id'
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+    post:
+      operationId: createGroupCourse
+      responses:
+        '200':
+          description: Fresh current Group-authorized Course result
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"co[1-9][0-9]*"$
+            Location:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Course'
+        '400': *id001
+        '401': *id002
+        '403': *id003
+        '404': *id004
+        '409': *id005
+        '412': *id006
+        '413': *id007
+        '415': *id008
+        '428': *id009
+        '503': *id010
+        '201':
+          description: Fresh current Group-authorized Course result
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"co[1-9][0-9]*"$
+            Location:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Course'
+      parameters:
+      - name: Origin
+        in: header
+        required: true
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^[0-9a-f]{32}$
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Input'
+  /api/groups/{groupId}/courses/{courseId}:
+    parameters: &id012
+    - *id011
+    - name: courseId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    get:
+      operationId: getGroupCourse
+      responses:
+        '200':
+          description: Fresh current Group-authorized Course result
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"co[1-9][0-9]*"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Course'
+        '400': *id001
+        '401': *id002
+        '403': *id003
+        '404': *id004
+        '409': *id005
+        '412': *id006
+        '413': *id007
+        '415': *id008
+        '428': *id009
+        '503': *id010
+    put:
+      operationId: reviseGroupCourse
+      responses:
+        '200':
+          description: Fresh current Group-authorized Course result
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"co[1-9][0-9]*"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Course'
+        '400': *id001
+        '401': *id002
+        '403': *id003
+        '404': *id004
+        '409': *id005
+        '412': *id006
+        '413': *id007
+        '415': *id008
+        '428': *id009
+        '503': *id010
+      parameters:
+      - name: Origin
+        in: header
+        required: true
+        schema:
+          type: string
+      - name: If-Match
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^"co[1-9][0-9]*"$
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Input'
+    delete:
+      operationId: archiveGroupCourse
+      responses:
+        '200':
+          description: Fresh current Group-authorized Course result
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"co[1-9][0-9]*"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Course'
+        '400': *id001
+        '401': *id002
+        '403': *id003
+        '404': *id004
+        '409': *id005
+        '412': *id006
+        '413': *id007
+        '415': *id008
+        '428': *id009
+        '503': *id010
+      parameters:
+      - name: Origin
+        in: header
+        required: true
+        schema:
+          type: string
+      - name: If-Match
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^"co[1-9][0-9]*"$
+  /api/groups/{groupId}/courses/{courseId}/curriculum:
+    parameters: *id012
+    put:
+      operationId: replaceGroupCourseCurriculum
+      responses:
+        '200':
+          description: Fresh current Group-authorized Course result
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"co[1-9][0-9]*"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Course'
+        '400': *id001
+        '401': *id002
+        '403': *id003
+        '404': *id004
+        '409': *id005
+        '412': *id006
+        '413': *id007
+        '415': *id008
+        '428': *id009
+        '503': *id010
+      parameters:
+      - name: Origin
+        in: header
+        required: true
+        schema:
+          type: string
+      - name: If-Match
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^"co[1-9][0-9]*"$
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CurriculumInput'
+  /api/groups/{groupId}/courses/{courseId}/state:
+    parameters: *id012
+    put:
+      operationId: setGroupCourseState
+      responses:
+        '200':
+          description: Fresh current Group-authorized Course result
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"co[1-9][0-9]*"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Course'
+        '400': *id001
+        '401': *id002
+        '403': *id003
+        '404': *id004
+        '409': *id005
+        '412': *id006
+        '413': *id007
+        '415': *id008
+        '428': *id009
+        '503': *id010
+      parameters:
+      - name: Origin
+        in: header
+        required: true
+        schema:
+          type: string
+      - name: If-Match
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^"co[1-9][0-9]*"$
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StateInput'
+  /api/groups/{groupId}/courses/{courseId}/revisions:
+    parameters: *id012
+    get:
+      operationId: getGroupCourseRevisions
+      responses:
+        '200':
+          description: Fresh current Group-authorized Course result
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/History'
+        '400': *id001
+        '401': *id002
+        '403': *id003
+        '404': *id004
+        '409': *id005
+        '412': *id006
+        '413': *id007
+        '415': *id008
+        '428': *id009
+        '503': *id010
+      parameters:
+      - name: before
+        in: query
+        required: false
+        schema: &id013
+          type: integer
+          format: int64
+          minimum: 1
+          maximum: 9223372036854775807
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 5
+          default: 3
+components:
+  securitySchemes:
+    browserSession:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest
+  schemas:
+    Id:
+      type: string
+      format: uuid
+      pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+    StudyReference:
+      type: object
+      additionalProperties: false
+      required:
+      - studyId
+      - studyVersion
+      - title
+      properties:
+        studyId:
+          $ref: '#/components/schemas/Id'
+        studyVersion: *id013
+        title: &id014
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: Nonblank valid Unicode without controls, literal text
+    Course:
+      type: object
+      additionalProperties: false
+      required:
+      - courseId
+      - groupId
+      - spaceId
+      - creatorId
+      - version
+      - title
+      - description
+      - state
+      - visibility
+      - studies
+      - createdAt
+      - updatedAt
+      properties:
+        courseId:
+          $ref: '#/components/schemas/Id'
+        groupId:
+          $ref: '#/components/schemas/Id'
+        spaceId:
+          $ref: '#/components/schemas/Id'
+        creatorId:
+          $ref: '#/components/schemas/Id'
+        version: *id013
+        title: *id014
+        description: &id017
+          type: string
+          description: Valid Unicode/no NUL; UTF-8 <=32768 bytes
+        state: &id016
+          enum:
+          - DRAFT
+          - ACTIVE
+          - COMPLETED
+          - RETIRED
+        visibility:
+          const: PRIVATE
+        studies:
+          type: array
+          maxItems: 50
+          items:
+            $ref: '#/components/schemas/StudyReference'
+          description: Ordered unique Study IDs, selection-time metadata/version;
+            latest Study is read separately
+        createdAt: &id015
+          type: string
+          format: date-time
+        updatedAt: *id015
+    Summary:
+      type: object
+      additionalProperties: false
+      required:
+      - courseId
+      - version
+      - title
+      - state
+      properties:
+        courseId:
+          $ref: '#/components/schemas/Id'
+        version: *id013
+        title: *id014
+        state: *id016
+    Input:
+      type: object
+      additionalProperties: false
+      required:
+      - title
+      - description
+      properties:
+        title: *id014
+        description: *id017
+    StateInput:
+      type: object
+      additionalProperties: false
+      required:
+      - state
+      properties:
+        state:
+          enum:
+          - ACTIVE
+          - COMPLETED
+    CurriculumInput:
+      type: object
+      additionalProperties: false
+      required:
+      - studyIds
+      properties:
+        studyIds:
+          type: array
+          maxItems: 50
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/Id'
+    Page:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - nextAfter
+      properties:
+        items:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/Summary'
+        nextAfter:
+          oneOf:
+          - $ref: '#/components/schemas/Id'
+          - type: 'null'
+    Revision:
+      type: object
+      additionalProperties: false
+      required:
+      - revisionId
+      - version
+      - actorId
+      - occurredAt
+      - snapshot
+      properties:
+        revisionId:
+          $ref: '#/components/schemas/Id'
+        version: *id013
+        actorId:
+          $ref: '#/components/schemas/Id'
+        occurredAt: *id015
+        snapshot:
+          $ref: '#/components/schemas/Course'
+    History:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - nextBefore
+      properties:
+        items:
+          type: array
+          maxItems: 5
+          items:
+            $ref: '#/components/schemas/Revision'
+        nextBefore:
+          oneOf:
+          - *id013
+          - type: 'null'

@@ -1,0 +1,13 @@
+package io.knowledgebrain.media;
+import java.util.*;import java.time.Clock;import javax.sql.DataSource;
+import org.springframework.jdbc.core.JdbcTemplate;import org.springframework.jdbc.datasource.DataSourceTransactionManager;import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.http.HttpStatus;import org.springframework.web.server.ResponseStatusException;import tools.jackson.databind.json.JsonMapper;
+/** Credential-isolated opaque consumer allocation. The consuming domain authorizes every request. */
+final class DomainMediaStore {
+ record Scope(UUID spaceId,UUID contextId,UUID ownerId){}
+ record Reference(UUID contextId,UUID ownerId,MediaStore.Info media){}
+ private final MediaStore media;private final JdbcTemplate sql;private final TransactionTemplate tx;private final JsonMapper json=JsonMapper.builder().build();
+ DomainMediaStore(DataSource source,MediaStore media){this.media=media;sql=new JdbcTemplate(source);tx=new TransactionTemplate(new DataSourceTransactionManager(source));tx.setTimeout(15);}
+ Reference get(Scope s,UUID id){MediaStore.id(s.spaceId());MediaStore.id(s.contextId());MediaStore.id(s.ownerId());MediaStore.id(id);if(sql.queryForObject("SELECT count(*) FROM domain_media_allocation WHERE media_id=? AND space_id=? AND context_id=? AND owner_id=?",Integer.class,id,s.spaceId(),s.contextId(),s.ownerId())!=1)throw new ResponseStatusException(HttpStatus.NOT_FOUND,"File unavailable");return new Reference(s.contextId(),s.ownerId(),media.get(s.spaceId(),id));}
+ Reference create(Scope s,String key,MediaInput.Upload input,String trace){MediaStore.id(s.spaceId());MediaStore.id(s.contextId());MediaStore.id(s.ownerId());var normalized=MediaInput.validate(input);if(key==null||!key.matches("[0-9a-f]{32}"))throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Invalid allocation key");return tx.execute(status->{sql.queryForObject("SELECT pg_advisory_xact_lock(?)",Object.class,s.spaceId().getMostSignificantBits()^s.spaceId().getLeastSignificantBits());var old=sql.query("SELECT media_id,original::text FROM domain_media_allocation WHERE space_id=? AND context_id=? AND owner_id=? AND request_key=?",(rs,n)->{if(!json.readValue(rs.getString(2),MediaInput.Upload.class).equals(normalized))throw new ResponseStatusException(HttpStatus.CONFLICT,"Allocation key changed");return rs.getObject(1,UUID.class);},s.spaceId(),s.contextId(),s.ownerId(),key);if(!old.isEmpty())return get(s,old.getFirst());var info=media.create(s.spaceId(),s.ownerId(),normalized,trace);sql.update("INSERT INTO domain_media_allocation VALUES (?,?,?,?,?,?::jsonb)",info.mediaId(),s.spaceId(),s.contextId(),s.ownerId(),key,json.writeValueAsString(normalized));return new Reference(s.contextId(),s.ownerId(),info);});}
+}

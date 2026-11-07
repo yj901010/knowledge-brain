@@ -1,0 +1,83 @@
+{
+  "springBoot": "4.1.2",
+  "javaMajor": 25,
+  "javaRuntime": "25.0.5+8",
+  "tomcat": "11.0.27",
+  "jackson3": "3.1.7",
+  "jackson2Bom": "2.21.7",
+  "image": "eclipse-temurin:25.0.5_8-jre-ubi10-minimal@sha256:a3dfc20b66d7d75731e3296b34b4a4d3a3cce210020a90a4322e3b9086d2a322",
+  "amd64Manifest": "sha256:a4ebfd7905cdbbd478ab4228fbcfaa062c2ce7d3896362f70a090b36d4f04820",
+  "containerSource": "https://github.com/adoptium/containers/tree/86e89ce20ba391b588e243844d0c0d996071b3ed/25/jre/ubi/ubi10-minimal",
+  "licenseSources": {
+    "redhat-ubi-EULA.pdf": {
+      "source": "https://www.redhat.com/licenses/EULA_Red_Hat_Universal_Base_Image_English_20190422.pdf",
+      "sha256": "a07025b9f5b71a816febe6ac76f21c9f759c806fa0a66874af90a50c3293f1b6"
+    },
+    "spring-boot-LICENSE.txt": {
+      "source": "https://raw.githubusercontent.com/spring-projects/spring-boot/v4.1.2/LICENSE.txt",
+      "sha256": "7200000367e0e8b47822d563a5ddd2dd3a97cc05b32bd7dbcc7b4eeb92b76628"
+    },
+    "tomcat-LICENSE.txt": {
+      "source": "https://raw.githubusercontent.com/apache/tomcat/11.0.27/LICENSE",
+      "sha256": "8c94f61bbde6bc5368d32cac3346afbb8f5b70d38304e389c3e3811a4382cbd4"
+    },
+    "jackson-LICENSE.txt": {
+      "source": "https://raw.githubusercontent.com/FasterXML/jackson-databind/jackson-databind-3.1.7/LICENSE",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    "openjdk-LICENSE.txt": {
+      "sourceImage": "eclipse-temurin:25.0.5_8-jre-ubi10-minimal@sha256:a3dfc20b66d7d75731e3296b34b4a4d3a3cce210020a90a4322e3b9086d2a322",
+      "sourcePath": "/opt/java/openjdk/legal/java.base/LICENSE",
+      "sha256": "4b9abebc4338048a7c2dc184e9f800deb349366bdf28eb23c2677a77b4c87726"
+    },
+    "openjdk-ADDITIONAL_LICENSE_INFO.txt": {
+      "sourceImage": "eclipse-temurin:25.0.5_8-jre-ubi10-minimal@sha256:a3dfc20b66d7d75731e3296b34b4a4d3a3cce210020a90a4322e3b9086d2a322",
+      "sourcePath": "/opt/java/openjdk/legal/java.base/ADDITIONAL_LICENSE_INFO",
+      "sha256": "a69bce275ba7a3570af6579cb0f55682cd75fedfcd49e0e8e9022270c447c916"
+    },
+    "openjdk-ASSEMBLY_EXCEPTION.txt": {
+      "sourceImage": "eclipse-temurin:25.0.5_8-jre-ubi10-minimal@sha256:a3dfc20b66d7d75731e3296b34b4a4d3a3cce210020a90a4322e3b9086d2a322",
+      "sourcePath": "/opt/java/openjdk/legal/java.base/ASSEMBLY_EXCEPTION",
+      "sha256": "75292f03bf23d3db7c985aecc191029b93883200721ed23ed34a2e601463df33"
+    }
+  },
+  "commercialUseAndRedistribution": {
+    "applicationLibraries": "Spring Boot/Tomcat/Jackson Apache-2.0; original transitive licenses/notices remain inside their JARs",
+    "containerBuildFiles": "Apache-2.0",
+    "openJdk": "GPL-2.0-only WITH Classpath-exception-2.0",
+    "base": "Unmodified UBI content; UBI EULA and individual component licenses retained",
+    "ubiTerms": "https://developers.redhat.com/articles/ubi-faq",
+    "noNonUbiPackagesAdded": true,
+    "graphCompatibilityRebuilds": "Apache-2.0 plus original bundled BSD/MIT notices; own artifact identities and prominent modification notices; upstream source hashes retained"
+  },
+  "sourceLocations": {
+    "openJdk": "https://github.com/adoptium/temurin25-binaries/releases/tag/jdk-25.0.5%2B8",
+    "ubi": "https://access.redhat.com/articles/4238681"
+  },
+  "transitiveVersions": {
+    "kafkaClients": "4.3.2",
+    "lz4Java": "1.11.4 (Kafka4.3.2 dependency)",
+    "snappyJava": "1.1.10.11",
+    "guava": "33.7.2-jre",
+    "bouncyCastle": "1.85",
+    "rabbitMqClient": "5.34.0",
+    "commonsBeanutils": "1.11.0",
+    "jlineFamilyIncludingBundle": "3.30.17"
+  },
+  "graphCompatibilityRebuilds": [
+    {
+      "artifact": "io.knowledgebrain:gremlin-shaded-patched",
+      "module": "libraries/gremlin-shaded-patched",
+      "upstream": "org.apache.tinkerpop:gremlin-shaded:3.7.3",
+      "relocatedJackson": "2.18.11",
+      "provenance": "src/main/resources/META-INF/knowledge-brain/upstream.json"
+    },
+    {
+      "artifact": "io.knowledgebrain:java-driver-shaded-guava-patched",
+      "module": "libraries/java-driver-shaded-guava-patched",
+      "upstream": "com.datastax.oss:java-driver-shaded-guava:25.1-jre-graal-sub-1",
+      "backport": "MapMakerInternalMap deserialization initialCapacity min(size,256), from Guava33.7.2",
+      "provenance": "src/main/resources/META-INF/knowledge-brain/upstream.json"
+    }
+  ]
+}

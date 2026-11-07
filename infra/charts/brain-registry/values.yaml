@@ -1,0 +1,14 @@
+image: apicurio/apicurio-registry:3.3.3
+replicas: 2
+kafka:
+  clusterName: brain-kafka
+  userName: brain-registry
+  replicationFactor: 3
+  minInSyncReplicas: 2
+oidc:
+  issuerUrl: ""
+  clientId: registry-api
+  trustSecret: ""
+resources:
+  requests: {cpu: 250m, memory: 512Mi}
+  limits: {cpu: "1", memory: 1Gi}

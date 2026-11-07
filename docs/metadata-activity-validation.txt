@@ -1,0 +1,22 @@
+PASS immutable Note tags/typed-property Activity history and local Kubernetes validation.
+Full backend:731 total,713 passed,0 failures/errors,18 unchanged environment-gated exclusions.
+Content135/135 own PostgreSQL and10 actual Kafka contracts; Activity48/48 own PostgreSQL,
+ClickHouse and18 actual Kafka streams. Full browser96/96; focused2/2; two real registered
+Space claims preserve canonical metadata definitions, revision IDs and original guest activity.
+Original ordered tag/property names/IDs, independent metadata/body versions and audit IDs;
+all five types,38-digit decimal,56-digit expanded negative-scale input, year0000 leap date,
+non-NUL string controls, multiline/empty list values, empty clear and retained retirement.
+Actual25 metadata revisions paginated20+5; archived owner404 retains timeline and audit.
+Explicit current m-version ETag and all five types preserve raw decimals; historical values
+remain separate; Note and metadata drafts preserved;390px fit; malformed/503/delayed/revoked
+response isolation and foreign Space404. HTML/URL values render escaped without fetching.
+Actual Activity restart and two complete three-owner pooled replays preserve22 original
+Note/Daily/Concept-association/metadata events, exact six typed metadata snapshots, seven
+Concept link snapshots, full source bodies/audits and original journal date/timezone.
+No source/Inbox/ClickHouse/PVC/topic/CDC slot/checkpoint reset. Active replay guard rejects
+a second Job before mutation. All10 Content Protobuf schemas unchanged, all OpenAPI references
+resolved. Only one literal Read/Describe topic added; Content connector unchanged.
+All12 app Deployments Ready, all8 Connectors/tasks RUNNING. Exact imports on both nodes;
+three owned builder resource sets removed. Verified HTTPS graph200, anonymous private401,
+internal export403. Initial local cluster restart recovered before deployment.
+Evidence:.local/metadata-activity-proof.json and runtime/contract/cleanup proofs.

@@ -1,0 +1,45 @@
+2026-10-07 Note search OpenSearch infrastructure and adapter validation
+Context: k3d-knowledge-brain; namespace: brain-data
+OpenSearch: 3.9.0; pinned manifest sha256:adfa61f85025d06b4aeb562e7e74fde7e31c437039c93c3862c17e9acebd6c7c
+Helm: brain-opensearch; actual StatefulSet Ready; private ClusterIP/mTLS
+
+Focused Java 25 Job: backend-validation-1791375943; Complete
+NoteSearchProjectionTest: 6 passed
+NoteSearchStorageIntegrationTest (actual OpenSearch mTLS): 4 passed
+ServiceBoundaryTest: 3 passed
+Total: 13 passed, 0 failures/errors/skips; BUILD SUCCESS
+
+Full Java 25 regression Job: backend-validation-1791376295; Complete
+Command: python scripts/Run-BackendValidation.py --cdc --space-kafka --content-kafka --media-kafka --media-storage --search-storage
+Actual PostgreSQL, mTLS Kafka, TLS MinIO and mTLS OpenSearch used.
+Total: 137 tests, 0 failures, 0 errors, 0 skipped; BUILD SUCCESS
+
+OpenSearch initialization Job: opensearch-initialize-1791375891; Complete
+PASS all 9 security configuration types and fixed note index initialized
+Installer repeat: Install-LocalOpenSearch.py succeeded, existing index/data retained.
+
+ACL/TLS/restart Job: opensearch-validation-1791375998; Complete
+PASS reader cannot write/fetch raw document/manage security
+PASS projector cannot search/delete/create another index
+PASS REST requires valid client certificate even with trusted server TLS
+PASS document, external version and scoped search persisted after actual Pod replacement
+Old Pod UID: 43aec7c9-e5ca-4a4f-87dd-0da82f6ed587
+New Ready Pod UID: 39dc6e8f-842d-43c4-90a9-b87e242c8efa
+The operator verified different UIDs before resuming the validator; PVC retained.
+
+Concurrent network control: opensearch-validation-1791376170; Complete/PASS
+Denied-network Job: opensearch-validation-1791376171; Complete/PASS
+Allowed labelled Pod reached the Ready service; unlabelled Pod with valid reader
+certificate was rejected by the network. K3s returned connection refused, not a timeout.
+
+Validated storage semantics: newer canonical versions index; exact duplicates are
+safe retries; old events are superseded; conflicting same-version/cross-Space data
+is rejected; PRIVATE/ACTIVE/Space filters cover hits and total; retired text-free
+versioned tombstones prevent late-event resurrection.
+Security runtime log confirms request body auditing disabled.
+Observed light-test RSS: 915-1008 MiB, heap 512 MiB, limit 1536 MiB.
+
+Not implemented/verified: live Note-to-search Kafka pipeline, end-user Space HTTP
+authorization, search HTTP/Gateway API, canonical rebuild after index loss or Kafka
+retention expiry, load/performance benchmarks, production HA/backup recovery.
+Brain Query remains a non-exposed skeleton plus tested adapter; fixtures are test data.

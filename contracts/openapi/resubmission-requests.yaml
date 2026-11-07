@@ -1,0 +1,343 @@
+openapi: 3.1.0
+info:
+  title: Private assignment resubmission requests
+  version: 1.0.0
+  description: 'Current Group OWNER explicitly requests or cancels a revision from
+    one answer author.
+
+    Only author/current OWNER read current/full history. Peers404 even for absent
+    requests;
+
+    removed authors denied, current VIEWER authors retain read access, OWNER retains
+    work.
+
+    One stable UUIDv7 per Submission; absent GET null/rr0 creates nothing. Independent
+    rrN
+
+    preconditions, stale412, reviewed source mismatch409. REQUEST requires OPEN Assignment
+
+    and nonarchived Study, pins current immutable attempt and submitted instruction
+    version.
+
+    CANCEL requires pending request, OPEN/CLOSED and nonarchived Study; exact current
+    cancel
+
+    or request no-op is stable. Archived parents preserve read-only audit. New submission
+
+    atomically resolves pending request in the SAME Collaboration local transaction;
+    exact
+
+    old submission retries do not resolve later requests. RESOLVED means answer arrival,
+
+    not grade/approval/completion. Request never opens a CLOSED Assignment or bypasses
+
+    existing submit permissions. No notification, public feed or private progress
+    change.
+
+    Group->Study->Assignment->Submission locks serialize all writers. Fresh Space
+    authority
+
+    precedes local transaction; concurrent revocation may race an admitted operation.
+
+    New Outbox topic collaboration.resubmission-request.v1, immutable Registry
+
+    collaboration/resubmission-request-events/1. No old schema/event rewrite.'
+security:
+- browserSession: []
+paths:
+  /api/groups/{groupId}/studies/{studyId}/assignments/{assignmentId}/submissions/{submissionId}/resubmission-request:
+    parameters: &id012
+    - name: groupId
+      in: path
+      required: true
+      schema: &id001
+        $ref: assignment-submissions.yaml#/components/schemas/Id
+    - name: studyId
+      in: path
+      required: true
+      schema: *id001
+    - name: assignmentId
+      in: path
+      required: true
+      schema: *id001
+    - name: submissionId
+      in: path
+      required: true
+      schema: *id001
+    get:
+      operationId: getResubmissionRequest
+      responses:
+        '200':
+          description: Authorized private request or immutable request history
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"rr(0|[1-9][0-9]*)"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/View'
+        '400': &id002
+          description: Exact command JSON, valid UUIDv7/Unicode, reason UTF8<=8192
+            bytes, bounded query, integral source versions and strong rrN required
+        '401': &id003
+          description: Singleton secure browser credential required
+        '403': &id004
+          description: Registered current Group participation required; writes OWNER
+            only and same-origin
+        '404': &id005
+          description: Group/Space/Study/Assignment/Submission unavailable, or actor
+            is neither author nor OWNER
+        '409': &id006
+          description: Reviewed answer changed, forbidden parent state, or no pending
+            request to cancel
+        '412': &id007
+          description: Independent request version changed; explicit refresh/reconfirmation
+            required
+        '413': &id008
+          description: JSON body exceeds20480 bytes
+        '415': &id009
+          description: application/json required
+        '428': &id010
+          description: Strong If-Match rrN required; rr0 before first request
+        '503': &id011
+          description: Space authority or Collaboration storage unavailable
+    put:
+      operationId: recordResubmissionRequest
+      responses:
+        '200':
+          description: Authorized private request or immutable request history
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"rr(0|[1-9][0-9]*)"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Request'
+        '400': *id002
+        '401': *id003
+        '403': *id004
+        '404': *id005
+        '409': *id006
+        '412': *id007
+        '413': *id008
+        '415': *id009
+        '428': *id010
+        '503': *id011
+      parameters:
+      - name: Origin
+        in: header
+        required: true
+        schema:
+          type: string
+      - name: If-Match
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^"rr(0|[1-9][0-9]*)"$
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Input'
+  ? /api/groups/{groupId}/studies/{studyId}/assignments/{assignmentId}/submissions/{submissionId}/resubmission-request/revisions
+  : parameters: *id012
+    get:
+      operationId: getResubmissionRequestHistory
+      responses:
+        '200':
+          description: Authorized private request or immutable request history
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/History'
+        '400': *id002
+        '401': *id003
+        '403': *id004
+        '404': *id005
+        '409': *id006
+        '412': *id007
+        '413': *id008
+        '415': *id009
+        '428': *id010
+        '503': *id011
+      parameters:
+      - name: before
+        in: query
+        required: false
+        schema: &id014
+          type: integer
+          format: int64
+          minimum: 1
+          maximum: 9223372036854775807
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 5
+components:
+  securitySchemes:
+    browserSession:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest
+  schemas:
+    Input:
+      oneOf:
+      - type: object
+        additionalProperties: false
+        required:
+        - action
+        - reason
+        - submissionVersion
+        - assignmentVersion
+        properties:
+          action:
+            const: REQUEST
+          reason: &id016
+            type: string
+            minLength: 1
+            description: Nonblank valid Unicode, no NUL/unpaired surrogate, <=8192
+              UTF8 bytes; render literally
+          submissionVersion: &id013
+            type: integer
+            format: int64
+            minimum: 1
+            maximum: 9223372036854775807
+          assignmentVersion: *id013
+      - type: object
+        additionalProperties: false
+        required:
+        - action
+        properties:
+          action:
+            const: CANCEL
+    View:
+      type: object
+      additionalProperties: false
+      required:
+      - submissionVersion
+      - assignmentVersion
+      - request
+      - canRequest
+      - canCancel
+      properties:
+        submissionVersion: *id013
+        assignmentVersion: *id013
+        request:
+          oneOf:
+          - $ref: '#/components/schemas/Request'
+          - type: 'null'
+        canRequest:
+          type: boolean
+          description: Current OWNER with OPEN Assignment, nonarchived Study
+        canCancel:
+          type: boolean
+          description: Current OWNER with pending request, OPEN/CLOSED Assignment,
+            nonarchived Study
+    Revision:
+      type: object
+      additionalProperties: false
+      required:
+      - revisionId
+      - version
+      - actorId
+      - occurredAt
+      - snapshot
+      properties:
+        revisionId: *id001
+        version: *id014
+        actorId: *id001
+        occurredAt:
+          type: string
+          format: date-time
+        snapshot:
+          $ref: '#/components/schemas/Request'
+    History:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - nextBefore
+      properties:
+        items:
+          type: array
+          maxItems: 10
+          items:
+            $ref: '#/components/schemas/Revision'
+        nextBefore:
+          oneOf:
+          - *id014
+          - type: 'null'
+    Request:
+      type: object
+      additionalProperties: false
+      required:
+      - requestId
+      - submissionId
+      - assignmentId
+      - studyId
+      - groupId
+      - spaceId
+      - authorId
+      - requestedBy
+      - changedBy
+      - version
+      - submissionVersion
+      - assignmentVersion
+      - reason
+      - state
+      - resolvedSubmissionVersion
+      - audience
+      - createdAt
+      - updatedAt
+      properties:
+        requestId: &id015
+          $ref: assignment-submissions.yaml#/components/schemas/Id
+        submissionId: *id015
+        assignmentId: *id015
+        studyId: *id015
+        groupId: *id015
+        spaceId: *id015
+        authorId: *id015
+        requestedBy: *id015
+        changedBy: *id015
+        version: *id013
+        submissionVersion: *id013
+        assignmentVersion: *id013
+        reason: *id016
+        state:
+          enum:
+          - REQUESTED
+          - CANCELLED
+          - RESOLVED
+        resolvedSubmissionVersion:
+          oneOf:
+          - *id013
+          - type: 'null'
+          description: Only RESOLVED has a newer immutable answer version; otherwise
+            null
+        audience:
+          const: AUTHOR_AND_OWNER
+        createdAt: &id017
+          type: string
+          format: date-time
+        updatedAt: *id017

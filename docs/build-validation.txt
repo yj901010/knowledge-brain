@@ -1,0 +1,14 @@
+Knowledge/Brain verification — 2026-10-06
+Project: C:\dev\knowledge-brain
+Java runtime: Microsoft OpenJDK 25.0.4.1 LTS (SHA256 verified)
+Compiler release: 25
+Spring Boot: 4.1.1
+Maven: 3.10.0
+BUILD SUCCESS: 13 independently packaged service applications
+Tests: 39; failures: 0; errors: 0; skipped: 0
+Each service verifies anonymous probes, domain/management access denial, and virtual Tomcat executor threads.
+Existing AGENTS.md and PROJECT.md architecture decisions remain unchanged.
+Performance has not been benchmarked; Kubernetes/platform infrastructure validation remains pending.
+
+Validated JAVA_HOME:
+C:\Users\이영재\Documents\Codex\2026-10-05\agents-md-project-md\work\tools\jdk25\jdk-25.0.4.1+1

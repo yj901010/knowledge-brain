@@ -1,0 +1,500 @@
+openapi: 3.1.0
+info:
+  title: Private Content decisions
+  version: 1.0.0
+  description: 'Content-owned PERSONAL PRIVATE Decision records retain context, selected
+    outcome, rationale and considered alternatives. Six-field input: title/context/outcome/rationale/alternatives/status.
+    Manual DRAFT/DECIDED, separate ACTIVE/RETIRED lifecycle. DECIDED requires nonblank
+    outcome and rationale; DRAFT may retain all entered text. Returning to draft does
+    not erase text or audit. This personal record does not publish Knowledge or amend
+    repository architecture decisions. Fresh DECISION_READ/WRITE via existing Content-to-Space
+    capability/common principal, visible members read, OWNER/ADMIN/EDITOR write. TLS/same-origin/no-store,
+    exact singleton queries/JSON, empty GET/DELETE, 256 KiB body. Strong independent
+    dcN tags; missing428/malformed400/stale412 before no-op. Random32-hex creation
+    key replays original v1 even after edits/archive/account claim/restart; changed
+    intent409. Compact catalog20/100 omits full text, ascending cursor binds Space/lifecycle/status
+    ALL/DRAFT/DECIDED. History5/10 descending exclusive versions. Retired GET/history200,
+    edit404, DELETE204 including current no-op. Local ACID snapshot/status/audit/Outbox;
+    no private browser storage or cross-owner SQL.'
+servers:
+- url: https://localhost:8443
+security:
+- sessionCookie: []
+paths:
+  /api/spaces/{spaceId}/decisions:
+    parameters:
+    - &id004
+      name: spaceId
+      in: path
+      required: true
+      schema: &id005
+        type: string
+        format: uuid
+        pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+    get:
+      operationId: listPrivateDecisions
+      responses:
+        '200':
+          description: Canonical private result; known retired objects/history remain
+            available
+          headers:
+            Cache-Control: &id001
+              schema:
+                type: string
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Page'
+        '400':
+          description: Malformed, ambiguous/unknown fields, invalid cursor/status
+            or non-empty read/DELETE body
+        '401':
+          description: No valid common guest/registered browser session
+        '403':
+          description: Origin or current role denied
+        '404':
+          description: Private Space/object unavailable, or editing a retired decision
+        '503':
+          description: Canonical storage or current authority unavailable; no partial
+            mutation
+      parameters:
+      - name: state
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - ACTIVE
+          - RETIRED
+          default: ACTIVE
+      - name: status
+        in: query
+        required: false
+        schema: &id015
+          type: string
+          enum:
+          - ALL
+          - DRAFT
+          - DECIDED
+          default: ALL
+      - name: after
+        in: query
+        required: false
+        schema:
+          type: string
+          maxLength: 256
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+    post:
+      operationId: createPrivateDecision
+      responses:
+        '200':
+          description: 'Same key and validated intent: original v1, even after edit/archive/account
+            claim'
+          headers:
+            Cache-Control: *id001
+            ETag: &id002
+              schema: &id007
+                type: string
+                pattern: ^"dc[1-9][0-9]*"$
+            Location:
+              schema:
+                type: string
+          content: &id003
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Decision'
+        '400':
+          description: Malformed, ambiguous/unknown fields, invalid cursor/status
+            or non-empty read/DELETE body
+        '401':
+          description: No valid common guest/registered browser session
+        '403':
+          description: Origin or current role denied
+        '404':
+          description: Private Space/object unavailable, or editing a retired decision
+        '503':
+          description: Canonical storage or current authority unavailable; no partial
+            mutation
+        '409':
+          description: Creation key used for different validated intent
+        '412':
+          description: Stale current version, including stale unchanged input
+        '413':
+          description: JSON exceeds256 KiB
+        '415':
+          description: JSON required
+        '428':
+          description: Missing strong If-Match
+        '201':
+          description: First creation
+          headers:
+            Cache-Control: *id001
+            ETag: *id002
+            Location:
+              schema:
+                type: string
+          content: *id003
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^[0-9a-f]{32}$
+      requestBody: &id006
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Input'
+  /api/spaces/{spaceId}/decisions/{decisionId}:
+    parameters:
+    - *id004
+    - &id009
+      name: decisionId
+      in: path
+      required: true
+      schema: *id005
+    get:
+      operationId: getPrivateDecision
+      responses:
+        '200':
+          description: Canonical private result; known retired objects/history remain
+            available
+          headers:
+            Cache-Control: *id001
+            ETag: *id002
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Decision'
+        '400':
+          description: Malformed, ambiguous/unknown fields, invalid cursor/status
+            or non-empty read/DELETE body
+        '401':
+          description: No valid common guest/registered browser session
+        '403':
+          description: Origin or current role denied
+        '404':
+          description: Private Space/object unavailable, or editing a retired decision
+        '503':
+          description: Canonical storage or current authority unavailable; no partial
+            mutation
+    put:
+      operationId: updatePrivateDecision
+      responses:
+        '200':
+          description: Canonical private result; known retired objects/history remain
+            available
+          headers:
+            Cache-Control: *id001
+            ETag: *id002
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Decision'
+        '400':
+          description: Malformed, ambiguous/unknown fields, invalid cursor/status
+            or non-empty read/DELETE body
+        '401':
+          description: No valid common guest/registered browser session
+        '403':
+          description: Origin or current role denied
+        '404':
+          description: Private Space/object unavailable, or editing a retired decision
+        '503':
+          description: Canonical storage or current authority unavailable; no partial
+            mutation
+        '409':
+          description: Creation key used for different validated intent
+        '412':
+          description: Stale current version, including stale unchanged input
+        '413':
+          description: JSON exceeds256 KiB
+        '415':
+          description: JSON required
+        '428':
+          description: Missing strong If-Match
+      requestBody: *id006
+      parameters: &id008
+      - name: If-Match
+        in: header
+        required: true
+        schema: *id007
+    delete:
+      operationId: archivePrivateDecision
+      responses:
+        '204':
+          description: Canonical private result; known retired objects/history remain
+            available
+          headers:
+            Cache-Control: *id001
+            ETag: *id002
+        '400':
+          description: Malformed, ambiguous/unknown fields, invalid cursor/status
+            or non-empty read/DELETE body
+        '401':
+          description: No valid common guest/registered browser session
+        '403':
+          description: Origin or current role denied
+        '404':
+          description: Private Space/object unavailable, or editing a retired decision
+        '503':
+          description: Canonical storage or current authority unavailable; no partial
+            mutation
+        '409':
+          description: Creation key used for different validated intent
+        '412':
+          description: Stale current version, including stale unchanged input
+        '413':
+          description: JSON exceeds256 KiB
+        '415':
+          description: JSON required
+        '428':
+          description: Missing strong If-Match
+      parameters: *id008
+  /api/spaces/{spaceId}/decisions/{decisionId}/revisions:
+    parameters:
+    - *id004
+    - *id009
+    get:
+      operationId: getPrivateDecisionRevisions
+      responses:
+        '200':
+          description: Canonical private result; known retired objects/history remain
+            available
+          headers:
+            Cache-Control: *id001
+          content:
+            application/json:
+              schema:
+                type: array
+                maxItems: 10
+                items:
+                  $ref: '#/components/schemas/Revision'
+        '400':
+          description: Malformed, ambiguous/unknown fields, invalid cursor/status
+            or non-empty read/DELETE body
+        '401':
+          description: No valid common guest/registered browser session
+        '403':
+          description: Origin or current role denied
+        '404':
+          description: Private Space/object unavailable, or editing a retired decision
+        '503':
+          description: Canonical storage or current authority unavailable; no partial
+            mutation
+      parameters:
+      - name: before
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 9223372036854775807
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 5
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest
+  schemas:
+    Input:
+      type: object
+      additionalProperties: false
+      required:
+      - title
+      - context
+      - outcome
+      - status
+      - rationale
+      - alternatives
+      properties:
+        title: &id010
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: Nonblank, at most200 Unicode codepoints/800 UTF-8 bytes; no
+            newline/tab/control/unpaired surrogate
+        context:
+          type: string
+          maxLength: 8192
+          description: At most8192 UTF-8 bytes; verbatim CR/LF/tab, no other ISO control/unpaired
+            surrogate
+        outcome:
+          type: string
+          maxLength: 8192
+          description: At most8192 UTF-8 bytes; verbatim CR/LF/tab, no other ISO control/unpaired
+            surrogate
+        status: &id011
+          type: string
+          enum:
+          - DRAFT
+          - DECIDED
+          description: Manual completion, separate from archival/public Knowledge
+            review. DECIDED requires nonblank outcome and rationale; DRAFT retains
+            entered text.
+        rationale:
+          type: string
+          maxLength: 8192
+          description: At most8192 UTF-8 bytes; verbatim CR/LF/tab, no other ISO control/unpaired
+            surrogate
+        alternatives:
+          type: string
+          maxLength: 8192
+          description: At most8192 UTF-8 bytes; verbatim CR/LF/tab, no other ISO control/unpaired
+            surrogate
+      allOf:
+      - if:
+          properties:
+            status:
+              const: DECIDED
+        then:
+          properties:
+            outcome:
+              minLength: 1
+              description: Must not consist only of Java whitespace; Content validates
+            rationale:
+              minLength: 1
+              description: Must not consist only of Java whitespace; Content validates
+    Decision:
+      type: object
+      additionalProperties: false
+      required:
+      - decisionId
+      - spaceId
+      - visibility
+      - state
+      - version
+      - title
+      - createdAt
+      - updatedAt
+      - context
+      - outcome
+      - status
+      - rationale
+      - alternatives
+      properties:
+        decisionId: *id005
+        spaceId: *id005
+        visibility:
+          type: string
+          const: PRIVATE
+        state: &id012
+          type: string
+          enum:
+          - ACTIVE
+          - RETIRED
+        version: &id013
+          type: integer
+          minimum: 1
+        title: *id010
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt: &id014
+          type: string
+          format: date-time
+        context:
+          type: string
+          maxLength: 8192
+          description: At most8192 UTF-8 bytes; verbatim CR/LF/tab, no other ISO control/unpaired
+            surrogate
+        outcome:
+          type: string
+          maxLength: 8192
+          description: At most8192 UTF-8 bytes; verbatim CR/LF/tab, no other ISO control/unpaired
+            surrogate
+        status: *id011
+        rationale:
+          type: string
+          maxLength: 8192
+          description: At most8192 UTF-8 bytes; verbatim CR/LF/tab, no other ISO control/unpaired
+            surrogate
+        alternatives:
+          type: string
+          maxLength: 8192
+          description: At most8192 UTF-8 bytes; verbatim CR/LF/tab, no other ISO control/unpaired
+            surrogate
+    Summary:
+      type: object
+      additionalProperties: false
+      required:
+      - decisionId
+      - title
+      - status
+      - state
+      - version
+      - updatedAt
+      properties:
+        decisionId: *id005
+        title: *id010
+        state: *id012
+        version: *id013
+        updatedAt: *id014
+        status: *id011
+    Revision:
+      type: object
+      additionalProperties: false
+      required:
+      - revisionId
+      - decisionId
+      - version
+      - actorId
+      - occurredAt
+      - snapshot
+      properties:
+        revisionId: *id005
+        decisionId: *id005
+        version:
+          type: integer
+          minimum: 1
+        actorId: *id005
+        occurredAt:
+          type: string
+          format: date-time
+        snapshot:
+          $ref: '#/components/schemas/Decision'
+    Page:
+      type: object
+      additionalProperties: false
+      required:
+      - spaceId
+      - state
+      - items
+      - nextAfter
+      - status
+      properties:
+        spaceId: *id005
+        state:
+          type: string
+          enum:
+          - ACTIVE
+          - RETIRED
+        items:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/Summary'
+        nextAfter:
+          type:
+          - string
+          - 'null'
+          maxLength: 256
+        status: *id015

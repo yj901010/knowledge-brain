@@ -1,0 +1,8 @@
+package io.knowledgebrain.learning;
+import java.util.*;import jakarta.servlet.http.HttpServletRequest;import org.springframework.web.bind.annotation.*;import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;import org.springframework.http.*;import io.micrometer.core.instrument.MeterRegistry;
+@RestController @ConditionalOnProperty(name="brain.learning.api.enabled",havingValue="true")
+final class GitHubEvidenceRelatedController {
+ private final GitHubEvidenceStore store;private final RoadmapController authority;private final MeterRegistry metrics;
+ GitHubEvidenceRelatedController(GitHubEvidenceStore store,RoadmapController authority,MeterRegistry metrics){this.store=store;this.authority=authority;this.metrics=metrics;}
+ @GetMapping("/api/spaces/{spaceId}/github-learning-evidence") ResponseEntity<GitHubEvidenceStore.Page<GitHubEvidenceStore.Related>> related(@PathVariable String spaceId,HttpServletRequest r){RoadmapController.parameters(r,Set.of("repositoryId","commitId","state","after","limit"));UUID space=RoadmapGraph.id(spaceId);authority.authorizeGithub(space,r,false,RoadmapController.parent(r));UUID repo=RoadmapGraph.id(r.getParameter("repositoryId")),commit=RoadmapGraph.id(r.getParameter("commitId")),after=r.getParameter("after")==null?null:RoadmapGraph.id(r.getParameter("after"));var value=store.related(space,repo,commit,Optional.ofNullable(r.getParameter("state")).orElse("ACTIVE"),after,(int)RoadmapController.number(r.getParameter("limit"),20,100));metrics.counter("brain.learning.github.evidence","operation","related").increment();return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(value);}
+}

@@ -1,0 +1,762 @@
+openapi: 3.1.0
+info:
+  title: Explicit owner-only Course completion summary sharing
+  version: 1.0.0
+  description: 'User-approved2026-10-24: Group OWNER enables Group-wide policy, each
+    participant explicitly publishes a saved completion-count snapshot to current
+    OWNER only. Default DISABLED. Policy gppN is a consent epoch; any off/on cycle
+    requires new explicit publication. Summary csN is independent of private cpN.
+    No automatic update/disclosure of later private progress, Study steps, private
+    revisions, Note/session/evidence. Current membershipVersion and enrollmentId/version
+    must still match, so remove/reinvite, role change or withdraw/rejoin invalidates
+    old consent. Withdraw permitted any current member including VIEWER, after policy
+    disabled or Course retired. Source authorization occurs before local transaction,
+    not a distributed atomic commit; concurrent revocation can race an admitted operation,
+    later requests recheck. Owners get bounded minimal counts/participant/share time
+    only. Personal progress/topic stay PRIVATE/PARTICIPANT_ONLY. Separate Space policy
+    and Learning summary current/revision/Outbox local transactions, no cross-service
+    DB access, new dependencies or implicit activity projection.'
+security:
+- browserSession: []
+paths:
+  /api/groups/{groupId}/progress-sharing-policy:
+    parameters:
+    - &id011
+      name: groupId
+      in: path
+      required: true
+      schema: &id012
+        $ref: course-learning-progress.yaml#/components/schemas/Id
+    get:
+      operationId: getGroupProgressSharingPolicy
+      responses:
+        '200':
+          description: Current authorized result; completion counts never include
+            private Study steps or history
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"gpp(0|[1-9][0-9]*)"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Policy'
+        '400': &id001
+          description: Exact JSON, UUIDv7, integer versions, bounded query/body and
+            strong ETag required
+        '401': &id002
+          description: Singleton secure session or internal service credential required
+        '403': &id003
+          description: Registered current Group participant required; policy mutations/history
+            and peer summaries OWNER only; same-origin writes
+        '404': &id004
+          description: Current Group/Space/Course or membership unavailable
+        '409': &id005
+          description: Policy/source context or preview changed; saved progress/current
+            enrollment/writable Course required for publication
+        '412': &id006
+          description: Independent policy or share version stale; refresh before explicit
+            reapplication
+        '413': &id007
+          description: Request exceeds endpoint body limit
+        '415': &id008
+          description: JSON required
+        '428': &id009
+          description: 'If-Match required: gppN or csN, zero before first write'
+        '503': &id010
+          description: Authority/storage unavailable or malformed; fail closed
+    put:
+      operationId: changeGroupProgressSharingPolicy
+      responses:
+        '200':
+          description: Current authorized result; completion counts never include
+            private Study steps or history
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"gpp(0|[1-9][0-9]*)"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Policy'
+        '400': *id001
+        '401': *id002
+        '403': *id003
+        '404': *id004
+        '409': *id005
+        '412': *id006
+        '413': *id007
+        '415': *id008
+        '428': *id009
+        '503': *id010
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PolicyInput'
+      parameters:
+      - name: Origin
+        in: header
+        required: true
+        schema:
+          type: string
+      - name: If-Match
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^"gpp(0|[1-9][0-9]*)"$
+  /api/groups/{groupId}/progress-sharing-policy/revisions:
+    parameters:
+    - *id011
+    get:
+      operationId: getGroupProgressSharingPolicyHistory
+      responses:
+        '200':
+          description: Current authorized result; completion counts never include
+            private Study steps or history
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyRevisionHistory'
+        '400': *id001
+        '401': *id002
+        '403': *id003
+        '404': *id004
+        '409': *id005
+        '412': *id006
+        '413': *id007
+        '415': *id008
+        '428': *id009
+        '503': *id010
+      parameters:
+      - name: before
+        in: query
+        required: false
+        schema: &id014
+          type: integer
+          format: int64
+          minimum: 1
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 5
+  /api/groups/{groupId}/courses/{courseId}/progress-sharing-context:
+    parameters: &id013
+    - *id011
+    - name: courseId
+      in: path
+      required: true
+      schema: *id012
+    post:
+      operationId: readCourseSharingAuthority
+      responses:
+        '200':
+          description: Current authorized result; completion counts never include
+            private Study steps or history
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SharingContext'
+        '400': *id001
+        '401': *id002
+        '403': *id003
+        '404': *id004
+        '409': *id005
+        '412': *id006
+        '413': *id007
+        '415': *id008
+        '428': *id009
+        '503': *id010
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Batch'
+      description: Read-only POST; no side effects, no Origin or idempotency key required.
+        Nonempty participantIds requires OWNER. Bounded100 fresh Space members intersected
+        with current local ENROLLED rows; no N+1 calls or cross-service SQL.
+  /api/groups/{groupId}/courses/{courseId}/my-progress/owner-share:
+    parameters: *id013
+    get:
+      operationId: getMyOwnerSummaryShare
+      responses:
+        '200':
+          description: Current authorized result; completion counts never include
+            private Study steps or history
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"cs(0|[1-9][0-9]*)"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/View'
+        '400': *id001
+        '401': *id002
+        '403': *id003
+        '404': *id004
+        '409': *id005
+        '412': *id006
+        '413': *id007
+        '415': *id008
+        '428': *id009
+        '503': *id010
+    put:
+      operationId: changeMyOwnerSummaryShare
+      responses:
+        '200':
+          description: Current authorized result; completion counts never include
+            private Study steps or history
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"cs(0|[1-9][0-9]*)"$
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - $ref: '#/components/schemas/Share'
+                - type: 'null'
+        '400': *id001
+        '401': *id002
+        '403': *id003
+        '404': *id004
+        '409': *id005
+        '412': *id006
+        '413': *id007
+        '415': *id008
+        '428': *id009
+        '503': *id010
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShareInput'
+      parameters:
+      - name: Origin
+        in: header
+        required: true
+        schema:
+          type: string
+      - name: If-Match
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^"cs(0|[1-9][0-9]*)"$
+  /api/groups/{groupId}/courses/{courseId}/my-progress/owner-share/revisions:
+    parameters: *id013
+    get:
+      operationId: getMyOwnerSummaryShareHistory
+      responses:
+        '200':
+          description: Current authorized result; completion counts never include
+            private Study steps or history
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShareRevisionHistory'
+        '400': *id001
+        '401': *id002
+        '403': *id003
+        '404': *id004
+        '409': *id005
+        '412': *id006
+        '413': *id007
+        '415': *id008
+        '428': *id009
+        '503': *id010
+      parameters:
+      - name: before
+        in: query
+        required: false
+        schema: *id014
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 5
+  /api/groups/{groupId}/courses/{courseId}/shared-progress:
+    parameters: *id013
+    get:
+      operationId: getCurrentOwnerCourseSummaryPage
+      responses:
+        '200':
+          description: Current authorized result; completion counts never include
+            private Study steps or history
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Page'
+        '400': *id001
+        '401': *id002
+        '403': *id003
+        '404': *id004
+        '409': *id005
+        '412': *id006
+        '413': *id007
+        '415': *id008
+        '428': *id009
+        '503': *id010
+      parameters:
+      - name: after
+        in: query
+        required: false
+        schema: *id012
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      description: 'OWNER only; scan stable UUIDv7 share IDs and recheck candidate
+        membership/enrollment versions in one batch. Only current epoch/current enrollment/current
+        membership summaries are visible. nextAfter is the last scanned ID: filtered
+        page may be empty with a continuation cursor. No peer history or Study states.'
+  /internal/space/group-progress-sharing:
+    post:
+      operationId: readSpaceGroupSharingAuthority
+      responses:
+        '200':
+          description: Current authorized result; completion counts never include
+            private Study steps or history
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpaceAccess'
+        '400': *id001
+        '401': *id002
+        '403': *id003
+        '404': *id004
+        '409': *id005
+        '412': *id006
+        '413': *id007
+        '415': *id008
+        '428': *id009
+        '503': *id010
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InternalInput'
+      security:
+      - groupService: []
+components:
+  securitySchemes:
+    browserSession:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest
+    groupService:
+      type: http
+      scheme: bearer
+      description: Existing Collaboration Group service key over trusted HTTPS plus
+        delegated registered browser token in strict body
+  schemas:
+    Policy:
+      type: object
+      additionalProperties: false
+      required:
+      - policyId
+      - groupId
+      - spaceId
+      - version
+      - mode
+      - audience
+      - updatedAt
+      properties:
+        policyId:
+          oneOf:
+          - *id012
+          - type: 'null'
+        groupId: *id012
+        spaceId: *id012
+        version: &id015
+          type: integer
+          format: int64
+          minimum: 0
+        mode:
+          enum:
+          - DISABLED
+          - OWNER_SUMMARY
+        audience:
+          const: OWNER
+        updatedAt:
+          oneOf:
+          - &id017
+            type: string
+            format: date-time
+          - type: 'null'
+    PolicyInput:
+      type: object
+      additionalProperties: false
+      required:
+      - mode
+      properties:
+        mode:
+          enum:
+          - DISABLED
+          - OWNER_SUMMARY
+    ActiveMember:
+      type: object
+      additionalProperties: false
+      required:
+      - principalId
+      - membershipVersion
+      properties:
+        principalId: *id012
+        membershipVersion: *id014
+    SpaceAccess:
+      type: object
+      additionalProperties: false
+      required:
+      - principalId
+      - groupId
+      - spaceId
+      - role
+      - membershipVersion
+      - policyVersion
+      - enabled
+      - audience
+      - activeMembers
+      properties:
+        principalId: *id012
+        groupId: *id012
+        spaceId: *id012
+        role:
+          enum:
+          - OWNER
+          - MEMBER
+          - VIEWER
+        membershipVersion: *id014
+        policyVersion: *id015
+        enabled:
+          type: boolean
+        audience:
+          const: OWNER
+        activeMembers:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/ActiveMember'
+    Eligible:
+      type: object
+      additionalProperties: false
+      required:
+      - principalId
+      - membershipVersion
+      - enrollmentId
+      - enrollmentVersion
+      properties:
+        principalId: *id012
+        membershipVersion: *id014
+        enrollmentId: *id012
+        enrollmentVersion: *id014
+    SharingContext:
+      type: object
+      additionalProperties: false
+      required:
+      - learning
+      - policyVersion
+      - enabled
+      - audience
+      - membershipVersion
+      - eligibleParticipants
+      properties:
+        learning:
+          $ref: course-learning-progress.yaml#/components/schemas/Context
+        policyVersion: *id015
+        enabled:
+          type: boolean
+        audience:
+          const: OWNER
+        membershipVersion: *id014
+        eligibleParticipants:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/Eligible'
+    Batch:
+      type: object
+      additionalProperties: false
+      required:
+      - participantIds
+      properties:
+        participantIds: &id016
+          type: array
+          maxItems: 100
+          uniqueItems: true
+          items: *id012
+    InternalInput:
+      type: object
+      additionalProperties: false
+      required:
+      - token
+      - groupId
+      - participantIds
+      properties:
+        token:
+          type: string
+          pattern: ^[A-Za-z0-9_-]{43}$
+        groupId: *id012
+        participantIds: *id016
+    Share:
+      type: object
+      additionalProperties: false
+      required:
+      - shareId
+      - groupId
+      - spaceId
+      - courseId
+      - participantId
+      - version
+      - state
+      - policyVersion
+      - membershipVersion
+      - enrollmentId
+      - enrollmentVersion
+      - courseVersion
+      - progressVersion
+      - completedStudies
+      - totalStudies
+      - audience
+      - updatedAt
+      properties:
+        shareId: *id012
+        groupId: *id012
+        spaceId: *id012
+        courseId: *id012
+        participantId: *id012
+        version: *id014
+        state:
+          enum:
+          - SHARED
+          - WITHDRAWN
+        policyVersion: *id014
+        membershipVersion: *id014
+        enrollmentId: *id012
+        enrollmentVersion: *id014
+        courseVersion: *id014
+        progressVersion: *id014
+        completedStudies: &id018
+          type: integer
+          minimum: 0
+          maximum: 50
+        totalStudies:
+          type: integer
+          minimum: 1
+          maximum: 50
+        audience:
+          const: OWNER
+        updatedAt: *id017
+    Preview:
+      type: object
+      additionalProperties: false
+      required:
+      - progressVersion
+      - completedStudies
+      - totalStudies
+      properties:
+        progressVersion: *id015
+        completedStudies: *id018
+        totalStudies:
+          type: integer
+          minimum: 0
+          maximum: 50
+    View:
+      type: object
+      additionalProperties: false
+      required:
+      - context
+      - share
+      - preview
+      - effectiveShared
+      properties:
+        context:
+          $ref: '#/components/schemas/SharingContext'
+        share:
+          oneOf:
+          - $ref: '#/components/schemas/Share'
+          - type: 'null'
+        preview:
+          $ref: '#/components/schemas/Preview'
+        effectiveShared:
+          type: boolean
+    Publish:
+      type: object
+      additionalProperties: false
+      required:
+      - state
+      - progressVersion
+      - policyVersion
+      - courseVersion
+      - enrollmentVersion
+      - membershipVersion
+      properties:
+        state:
+          const: SHARED
+        progressVersion: *id014
+        policyVersion: *id014
+        courseVersion: *id014
+        enrollmentVersion: *id014
+        membershipVersion: *id014
+    Withdraw:
+      type: object
+      additionalProperties: false
+      required:
+      - state
+      properties:
+        state:
+          const: WITHDRAWN
+    ShareInput:
+      oneOf:
+      - $ref: '#/components/schemas/Publish'
+      - $ref: '#/components/schemas/Withdraw'
+    Summary:
+      type: object
+      additionalProperties: false
+      required:
+      - shareId
+      - participantId
+      - completedStudies
+      - totalStudies
+      - sharedAt
+      properties:
+        shareId: *id012
+        participantId: *id012
+        completedStudies: *id018
+        totalStudies:
+          type: integer
+          minimum: 1
+          maximum: 50
+        sharedAt: *id017
+    Page:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - nextAfter
+      properties:
+        items:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/Summary'
+        nextAfter:
+          oneOf:
+          - *id012
+          - type: 'null'
+    PolicyRevision:
+      type: object
+      additionalProperties: false
+      required:
+      - revisionId
+      - version
+      - actorId
+      - occurredAt
+      - snapshot
+      properties:
+        revisionId: *id012
+        version: *id014
+        actorId: *id012
+        occurredAt: *id017
+        snapshot:
+          $ref: '#/components/schemas/Policy'
+    PolicyRevisionHistory:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - nextBefore
+      properties:
+        items:
+          type: array
+          maxItems: 10
+          items:
+            $ref: '#/components/schemas/PolicyRevision'
+        nextBefore:
+          oneOf:
+          - *id014
+          - type: 'null'
+    ShareRevision:
+      type: object
+      additionalProperties: false
+      required:
+      - revisionId
+      - version
+      - actorId
+      - occurredAt
+      - snapshot
+      properties:
+        revisionId: *id012
+        version: *id014
+        actorId: *id012
+        occurredAt: *id017
+        snapshot:
+          $ref: '#/components/schemas/Share'
+    ShareRevisionHistory:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - nextBefore
+      properties:
+        items:
+          type: array
+          maxItems: 10
+          items:
+            $ref: '#/components/schemas/ShareRevision'
+        nextBefore:
+          oneOf:
+          - *id014
+          - type: 'null'

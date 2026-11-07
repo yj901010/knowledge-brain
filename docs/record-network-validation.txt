@@ -1,0 +1,22 @@
+PASS record network implementation and local Kubernetes validation
+Full backend:696 total,678 passed,0 failures/errors,18 environment-gated exclusions.
+Final Brain Query:61/61 passed with own PostgreSQL, JanusGraph/Cassandra and OpenSearch.
+Final Gateway:56/56 passed including all six search kinds and rejection boundaries.
+Latest run per service:699 total,681 passed,18 exclusions; repeated tests counted once.
+Focused browser:2/2; full browser:86/86 including two real Keycloak Space claims.
+Study UI minute-boundary fixture:3/3; exact zero-second input is always exercised.
+Four old Note graph readers:4/4; bounded503 retry, no other failures ignored.
+Nine existing immutable streams; all ten Content schemas byte-identical.
+Three typed nodes/Concept edges/body filters; canonical detail; rename/remove/retire;
+independent source/link versions; foreign/revoked denial; 390px; no private storage.
+Non-destructive canonical six-feed refresh succeeded, repeated twice around actual
+Brain Query restart. Canonical state/history/link IDs remain; archived sources hidden.
+No canonical/store/topic/PVC/slot/checkpoint reset; all12 app Deployments Ready,
+all8 Connectors/tasks RUNNING; same Content connector configuration.
+Cassandra log EmptyDir eviction fixed by bounded4MB/8MB file rotation and
+GC4MiB/3 rotations; actual JVM flags checked. Exact Cassandra PVC retained;
+same new Pod survives subsequent validation and logs remain under64MiB.
+Exact image imports on both k3d nodes; owned temporary builders removed.
+HTTPS localhost:8443/graph verified; private/internal anonymous requests denied.
+Evidence:.local/record-network-proof.json, record-network-runtime-proof.json,
+record-network-build-cleanup.json; docs/record-network.md.

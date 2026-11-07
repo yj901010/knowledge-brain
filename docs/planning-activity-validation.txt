@@ -1,0 +1,138 @@
+Private Planning + Learning activity validation, 2026-10-16
+
+{
+  "jobs": {
+    "backend": "backend-validation-1792156386670858900",
+    "focusedBrowser": "graph-web-validation-1792156840",
+    "browser": "graph-web-validation-1792156895"
+  },
+  "backend": {
+    "tests": 555,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 31
+  },
+  "planningOwnPostgresAndKafkaTests": 50,
+  "activityActualPostgresClickhouseTenTopicKafkaTests": 21,
+  "browserTests": 61,
+  "focusedBrowserTests": 2,
+  "realRegisteredClaimChecks": 2,
+  "unchangedPlanningEventHashes": {
+    "goal": "643ed1f2566750ffc0bb21b63d2837ad8aaa625d0fe1ed3d2ca21a85cc6391b3",
+    "task": "844707c3cbe6339cc44de5499f37198bf315953db5a71c9f7720403cddff78c3",
+    "schedule": "3e5b1e083bc344d027a080382b418f7a7981a0fdec45b44fe4e29fc40d035ee2"
+  },
+  "unchangedLearningEventHashes": {
+    "association": "1e210a4b741051d23b1e560384c6b9adfde008ccc91b28594495c846fec034a7",
+    "media": "570c5ed12f35a119b9bda059c98a2fea913e19cf329adaa964b96de97f1bbc52",
+    "note": "432a3664007de5f39da77d077b745c534147c8dc50be424dab4cd04e56ccce2b",
+    "concept": "defd2827328024b6fee71e56a3a40c650f335f0359d03dcf62ef0d6a2b31ef04",
+    "progress": "ef3bf592594564efa67c9ddd1f3b9f3dddb7f6cc5e6fc7d20943464f013c1113",
+    "study": "98b45509343000736c25510aa59fb5cd814a9f2672de5e9dcdd242a2cf55a90e",
+    "roadmap": "a2c1db67ceded3c5c965b92797b2caa0e7224aeb71386e71899d2edd4db5e1a9"
+  },
+  "openapiReferences": 1230,
+  "exactTenReadOnlyTopicAcls": true,
+  "consumerGroupPreserved": "activity-learning-timeline-v1",
+  "readyDeployments": 11,
+  "runningConnectors": [
+    "space-outbox",
+    "planning-outbox",
+    "knowledge-outbox",
+    "media-outbox",
+    "content-outbox",
+    "learning-outbox",
+    "identity-outbox"
+  ],
+  "images": {
+    "planning": "knowledge-brain/planning-service:local-302a8b5fea3cf086",
+    "activity": "knowledge-brain/activity-service:local-43ff4e0c7d4e4131",
+    "gateway": "knowledge-brain/gateway-service:local-6e4f8f2c31ff5faa"
+  },
+  "localAndBaseScopedExportConfigurationVerified": true,
+  "runtime": {
+    "browserJob": "graph-web-validation-1792156895",
+    "spaceId": "01a144e3-5f2d-7e25-8906-608b7f8dda88",
+    "goalId": "01a144e3-6d76-7d8c-ae93-ead7eb0cd60e",
+    "taskId": "01a144e3-758d-794e-bcab-1b054e52117b",
+    "scheduleId": "01a144e3-7daa-7067-9941-02575c67a7f7",
+    "roadmapId": "01a144e3-85c0-7d4c-b251-07f2e14ab3fb",
+    "image": "knowledge-brain/activity-service:local-43ff4e0c7d4e4131",
+    "oldPodUids": [
+      "a5066a45-3a76-438c-981b-da4f8f30df14"
+    ],
+    "newPodUids": [
+      "5b5c9dc8-2820-43bf-9cf8-9b50fbeccd31"
+    ],
+    "replayJob": "activity-timeline-replay-1792157190",
+    "replaySummary": "PASS canonical Learning/Planning and durable Inbox timeline replay: 13731 rows; source facts unchanged",
+    "timelineEventIds": [
+      "01a144e3-9def-79ab-a962-b885940a4ef8",
+      "01a144e3-95de-71e3-9633-84fba9b15ba6",
+      "01a144e3-8dcc-7387-8949-13c16fd19e67",
+      "01a144e3-85c0-7e90-bbde-b4c1942dec66",
+      "01a144e3-7dac-7c01-a9d1-e5d1723ab1da",
+      "01a144e3-758f-7559-ab73-20fb2d2a07ff",
+      "01a144e3-6d77-7517-b109-87fe8e5c6565"
+    ],
+    "mixedCanonicalSnapshotsUnchanged": true,
+    "exactHistorySurvivesRestartAndTwoOwnerReplay": true,
+    "pinnedScheduleTimezoneOffsetsPreserved": true,
+    "retiredTaskScheduleHistoryPreserved": true,
+    "originalCreateRetryStillSingleEvent": true,
+    "operatorPodIsolatedFromApiAndKafka": true
+  },
+  "ownedBuilderSetsRemoved": 5,
+  "verifiedHostHttps": true
+}
+
+The full backend reactor completed 555 tests with no failure/error; 31 existing
+environment-gated tests remain skipped. Planning's 50 tests ran against own
+PostgreSQL and three producer Kafka topics with zero skips. Activity's 21 tests
+ran against own PostgreSQL, HTTPS ClickHouse and ten read-only TLS Kafka topics,
+with zero skips. The new checks cover original immutable Planning envelopes,
+status/date and lifecycle separation, pinned UTC/local/timezone/offset labels,
+invalid and conflicting envelopes/headers, same-Space target routes, five-row
+fixed-high-watermark canonical exports including retired revisions, distinct
+service authority/HTTPS/no cookies/strict body/query rejection, per-owner
+recovery failures keeping readiness false, durable duplicate/conflict handling,
+ten-kind ClickHouse replay and equal-time pagination/Space/type/date filtering,
+and a full 100-entry page of maximally escaped 32768-byte descriptions. Bounded
+responses cover JSON expansion, with 16 MiB ClickHouse and 8 MiB Gateway limits.
+
+All 61 deployed browser tests passed. Two new scenarios verify three actual
+Planning Outbox/CDC streams in the mixed Learning feed, 31 exact immutable rows,
+24-Task filtered keyset paging, scoped cursor rejection, save dates separate
+from future scheduled dates, optional stable Goal/Task IDs, archived source
+history, original create retries without duplicate events, cross-Space and
+internal-route denial, explicit live source checks, original historical title,
+escaped description, DST-overlap local/offset labels, unchanged sibling Note
+drafts and canonical Task snapshots, and 390px fit. Existing three activity UI
+tests continue covering all seven Learning kinds, late/closed replies, 503
+recovery and actual revocation. Two real Keycloak account flows preserve guest
+Schedule activity/actor/Task/timezone pins after claim and use registered actors
+for later edits. All existing Goal/Task/Schedule/Note/Knowledge/Learning/Media/
+public-contribution browser flows passed. Desktop/mobile screenshots inspected.
+
+The runtime helper held a synthetic guest token only in memory. It captured
+seven exact mixed canonical history entries, restarted Activity and verified
+the same IDs/order/facts, then ran the isolated operator replay with both owner
+exports and retained Inbox. After replay all seven entries remained identical,
+canonical Goal/Task/Schedule/Roadmap snapshots and revisions were unchanged,
+archived facts remained historical and the original Schedule creation retry
+returned its original representation without another event. The replay Job
+uses the deployed Activity image, narrow owner export/projector capabilities,
+no Kafka/session/Space-write key and a label that cannot match the API Service.
+No table/PVC, canonical fact, event ID, Kafka offset, topic or CDC slot was reset
+or deleted. New V2 changes only Activity seed/readiness flags, preserving rows.
+
+All ten v1 source schemas retain their prior hashes. Local OpenAPI references
+resolve. The dedicated Activity Kafka identity has only literal Read/Describe
+on exactly ten topics plus its original prefixed group. Both base and local
+Helm overrides contain the distinct Planning export configuration. All 11 app
+deployments are Ready, all seven connectors/tasks RUNNING and verified host
+Graph/MinIO HTTPS is available. Five exact owned successful builder sets were
+removed only after deployed image, selectors, source owner UID and init-exit
+checks. No dependency version, external dataset, AI or frontend redesign was
+introduced. Recurrence/reminders/notifications and Planning graph/search remain
+separate scope; central observability/export dashboards remain platform work.

@@ -1,0 +1,21 @@
+syntax = "proto3";
+package planning.reminder.v1;
+option java_package = "io.knowledgebrain.contracts.planning.reminder.v1";
+option java_multiple_files = true;
+message ReminderEventEnvelopeV1 {
+ string event_id=1;string event_type=2;uint32 event_version=3;int64 occurred_at_epoch_millis=4;
+ string producer=5;string aggregate_type=6;string aggregate_id=7;string space_id=8;
+ string actor_id=9;string trace_id=10;bytes payload=11;
+}
+message ReminderSchedulePinV1 {
+ string schedule_id=1;uint64 version=2;string title=3;string starts_at=4;string ends_at=5;
+ string time_zone=6;string starts_local=7;string ends_local=8;string starts_offset=9;string ends_offset=10;
+}
+// Canonical settings only. ACTIVE is not sent/delivered/read; no dispatch is implied.
+// Minutes are elapsed UTC minutes before the explicitly pinned Schedule start.
+message ReminderChangedPayloadV1 {
+ string reminder_id=1;string revision_id=2;uint64 version=3;string visibility=4;string state=5;
+ uint32 minutes_before=6;ReminderSchedulePinV1 schedule=7;string reminds_at=8;
+ string reminds_local=9;string reminds_offset=10;string preview_hash=11;
+ string created_at=12;string updated_at=13;
+}

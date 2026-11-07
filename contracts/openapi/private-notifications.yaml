@@ -1,0 +1,470 @@
+openapi: 3.1.0
+info:
+  title: Private persistent in-app notifications
+  version: 1.0.0
+  description: Notification owns the private in-app inbox, independent read/archive
+    versions and immutable revisions. Browser cannot create notifications. Only canonical
+    ReminderDispatched events create them, through one local Inbox+Notification+revision+Outbox
+    transaction. Duplicate source event must have identical bytes and never overwrites
+    read/archive state; conflicting ID/payload or second event for one dispatch fails
+    without acknowledging. Fresh NOTIFICATION_READ/WRITE is authorized by dedicated
+    Space capability and common guest/registered principal, PERSONAL/PRIVATE only;
+    no auth cache. Strong independent ntN, HTTPS, same-origin mutations, 1024-byte
+    exact boolean write, empty GET/DELETE bodies, no-store and exact singleton queries.
+    Missing If-Match428, stale412, malformed400; current read no-op/retired DELETE
+    no-op emits nothing. Known retired GET/history remain available; retired read
+    edits404. Catalog ascending ID after binds Space, lifecycle and read filter; current
+    pages are not frozen snapshots. Arrival is durable before Kafka acknowledgment.
+    No automatic mark-read, browser storage, external image retrieval, email or OS
+    push. Scheduled time, dispatch time and arrival time are separately labelled;
+    source pins never recalculate on later source changes/account claim.
+servers:
+- url: https://localhost:8443
+security:
+- browserSession: []
+paths:
+  /api/spaces/{spaceId}/notifications:
+    parameters:
+    - &id001
+      name: spaceId
+      in: path
+      schema: &id002
+        type: string
+        format: uuid
+        pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+      required: true
+    get:
+      operationId: listPrivateInAppNotifications
+      parameters:
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+        required: false
+      - name: after
+        in: query
+        schema:
+          type: string
+          maxLength: 256
+        required: false
+      - name: state
+        in: query
+        schema:
+          type: string
+          enum:
+          - ACTIVE
+          - RETIRED
+          default: ACTIVE
+        required: false
+      - name: read
+        in: query
+        schema:
+          type: string
+          enum:
+          - ALL
+          - READ
+          - UNREAD
+          default: ALL
+        required: false
+      responses:
+        '200':
+          description: Canonical private result
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            ETag:
+              description: Strong version of this resource only
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Page'
+        '400':
+          description: Invalid exact input, bounds or query; future time required
+            for arm
+        '401':
+          description: Missing, revoked or ambiguous session
+        '403':
+          description: Same-origin, role or route denied
+        '404':
+          description: Unavailable private resource or source
+        '409':
+          description: Another pending attempt, conflicting key or already dispatched
+            cancellation
+        '412':
+          description: Stale source/reminder/resource version
+        '413':
+          description: Bounded body exceeded
+        '415':
+          description: JSON required
+        '428':
+          description: Strong If-Match required
+        '503':
+          description: Dependency unavailable
+  /api/spaces/{spaceId}/notifications/{notificationId}:
+    parameters:
+    - *id001
+    - &id004
+      name: notificationId
+      in: path
+      schema: *id002
+      required: true
+    get:
+      operationId: getPrivateInAppNotification
+      parameters: []
+      responses:
+        '200':
+          description: Canonical private result
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            ETag:
+              description: Strong version of this resource only
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+        '400':
+          description: Invalid exact input, bounds or query; future time required
+            for arm
+        '401':
+          description: Missing, revoked or ambiguous session
+        '403':
+          description: Same-origin, role or route denied
+        '404':
+          description: Unavailable private resource or source
+        '409':
+          description: Another pending attempt, conflicting key or already dispatched
+            cancellation
+        '412':
+          description: Stale source/reminder/resource version
+        '413':
+          description: Bounded body exceeded
+        '415':
+          description: JSON required
+        '428':
+          description: Strong If-Match required
+        '503':
+          description: Dependency unavailable
+    put:
+      operationId: setPrivateInAppNotificationReadState
+      parameters: &id003
+      - name: If-Match
+        in: header
+        schema:
+          type: string
+          pattern: ^"nt[1-9][0-9]{0,18}"$
+        required: true
+      responses:
+        '200':
+          description: Canonical private result
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            ETag:
+              description: Strong version of this resource only
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+        '400':
+          description: Invalid exact input, bounds or query; future time required
+            for arm
+        '401':
+          description: Missing, revoked or ambiguous session
+        '403':
+          description: Same-origin, role or route denied
+        '404':
+          description: Unavailable private resource or source
+        '409':
+          description: Another pending attempt, conflicting key or already dispatched
+            cancellation
+        '412':
+          description: Stale source/reminder/resource version
+        '413':
+          description: Bounded body exceeded
+        '415':
+          description: JSON required
+        '428':
+          description: Strong If-Match required
+        '503':
+          description: Dependency unavailable
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - read
+              properties:
+                read:
+                  type: boolean
+    delete:
+      operationId: archivePrivateInAppNotification
+      parameters: *id003
+      responses:
+        '200':
+          description: Canonical private result
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            ETag:
+              description: Strong version of this resource only
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+        '400':
+          description: Invalid exact input, bounds or query; future time required
+            for arm
+        '401':
+          description: Missing, revoked or ambiguous session
+        '403':
+          description: Same-origin, role or route denied
+        '404':
+          description: Unavailable private resource or source
+        '409':
+          description: Another pending attempt, conflicting key or already dispatched
+            cancellation
+        '412':
+          description: Stale source/reminder/resource version
+        '413':
+          description: Bounded body exceeded
+        '415':
+          description: JSON required
+        '428':
+          description: Strong If-Match required
+        '503':
+          description: Dependency unavailable
+  /api/spaces/{spaceId}/notifications/{notificationId}/revisions:
+    parameters:
+    - *id001
+    - *id004
+    get:
+      operationId: listPrivateInAppNotificationRevisions
+      parameters:
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 5
+        required: false
+      - name: before
+        in: query
+        schema: &id005
+          type: integer
+          format: int64
+          minimum: 1
+        required: false
+      responses:
+        '200':
+          description: Canonical private result
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            ETag:
+              description: Strong version of this resource only
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: array
+                maxItems: 10
+                items:
+                  $ref: '#/components/schemas/Revision'
+        '400':
+          description: Invalid exact input, bounds or query; future time required
+            for arm
+        '401':
+          description: Missing, revoked or ambiguous session
+        '403':
+          description: Same-origin, role or route denied
+        '404':
+          description: Unavailable private resource or source
+        '409':
+          description: Another pending attempt, conflicting key or already dispatched
+            cancellation
+        '412':
+          description: Stale source/reminder/resource version
+        '413':
+          description: Bounded body exceeded
+        '415':
+          description: JSON required
+        '428':
+          description: Strong If-Match required
+        '503':
+          description: Dependency unavailable
+components:
+  securitySchemes:
+    browserSession:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest
+  schemas:
+    Source:
+      type: object
+      additionalProperties: false
+      required:
+      - deliveryId
+      - reminderId
+      - reminderVersion
+      - scheduleId
+      - scheduleVersion
+      - minutesBefore
+      - title
+      - startsAt
+      - endsAt
+      - timeZone
+      - startsLocal
+      - endsLocal
+      - startsOffset
+      - endsOffset
+      - remindsAt
+      - remindsLocal
+      - remindsOffset
+      - armedAt
+      - dispatchedAt
+      - armedBy
+      properties:
+        deliveryId: *id002
+        reminderId: *id002
+        reminderVersion: *id005
+        scheduleId: *id002
+        scheduleVersion: *id005
+        minutesBefore:
+          type: integer
+          minimum: 0
+          maximum: 10080
+        title:
+          type: string
+          maxLength: 200
+        startsAt: &id006
+          type: string
+          format: date-time
+        endsAt: *id006
+        timeZone:
+          type: string
+        startsLocal:
+          type: string
+        endsLocal:
+          type: string
+        startsOffset:
+          type: string
+        endsOffset:
+          type: string
+        remindsAt: *id006
+        remindsLocal:
+          type: string
+        remindsOffset:
+          type: string
+        armedAt: *id006
+        dispatchedAt: *id006
+        armedBy: *id002
+    Notification:
+      type: object
+      additionalProperties: false
+      required:
+      - notificationId
+      - spaceId
+      - visibility
+      - state
+      - version
+      - read
+      - source
+      - originEventId
+      - deliveredAt
+      - updatedAt
+      properties:
+        notificationId: *id002
+        spaceId: *id002
+        visibility:
+          type: string
+          const: PRIVATE
+        state:
+          type: string
+          enum:
+          - ACTIVE
+          - RETIRED
+        version: *id005
+        read:
+          type: boolean
+        source:
+          $ref: '#/components/schemas/Source'
+        originEventId: *id002
+        deliveredAt: *id006
+        updatedAt: *id006
+    Page:
+      type: object
+      additionalProperties: false
+      required:
+      - spaceId
+      - state
+      - readFilter
+      - items
+      - nextAfter
+      properties:
+        spaceId: *id002
+        state:
+          type: string
+          enum:
+          - ACTIVE
+          - RETIRED
+        readFilter:
+          type: string
+          enum:
+          - ALL
+          - UNREAD
+          - READ
+        items:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/Notification'
+        nextAfter:
+          type:
+          - string
+          - 'null'
+          maxLength: 256
+    Revision:
+      type: object
+      additionalProperties: false
+      required:
+      - revisionId
+      - notificationId
+      - version
+      - actorId
+      - occurredAt
+      - snapshot
+      properties:
+        revisionId: *id002
+        notificationId: *id002
+        version: *id005
+        actorId: *id002
+        occurredAt: *id006
+        snapshot:
+          $ref: '#/components/schemas/Notification'

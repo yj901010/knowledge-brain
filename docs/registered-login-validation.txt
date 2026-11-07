@@ -1,0 +1,59 @@
+Registered login and Personal Space claiming validation
+Completed: 2026-10-09 (Asia/Seoul)
+Environment: local k3d-knowledge-brain, verified HTTPS, Java 25
+
+Architecture approval:
+  docs/decisions/0002-registered-personal-spaces.md records the approved
+  multiple-Personal-Space ownership model and Space V2 migration impact.
+
+Backend:
+  Job backend-validation-1791470206 succeeded.
+  199 tests; 0 failures, 0 errors, 0 skipped.
+  PostgreSQL, Kafka, CDC and storage integration checks enabled.
+  Safe module summaries: .local/registered-backend-validation.txt
+
+Actual Keycloak/browser validation:
+  graph-web-validation-1791470089: 2 passed (10.5 seconds).
+  graph-web-validation-1791470280: 2 passed (1.2 minutes), outage/recovery.
+  graph-web-validation-1791471936: 2 passed (11.0 seconds), final deployed UI.
+  Actual registration and authorization-code/PKCE login; original Note,
+  Concept link and Space IDs retained; former guest credential denied;
+  second guest Space claimed by the same account; desktop/mobile Space
+  selection and logout verified. No browser token storage or TLS bypass.
+  During the controlled Keycloak outage registered access returned 503 and
+  private UI state cleared; fresh guest use remained available. After
+  restoration the registered session and original data were accessible.
+  Keycloak was restored and Ready after the fault test.
+  Final evidence: .local/graph-ui-results/validation.txt, login.png,
+  login-mobile.png, desktop.png and mobile.png.
+
+Registry isolation regression:
+  registry-auth-validation succeeded after Keycloak restoration.
+  Anonymous access 401; unprivileged access 403; reader write 403;
+  publisher Protobuf creation 200; reader retrieved exact contract bytes.
+  Existing brain-platform issuer and TLS configuration retained.
+
+Final operator installation succeeded:
+  user-realm-bootstrap-1791471719
+  identityaccount-contract-validation-1791471730
+  spaceclaim-contract-validation-1791471737
+  identity-connector-config-1791471743
+  space-connector-config-1791471750
+  Contract validity FULL and compatibility FULL_TRANSITIVE verified.
+
+Final deployed images (all four deployments Ready):
+  Identity: knowledge-brain/identity-service:local-d55abb435d1b95ec
+  Space: knowledge-brain/space-service:local-d55abb435d1b95ec
+  Gateway: knowledge-brain/gateway-service:local-8389a782b04df929
+  Login edge: nginx:1.28.3-alpine@sha256:a8b39bd9cf0f83869a2162827a0caf6137ddf759d50a171451b335cecc87d236
+
+Helm login chart lint and Python helper compilation passed.
+Desktop and mobile screenshots visually reviewed: account controls and
+Space selector visible, content preserved, no horizontal overflow.
+
+Operational limits:
+  Registered session expiry is bounded by the original refresh-token
+  lifetime (current local realm: 30 minutes) and a 12-hour ceiling.
+  Public Contribution/Review remains a subsequent phase.
+  Space V2 removes the unique-owner index; old Space binaries using the
+  previous owner-based ON CONFLICT clause are not migration-compatible.

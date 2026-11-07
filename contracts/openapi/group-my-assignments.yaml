@@ -1,0 +1,153 @@
+openapi: 3.1.0
+info:
+  title: Group-wide own assignment and submission-presence overview
+  version: 1.0.0
+  description: Fresh current registered Group participants including VIEWER. Shared
+    Assignment metadata across all canonical Studies in the exact Group/Space with
+    only authenticated actor own submission presence. Ten fields exclude peer roster,
+    answers, scores and reasons. Existing five filters/default OPEN_NOT_SUBMITTED
+    require OPEN Assignment and nonarchived Study, never obligation, write permission
+    or private completion. Current Study/Assignment labels preserve submitted instruction
+    versions. Active local Group/Space check then one canonical own-author left-joined
+    snapshot, filter before Assignment UUIDv7 keyset/default20/max100. Fresh current
+    participation and original Study/Assignment source authority, with current OWNER
+    flag and VIEWER readonly. No Course/enrollment requirement, writes/events/migrations/dependencies,
+    notification or private progress mutation. Existing endpoints preserved.
+servers:
+- url: https://localhost:8443
+security:
+- browserSession: []
+paths:
+  /api/groups/{groupId}/my-assignments:
+    parameters:
+    - name: groupId
+      in: path
+      required: true
+      schema: &id001
+        $ref: assignment-submissions.yaml#/components/schemas/Id
+    get:
+      operationId: getGroupOwnAssignments
+      parameters:
+      - name: filter
+        in: query
+        schema:
+          type: string
+          enum:
+          - OPEN_NOT_SUBMITTED
+          - ALL
+          - OPEN
+          - SUBMITTED
+          - NOT_SUBMITTED
+          default: OPEN_NOT_SUBMITTED
+      - name: after
+        in: query
+        schema: *id001
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      responses:
+        '400':
+          description: Malformed/singleton query, limit, cursor or nonempty GET body
+        '401':
+          description: Secure singleton browser session required
+        '403':
+          description: Registered Group participation required
+        '404':
+          description: Missing current Group participation or exact parent scope
+        '503':
+          description: Space authority unavailable
+        '200':
+          description: Shared Assignments across all Group Studies with only own submission
+            presence
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Page'
+components:
+  securitySchemes:
+    browserSession:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest
+  schemas:
+    Row:
+      type: object
+      additionalProperties: false
+      required:
+      - assignmentId
+      - title
+      - state
+      - version
+      - studyState
+      - submissionId
+      - submissionVersion
+      - submittedAssignmentVersion
+      - studyId
+      - studyTitle
+      properties:
+        assignmentId: &id002
+          $ref: assignment-submissions.yaml#/components/schemas/Id
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        state:
+          type: string
+          enum:
+          - DRAFT
+          - OPEN
+          - CLOSED
+          - RETIRED
+        version:
+          type: integer
+          format: int64
+          minimum: 1
+        studyState:
+          type: string
+          enum:
+          - PLANNED
+          - ACTIVE
+          - COMPLETED
+          - RETIRED
+        submissionId:
+          anyOf:
+          - *id002
+          - type: 'null'
+        submissionVersion: &id003
+          type:
+          - integer
+          - 'null'
+          format: int64
+          minimum: 1
+        submittedAssignmentVersion: *id003
+        studyId:
+          $ref: assignment-submissions.yaml#/components/schemas/Id
+        studyTitle:
+          type: string
+          minLength: 1
+          maxLength: 200
+    Page:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - nextAfter
+      properties:
+        items:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/Row'
+        nextAfter:
+          anyOf:
+          - *id001
+          - type: 'null'

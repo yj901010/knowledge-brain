@@ -1,0 +1,36 @@
+replicaCount: 2
+image:
+  repository: ''
+  tag: ''
+  pullPolicy: IfNotPresent
+resources:
+  requests:
+    cpu: 250m
+    memory: 384Mi
+  limits:
+    cpu: '1'
+    memory: 768Mi
+env:
+- name: BRAIN_MEDIA_DOMAIN_FILES_ENABLED
+  value: 'true'
+- name: BRAIN_MEDIA_DOMAIN_AUTHORIZATION_KEY
+  valueFrom:
+    secretKeyRef:
+      name: brain-collaboration-media-authorization
+      key: key
+probeScheme: HTTPS
+restrictGuestApiIngress: true
+extraVolumeMounts:
+- name: api-tls
+  mountPath: /api-tls
+  readOnly: true
+- name: space-trust
+  mountPath: /space-trust
+  readOnly: true
+extraVolumes:
+- name: api-tls
+  secret:
+    secretName: brain-media-api-tls
+- name: space-trust
+  secret:
+    secretName: brain-guest-api-trust

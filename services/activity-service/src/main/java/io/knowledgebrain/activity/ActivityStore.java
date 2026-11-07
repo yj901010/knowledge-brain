@@ -1,0 +1,18 @@
+package io.knowledgebrain.activity;
+import java.util.*;import java.security.*;import javax.sql.DataSource;import org.springframework.jdbc.core.JdbcTemplate;import org.springframework.jdbc.datasource.DataSourceTransactionManager;import org.springframework.transaction.support.TransactionTemplate;
+final class ActivityStore {
+ record Pending(UUID eventId,String entry){} record State(boolean seeded,boolean rebuilding,boolean ready){}
+ private final JdbcTemplate jdbc;private final TransactionTemplate tx;private final tools.jackson.databind.json.JsonMapper json=tools.jackson.databind.json.JsonMapper.builder().build();
+ ActivityStore(DataSource ds){jdbc=new JdbcTemplate(ds);tx=new TransactionTemplate(new DataSourceTransactionManager(ds));tx.setTimeout(15);}
+ State state(){return jdbc.queryForObject("SELECT seeded,rebuilding,ready FROM activity_projection_state WHERE singleton=true",(rs,n)->new State(rs.getBoolean(1),rs.getBoolean(2),rs.getBoolean(3)));}
+ void stage(String topic,byte[] wire){var event=ActivityEvent.decode(topic,wire);byte[] hash;try{hash=MessageDigest.getInstance("SHA-256").digest(wire);}catch(Exception e){throw new IllegalStateException(e);}tx.executeWithoutResult(s->{jdbc.queryForObject("SELECT singleton FROM activity_projection_state WHERE singleton=true FOR SHARE",Boolean.class);jdbc.update("INSERT INTO activity_inbox(event_id,space_id,topic,aggregate_id,source_version,payload_hash,entry) VALUES (?,?,?,?,?,?,?::jsonb) ON CONFLICT(event_id) DO NOTHING",event.eventId(),event.spaceId(),topic,event.aggregateId(),event.sourceVersion(),hash,json.writeValueAsString(event));var stored=jdbc.queryForObject("SELECT payload_hash FROM activity_inbox WHERE event_id=? FOR UPDATE",byte[].class,event.eventId());if(!MessageDigest.isEqual(hash,stored))throw new IllegalStateException("Activity event ID conflict");});}
+ List<Pending> pending(int limit){if(limit<1||limit>100)throw ActivityEvent.invalid();return jdbc.query("SELECT event_id,entry::text FROM activity_inbox WHERE NOT projected ORDER BY event_id LIMIT ?",(rs,n)->new Pending(rs.getObject(1,UUID.class),rs.getString(2)),limit);}
+ void applied(UUID id){jdbc.update("UPDATE activity_inbox SET projected=true WHERE event_id=?",id);}
+ void appliedAll(List<UUID> ids){if(ids.isEmpty()||ids.size()>100)throw ActivityEvent.invalid();tx.executeWithoutResult(s->jdbc.batchUpdate("UPDATE activity_inbox SET projected=true WHERE event_id=?",ids.stream().map(id->new Object[]{id}).toList()));}
+ long pendingCount(){return jdbc.queryForObject("SELECT count(*) FROM activity_inbox WHERE NOT projected",Long.class);}
+ void backfillStarted(){jdbc.update("UPDATE activity_projection_state SET seeded=false,ready=false WHERE singleton=true");}
+ void seeded(){jdbc.update("UPDATE activity_projection_state SET seeded=true WHERE singleton=true");}
+ void startRebuild(){tx.executeWithoutResult(s->{jdbc.queryForObject("SELECT singleton FROM activity_projection_state WHERE singleton=true FOR UPDATE",Boolean.class);jdbc.update("UPDATE activity_projection_state SET rebuilding=true,ready=false WHERE singleton=true");jdbc.update("UPDATE activity_inbox SET projected=false");});}
+ void finishIfDrained(){tx.executeWithoutResult(s->{jdbc.queryForObject("SELECT singleton FROM activity_projection_state WHERE singleton=true FOR UPDATE",Boolean.class);if(pendingCount()==0)jdbc.update("UPDATE activity_projection_state SET rebuilding=false,ready=seeded WHERE singleton=true");});}
+ ActivityEvent decode(Pending p){var e=json.readValue(p.entry(),ActivityEvent.class);if(!e.eventId().equals(p.eventId()))throw ActivityEvent.invalid();return e;}
+}

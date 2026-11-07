@@ -1,0 +1,761 @@
+openapi: 3.1.0
+info:
+  title: Private evidence to StudySession association
+  version: 1.0.0
+  description: Learning-owned optional relationship shared by typed NOTE/CONCEPT/MEDIA
+    evidence. Existing evidence/session JSON, revisions, ETags and event v1 contracts
+    remain unchanged. Link operations never change progress or study duration.
+servers:
+- url: https://localhost:8443
+security:
+- sessionCookie: []
+paths:
+  /api/spaces/{spaceId}/roadmaps/{roadmapId}/evidence/{evidenceId}/study-session:
+    parameters: &id015
+    - name: spaceId
+      in: path
+      required: true
+      schema: &id001
+        type: string
+        format: uuid
+        pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+    - name: roadmapId
+      in: path
+      required: true
+      schema: *id001
+    - name: evidenceId
+      in: path
+      required: true
+      schema: *id001
+    get:
+      operationId: readNoteEvidenceStudySession
+      description: Fresh ROADMAP_READ. Known typed evidence including retired evidence/node/root.
+        Default es0 reads and empty history never write. Returns only the original
+        pinned association, without automatically fetching a current session. Wrong
+        variant is 404. Empty body and no query.
+      responses:
+        '200': &id004
+          description: Current independent link representation
+          headers:
+            Cache-Control: &id002
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"es(0|[1-9][0-9]*)"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Link'
+        '400': &id005
+          description: Invalid UUIDv7, strict body/query, paired fields, integer or
+            strong esN ETag
+          headers: &id003
+            Cache-Control: *id002
+        '401': &id006
+          description: Common browser session unavailable
+          headers: *id003
+        '403': &id007
+          description: Current private Space permission or browser origin denied
+          headers: *id003
+        '404': &id008
+          description: Space, typed evidence, root/node or target session unavailable
+            for the operation
+          headers: *id003
+        '409': &id009
+          description: Current target session version changed or its learning node
+            differs
+          headers: *id003
+        '412': &id010
+          description: Independent evidence/session link ETag changed; explicitly
+            inspect latest
+          headers: *id003
+        '413': &id011
+          description: Body exceeds 4096 bytes
+          headers: *id003
+        '415': &id012
+          description: JSON required
+          headers: *id003
+        '428': &id013
+          description: If-Match required
+          headers: *id003
+        '503': &id014
+          description: Space authorization or local persistence unavailable; no partial
+            write
+          headers: *id003
+    put:
+      operationId: setNoteEvidenceStudySession
+      description: Fresh ROADMAP_WRITE, same-origin and strong esN required. Root
+        lock serializes all Learning writes. A new/re-pinned target must be ACTIVE,
+        same Space/Roadmap and same active learning node, with matching current sessionVersion.
+        Unlink remains allowed for retired evidence/node/session while the root is
+        active. All writes, including no-ops, reject retired roots. Exact same current
+        link pin is a no-op after checking ETag, even if the source later changed/retired.
+        Atomically commit independent relationship, full immutable revision and Protobuf
+        Outbox. Missing/stale ETag is 428/412. A lost response must be resolved through
+        explicit latest inspection, never blind overwrite.
+      parameters:
+      - name: Origin
+        in: header
+        required: true
+        schema:
+          type: string
+          const: https://localhost:8443
+      - name: If-Match
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^"es(0|[1-9][0-9]*)"$
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Input'
+      responses:
+        '200': *id004
+        '400': *id005
+        '401': *id006
+        '403': *id007
+        '404': *id008
+        '409': *id009
+        '412': *id010
+        '413': *id011
+        '415': *id012
+        '428': *id013
+        '503': *id014
+  /api/spaces/{spaceId}/roadmaps/{roadmapId}/evidence/{evidenceId}/study-session/revisions:
+    parameters: *id015
+    get:
+      operationId: readNoteEvidenceStudySessionHistory
+      description: Fresh ROADMAP_READ; immutable full association history including
+        after source/evidence/node/root retirement. No row means empty history. Strict
+        descending version cursor; wrong-kind evidence is 404.
+      parameters:
+      - name: before
+        in: query
+        schema:
+          type: integer
+          format: int64
+          minimum: 1
+          default: 9223372036854775807
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 5
+      responses:
+        '200':
+          description: Immutable association revisions
+          headers: *id003
+          content:
+            application/json:
+              schema:
+                type: array
+                maxItems: 10
+                items:
+                  $ref: '#/components/schemas/Revision'
+        '400': *id005
+        '401': *id006
+        '403': *id007
+        '404': *id008
+        '409': *id009
+        '412': *id010
+        '413': *id011
+        '415': *id012
+        '428': *id013
+        '503': *id014
+  /api/spaces/{spaceId}/roadmaps/{roadmapId}/concept-evidence/{evidenceId}/study-session:
+    parameters: &id016
+    - name: spaceId
+      in: path
+      required: true
+      schema: *id001
+    - name: roadmapId
+      in: path
+      required: true
+      schema: *id001
+    - name: evidenceId
+      in: path
+      required: true
+      schema: *id001
+    get:
+      operationId: readConceptEvidenceStudySession
+      description: Fresh ROADMAP_READ. Known typed evidence including retired evidence/node/root.
+        Default es0 reads and empty history never write. Returns only the original
+        pinned association, without automatically fetching a current session. Wrong
+        variant is 404. Empty body and no query.
+      responses:
+        '200': *id004
+        '400': *id005
+        '401': *id006
+        '403': *id007
+        '404': *id008
+        '409': *id009
+        '412': *id010
+        '413': *id011
+        '415': *id012
+        '428': *id013
+        '503': *id014
+    put:
+      operationId: setConceptEvidenceStudySession
+      description: Fresh ROADMAP_WRITE, same-origin and strong esN required. Root
+        lock serializes all Learning writes. A new/re-pinned target must be ACTIVE,
+        same Space/Roadmap and same active learning node, with matching current sessionVersion.
+        Unlink remains allowed for retired evidence/node/session while the root is
+        active. All writes, including no-ops, reject retired roots. Exact same current
+        link pin is a no-op after checking ETag, even if the source later changed/retired.
+        Atomically commit independent relationship, full immutable revision and Protobuf
+        Outbox. Missing/stale ETag is 428/412. A lost response must be resolved through
+        explicit latest inspection, never blind overwrite.
+      parameters:
+      - name: Origin
+        in: header
+        required: true
+        schema:
+          type: string
+          const: https://localhost:8443
+      - name: If-Match
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^"es(0|[1-9][0-9]*)"$
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Input'
+      responses:
+        '200': *id004
+        '400': *id005
+        '401': *id006
+        '403': *id007
+        '404': *id008
+        '409': *id009
+        '412': *id010
+        '413': *id011
+        '415': *id012
+        '428': *id013
+        '503': *id014
+  /api/spaces/{spaceId}/roadmaps/{roadmapId}/concept-evidence/{evidenceId}/study-session/revisions:
+    parameters: *id016
+    get:
+      operationId: readConceptEvidenceStudySessionHistory
+      description: Fresh ROADMAP_READ; immutable full association history including
+        after source/evidence/node/root retirement. No row means empty history. Strict
+        descending version cursor; wrong-kind evidence is 404.
+      parameters:
+      - name: before
+        in: query
+        schema:
+          type: integer
+          format: int64
+          minimum: 1
+          default: 9223372036854775807
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 5
+      responses:
+        '200':
+          description: Immutable association revisions
+          headers: *id003
+          content:
+            application/json:
+              schema:
+                type: array
+                maxItems: 10
+                items:
+                  $ref: '#/components/schemas/Revision'
+        '400': *id005
+        '401': *id006
+        '403': *id007
+        '404': *id008
+        '409': *id009
+        '412': *id010
+        '413': *id011
+        '415': *id012
+        '428': *id013
+        '503': *id014
+  /api/spaces/{spaceId}/roadmaps/{roadmapId}/media-evidence/{evidenceId}/study-session:
+    parameters: &id017
+    - name: spaceId
+      in: path
+      required: true
+      schema: *id001
+    - name: roadmapId
+      in: path
+      required: true
+      schema: *id001
+    - name: evidenceId
+      in: path
+      required: true
+      schema: *id001
+    get:
+      operationId: readMediaEvidenceStudySession
+      description: Fresh ROADMAP_READ. Known typed evidence including retired evidence/node/root.
+        Default es0 reads and empty history never write. Returns only the original
+        pinned association, without automatically fetching a current session. Wrong
+        variant is 404. Empty body and no query.
+      responses:
+        '200': *id004
+        '400': *id005
+        '401': *id006
+        '403': *id007
+        '404': *id008
+        '409': *id009
+        '412': *id010
+        '413': *id011
+        '415': *id012
+        '428': *id013
+        '503': *id014
+    put:
+      operationId: setMediaEvidenceStudySession
+      description: Fresh ROADMAP_WRITE, same-origin and strong esN required. Root
+        lock serializes all Learning writes. A new/re-pinned target must be ACTIVE,
+        same Space/Roadmap and same active learning node, with matching current sessionVersion.
+        Unlink remains allowed for retired evidence/node/session while the root is
+        active. All writes, including no-ops, reject retired roots. Exact same current
+        link pin is a no-op after checking ETag, even if the source later changed/retired.
+        Atomically commit independent relationship, full immutable revision and Protobuf
+        Outbox. Missing/stale ETag is 428/412. A lost response must be resolved through
+        explicit latest inspection, never blind overwrite.
+      parameters:
+      - name: Origin
+        in: header
+        required: true
+        schema:
+          type: string
+          const: https://localhost:8443
+      - name: If-Match
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^"es(0|[1-9][0-9]*)"$
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Input'
+      responses:
+        '200': *id004
+        '400': *id005
+        '401': *id006
+        '403': *id007
+        '404': *id008
+        '409': *id009
+        '412': *id010
+        '413': *id011
+        '415': *id012
+        '428': *id013
+        '503': *id014
+  /api/spaces/{spaceId}/roadmaps/{roadmapId}/media-evidence/{evidenceId}/study-session/revisions:
+    parameters: *id017
+    get:
+      operationId: readMediaEvidenceStudySessionHistory
+      description: Fresh ROADMAP_READ; immutable full association history including
+        after source/evidence/node/root retirement. No row means empty history. Strict
+        descending version cursor; wrong-kind evidence is 404.
+      parameters:
+      - name: before
+        in: query
+        schema:
+          type: integer
+          format: int64
+          minimum: 1
+          default: 9223372036854775807
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 5
+      responses:
+        '200':
+          description: Immutable association revisions
+          headers: *id003
+          content:
+            application/json:
+              schema:
+                type: array
+                maxItems: 10
+                items:
+                  $ref: '#/components/schemas/Revision'
+        '400': *id005
+        '401': *id006
+        '403': *id007
+        '404': *id008
+        '409': *id009
+        '412': *id010
+        '413': *id011
+        '415': *id012
+        '428': *id013
+        '503': *id014
+  /api/spaces/{spaceId}/roadmaps/{roadmapId}/github-evidence/{evidenceId}/study-session:
+    parameters:
+    - name: spaceId
+      in: path
+      required: true
+      schema: &id018
+        type: string
+        format: uuid
+        pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+    - name: roadmapId
+      in: path
+      required: true
+      schema: *id018
+    - name: evidenceId
+      in: path
+      required: true
+      schema: *id018
+    get:
+      operationId: githubReadConceptEvidenceStudySession
+      description: Fresh common-session ROADMAP and GITHUB_EVIDENCE authority; registered
+        PRIVATE PERSONAL OWNER only. GITHUB variant uses the same independent esN
+        CAS, current same-node StudySession pin and immutable association history.
+        Separate learning.github-evidence-session.v1 event; existing three variant
+        bytes unchanged. Fresh ROADMAP_READ. Known typed evidence including retired
+        evidence/node/root. Default es0 reads and empty history never write. Returns
+        only the original pinned association, without automatically fetching a current
+        session. Wrong variant is 404. Empty body and no query.
+      responses:
+        '200': &id021
+          description: Current independent link representation
+          headers:
+            Cache-Control: &id019
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"es(0|[1-9][0-9]*)"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Link'
+        '400': &id022
+          description: Invalid UUIDv7, strict body/query, paired fields, integer or
+            strong esN ETag
+          headers: &id020
+            Cache-Control: *id019
+        '401': &id023
+          description: Common browser session unavailable
+          headers: *id020
+        '403': &id024
+          description: Current private Space permission or browser origin denied
+          headers: *id020
+        '404': &id025
+          description: Space, typed evidence, root/node or target session unavailable
+            for the operation
+          headers: *id020
+        '409': &id026
+          description: Current target session version changed or its learning node
+            differs
+          headers: *id020
+        '412': &id027
+          description: Independent evidence/session link ETag changed; explicitly
+            inspect latest
+          headers: *id020
+        '413': &id028
+          description: Body exceeds 4096 bytes
+          headers: *id020
+        '415': &id029
+          description: JSON required
+          headers: *id020
+        '428': &id030
+          description: If-Match required
+          headers: *id020
+        '503': &id031
+          description: Space authorization or local persistence unavailable; no partial
+            write
+          headers: *id020
+    put:
+      operationId: githubSetConceptEvidenceStudySession
+      description: Fresh common-session ROADMAP and GITHUB_EVIDENCE authority; registered
+        PRIVATE PERSONAL OWNER only. GITHUB variant uses the same independent esN
+        CAS, current same-node StudySession pin and immutable association history.
+        Separate learning.github-evidence-session.v1 event; existing three variant
+        bytes unchanged. Fresh ROADMAP_WRITE, same-origin and strong esN required.
+        Root lock serializes all Learning writes. A new/re-pinned target must be ACTIVE,
+        same Space/Roadmap and same active learning node, with matching current sessionVersion.
+        Unlink remains allowed for retired evidence/node/session while the root is
+        active. All writes, including no-ops, reject retired roots. Exact same current
+        link pin is a no-op after checking ETag, even if the source later changed/retired.
+        Atomically commit independent relationship, full immutable revision and Protobuf
+        Outbox. Missing/stale ETag is 428/412. A lost response must be resolved through
+        explicit latest inspection, never blind overwrite.
+      parameters:
+      - name: Origin
+        in: header
+        required: true
+        schema:
+          type: string
+          const: https://localhost:8443
+      - name: If-Match
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^"es(0|[1-9][0-9]*)"$
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Input'
+      responses:
+        '200': *id021
+        '400': *id022
+        '401': *id023
+        '403': *id024
+        '404': *id025
+        '409': *id026
+        '412': *id027
+        '413': *id028
+        '415': *id029
+        '428': *id030
+        '503': *id031
+  /api/spaces/{spaceId}/roadmaps/{roadmapId}/github-evidence/{evidenceId}/study-session/revisions:
+    parameters:
+    - name: spaceId
+      in: path
+      required: true
+      schema: &id032
+        type: string
+        format: uuid
+        pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+    - name: roadmapId
+      in: path
+      required: true
+      schema: *id032
+    - name: evidenceId
+      in: path
+      required: true
+      schema: *id032
+    get:
+      operationId: githubReadConceptEvidenceStudySessionHistory
+      description: Fresh common-session ROADMAP and GITHUB_EVIDENCE authority; registered
+        PRIVATE PERSONAL OWNER only. GITHUB variant uses the same independent esN
+        CAS, current same-node StudySession pin and immutable association history.
+        Separate learning.github-evidence-session.v1 event; existing three variant
+        bytes unchanged. Fresh ROADMAP_READ; immutable full association history including
+        after source/evidence/node/root retirement. No row means empty history. Strict
+        descending version cursor; wrong-kind evidence is 404.
+      parameters:
+      - name: before
+        in: query
+        schema:
+          type: integer
+          format: int64
+          minimum: 1
+          default: 9223372036854775807
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 5
+      responses:
+        '200':
+          description: Immutable association revisions
+          headers: &id033
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                type: array
+                maxItems: 10
+                items:
+                  $ref: '#/components/schemas/Revision'
+        '400':
+          description: Invalid UUIDv7, strict body/query, paired fields, integer or
+            strong esN ETag
+          headers: *id033
+        '401':
+          description: Common browser session unavailable
+          headers: *id033
+        '403':
+          description: Current private Space permission or browser origin denied
+          headers: *id033
+        '404':
+          description: Space, typed evidence, root/node or target session unavailable
+            for the operation
+          headers: *id033
+        '409':
+          description: Current target session version changed or its learning node
+            differs
+          headers: *id033
+        '412':
+          description: Independent evidence/session link ETag changed; explicitly
+            inspect latest
+          headers: *id033
+        '413':
+          description: Body exceeds 4096 bytes
+          headers: *id033
+        '415':
+          description: JSON required
+          headers: *id033
+        '428':
+          description: If-Match required
+          headers: *id033
+        '503':
+          description: Space authorization or local persistence unavailable; no partial
+            write
+          headers: *id033
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest
+  schemas:
+    Link:
+      type: object
+      additionalProperties: false
+      required:
+      - linkId
+      - evidenceId
+      - evidenceKind
+      - roadmapId
+      - spaceId
+      - nodeId
+      - nodeTitle
+      - visibility
+      - state
+      - version
+      - sessionId
+      - sessionVersion
+      - sessionNodeTitle
+      - startedAt
+      - endedAt
+      - durationSeconds
+      - createdAt
+      - updatedAt
+      properties:
+        linkId: &id034
+          type:
+          - string
+          - 'null'
+          format: uuid
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+        evidenceId: *id001
+        evidenceKind:
+          enum:
+          - NOTE
+          - CONCEPT
+          - MEDIA
+          - GITHUB
+        roadmapId: *id001
+        spaceId: *id001
+        nodeId: *id001
+        nodeTitle:
+          type: string
+          minLength: 1
+          maxLength: 200
+        visibility:
+          const: PRIVATE
+        state:
+          enum:
+          - LINKED
+          - UNLINKED
+        version:
+          type: integer
+          format: int64
+          minimum: 0
+        sessionId: *id034
+        sessionVersion:
+          type:
+          - integer
+          - 'null'
+          format: int64
+          minimum: 1
+        sessionNodeTitle:
+          type:
+          - string
+          - 'null'
+          maxLength: 200
+        startedAt:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        endedAt:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        durationSeconds:
+          type:
+          - integer
+          - 'null'
+          minimum: 1
+          maximum: 86400
+        createdAt:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        updatedAt:
+          type:
+          - string
+          - 'null'
+          format: date-time
+      description: Version zero is UNLINKED with null linkId/timestamps and no database
+        row. A persisted link keeps its UUIDv7 ID across unlink/relink. All session
+        pin fields are null when UNLINKED; LINKED requires every session pin field.
+        A later source edit/retirement never changes these historical pins.
+    Input:
+      type: object
+      additionalProperties: false
+      required:
+      - sessionId
+      - sessionVersion
+      properties:
+        sessionId: *id034
+        sessionVersion:
+          type:
+          - integer
+          - 'null'
+          format: int64
+          minimum: 1
+      description: Both fields must be null to unlink, or both must identify the selected
+        current session/version. Body limit 4096 bytes; strict duplicate/unknown/trailing
+        JSON and invalid integers rejected.
+    Revision:
+      type: object
+      additionalProperties: false
+      required:
+      - revisionId
+      - linkId
+      - version
+      - actorId
+      - occurredAt
+      - snapshot
+      properties:
+        revisionId: *id001
+        linkId: *id001
+        version:
+          type: integer
+          format: int64
+          minimum: 1
+        actorId: *id001
+        occurredAt:
+          type: string
+          format: date-time
+        snapshot:
+          $ref: '#/components/schemas/Link'

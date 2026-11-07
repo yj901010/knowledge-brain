@@ -1,0 +1,27 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent><groupId>io.knowledgebrain</groupId><artifactId>knowledge-brain</artifactId><version>0.1.0-SNAPSHOT</version><relativePath>../../pom.xml</relativePath></parent>
+  <artifactId>gateway-service</artifactId>
+  <dependencies>
+    <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-api</artifactId><version>1.67.0</version></dependency>
+    <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-webmvc</artifactId></dependency>
+    <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-actuator</artifactId></dependency>
+    <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-security</artifactId></dependency>
+    <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-test</artifactId><scope>test</scope></dependency>
+  </dependencies>
+  <build><plugins><plugin><groupId>org.springframework.boot</groupId><artifactId>spring-boot-maven-plugin</artifactId></plugin></plugins></build>
+  <profiles>
+    <profile><id>container-image</id>
+      <properties><image.repository>knowledge-brain/gateway-service</image.repository><image.tag>local-dev</image.tag></properties>
+      <build><plugins><plugin>
+        <groupId>com.google.cloud.tools</groupId><artifactId>jib-maven-plugin</artifactId><version>3.5.2</version>
+        <configuration>
+          <from><image>${brain.runtime.image}</image></from>
+          <to><image>${image.repository}:${image.tag}</image></to>
+          <container><mainClass>io.knowledgebrain.gateway.Application</mainClass><user>10001:10001</user><ports><port>8080</port></ports></container>
+        </configuration>
+        <executions><execution><phase>package</phase><goals><goal>buildTar</goal></goals></execution></executions>
+      </plugin></plugins></build>
+    </profile>
+  </profiles>
+</project>

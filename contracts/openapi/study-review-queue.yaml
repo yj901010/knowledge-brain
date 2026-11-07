@@ -1,0 +1,199 @@
+openapi: 3.1.0
+info:
+  title: OWNER standalone Study feedback and resubmission review queue
+  version: 1.0.0
+  description: 'Fresh current registered Group OWNER only. Submitted feedback/request
+    metadata across one Study, independent of Course binding, enrollment and private
+    progress. Includes permitted OWNER own-submission feedback/request workflows;
+    separate grading queue/writer still forbid self-grading. Eighteen fields exclude
+    private text, reasons, scores and files. Existing Course review filters and exact
+    latest-version feedback annotations/atomic request normalization apply: NEEDS_FEEDBACK
+    default; unknown data is UNAVAILABLE, never current feedback or pending/resolved
+    request. One local SQL snapshot, filter before ascending Submission UUIDv7 keyset/default20/max100,
+    current shared Assignment labels and original submitted versions. Explicit fresh
+    Study/exact original Submission navigation. Archived reads retain source write
+    restrictions. No roster, writes/events/migrations/dependencies, Course creation,
+    notification or private progress changes. Existing endpoints preserved.'
+servers:
+- url: https://localhost:8443
+security:
+- browserSession: []
+paths:
+  /api/groups/{groupId}/studies/{studyId}/submissions/review-queue:
+    parameters:
+    - name: groupId
+      in: path
+      required: true
+      schema: &id001
+        $ref: assignment-submissions.yaml#/components/schemas/Id
+    - name: studyId
+      in: path
+      required: true
+      schema:
+        $ref: assignment-submissions.yaml#/components/schemas/Id
+    get:
+      operationId: getOwnerStudyReviewQueue
+      parameters:
+      - name: filter
+        in: query
+        schema:
+          type: string
+          enum:
+          - ALL
+          - NEEDS_FEEDBACK
+          - HAS_FEEDBACK
+          - RETRACTED_FEEDBACK
+          - PENDING_RESUBMISSION
+          - UNAVAILABLE
+          default: NEEDS_FEEDBACK
+      - name: after
+        in: query
+        schema: *id001
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      responses:
+        '400':
+          description: Malformed/singleton query, limit, cursor or nonempty GET body
+        '401':
+          description: Secure singleton browser session required
+        '403':
+          description: Current registered Group OWNER required, even for empty results
+        '404':
+          description: Missing current Group participation or exact parent scope
+        '503':
+          description: Space authority unavailable
+        '200':
+          description: Submitted feedback and request metadata within one exact Study
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Page'
+components:
+  securitySchemes:
+    browserSession:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest
+  schemas:
+    Row:
+      type: object
+      additionalProperties: false
+      required:
+      - submissionId
+      - authorId
+      - version
+      - assignmentVersion
+      - updatedAt
+      - feedbackStatus
+      - feedbackVersion
+      - feedbackSubmissionVersion
+      - retractionState
+      - retractionVersion
+      - assignmentId
+      - assignmentTitle
+      - assignmentState
+      - studyState
+      - needsFeedback
+      - requestVersion
+      - requestState
+      - requestedSubmissionVersion
+      properties:
+        submissionId: *id001
+        authorId: *id001
+        version: &id002
+          type: integer
+          format: int64
+          minimum: 1
+        assignmentVersion: *id002
+        updatedAt:
+          type: string
+          format: date-time
+        feedbackStatus:
+          type: string
+          enum:
+          - MISSING
+          - CURRENT
+          - OUTDATED
+          - RETRACTED
+          - UNAVAILABLE
+        feedbackVersion: &id003
+          type:
+          - integer
+          - 'null'
+          format: int64
+          minimum: 1
+        feedbackSubmissionVersion: *id003
+        retractionState:
+          type: string
+          enum:
+          - NONE
+          - RETRACTED
+          - RESTORED
+          - UNKNOWN
+        retractionVersion: *id003
+        assignmentId:
+          $ref: assignment-submissions.yaml#/components/schemas/Id
+        assignmentTitle:
+          type: string
+          minLength: 1
+          maxLength: 200
+        assignmentState:
+          type: string
+          enum:
+          - DRAFT
+          - OPEN
+          - CLOSED
+          - RETIRED
+        needsFeedback:
+          type: boolean
+        requestVersion:
+          type: &id004
+          - integer
+          - 'null'
+          format: int64
+          minimum: 1
+        requestState:
+          type: string
+          enum:
+          - NONE
+          - REQUESTED
+          - CANCELLED
+          - RESOLVED
+          - UNAVAILABLE
+        requestedSubmissionVersion:
+          type: *id004
+          format: int64
+          minimum: 1
+        studyState:
+          type: string
+          enum:
+          - PLANNED
+          - ACTIVE
+          - COMPLETED
+          - RETIRED
+    Page:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - nextAfter
+      properties:
+        items:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/Row'
+        nextAfter:
+          anyOf:
+          - *id001
+          - type: 'null'

@@ -1,0 +1,18 @@
+syntax = "proto3";
+package notification.policy.v1;
+option java_package = "io.knowledgebrain.contracts.notification.policy.v1";
+option java_multiple_files = true;
+message NotificationPolicyEnvelopeV1 {
+ string event_id=1; string event_type=2; uint32 event_version=3; int64 occurred_at_epoch_millis=4;
+ string producer=5; string aggregate_type=6; string aggregate_id=7; string space_id=8;
+ string actor_id=9; string trace_id=10; bytes payload=11;
+}
+message NotificationPreferencePayloadV1 {
+ string preference_id=1; string revision_id=2; uint64 version=3; string visibility=4;
+ bool in_app_enabled=5; string updated_at=6;
+}
+message NotificationSuppressionPayloadV1 {
+ string suppression_id=1; string preference_id=2; uint64 preference_version=3;
+ string source_event_id=4; string dispatch_id=5; string reason=6; string processed_at=7;
+ bytes source_dispatch_envelope=8; string visibility=9;
+}

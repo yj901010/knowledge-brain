@@ -1,0 +1,81 @@
+apiVersion: v1
+kind: ConfigMap
+metadata: {name: brain-clickhouse-config}
+data:
+  brain.xml: |
+    <clickhouse>
+      <listen_host replace="replace">0.0.0.0</listen_host><http_port remove="remove"/><tcp_port remove="remove"/>
+      <mysql_port remove="remove"/><postgresql_port remove="remove"/><interserver_http_port remove="remove"/><https_port>8443</https_port>
+      <openSSL><server><certificateFile>/tls/tls.crt</certificateFile><privateKeyFile>/tls/tls.key</privateKeyFile><verificationMode>none</verificationMode><disableProtocols>sslv2,sslv3,tlsv1,tlsv1_1</disableProtocols></server></openSSL>
+      <logger><level>warning</level><console>1</console></logger>
+      <max_server_memory_usage>805306368</max_server_memory_usage><max_thread_pool_size>256</max_thread_pool_size>
+      <background_pool_size>4</background_pool_size><background_schedule_pool_size>4</background_schedule_pool_size>
+      <background_message_broker_schedule_pool_size>2</background_message_broker_schedule_pool_size><background_distributed_schedule_pool_size>2</background_distributed_schedule_pool_size><background_buffer_flush_schedule_pool_size>2</background_buffer_flush_schedule_pool_size>
+      <background_fetches_pool_size>2</background_fetches_pool_size><background_move_pool_size>2</background_move_pool_size>
+      <mark_cache_size>33554432</mark_cache_size><uncompressed_cache_size>0</uncompressed_cache_size>
+      <merge_tree><number_of_free_entries_in_pool_to_execute_mutation>2</number_of_free_entries_in_pool_to_execute_mutation><number_of_free_entries_in_pool_to_lower_max_size_of_merge>2</number_of_free_entries_in_pool_to_lower_max_size_of_merge><number_of_free_entries_in_pool_to_execute_optimize_entire_partition>2</number_of_free_entries_in_pool_to_execute_optimize_entire_partition></merge_tree>
+      <query_log remove="remove"/><query_thread_log remove="remove"/><trace_log remove="remove"/><metric_log remove="remove"/><asynchronous_metric_log remove="remove"/>
+    </clickhouse>
+---
+apiVersion: v1
+kind: Service
+metadata: {name: brain-clickhouse}
+spec:
+  selector: {app: brain-clickhouse}
+  ports: [{name: https, port: 8443, targetPort: 8443}]
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata: {name: brain-clickhouse}
+spec:
+  serviceName: brain-clickhouse
+  replicas: 1
+  selector: {matchLabels: {app: brain-clickhouse}}
+  template:
+    metadata: {labels: {app: brain-clickhouse}}
+    spec:
+      automountServiceAccountToken: false
+      securityContext: {runAsNonRoot: true, runAsUser: 101, runAsGroup: 101, fsGroup: 101, fsGroupChangePolicy: OnRootMismatch}
+      containers:
+      - name: clickhouse
+        image: {{ .Values.image | quote }}
+        command: [/usr/bin/clickhouse-server, --config-file=/etc/clickhouse-server/config.xml]
+        securityContext: {allowPrivilegeEscalation: false, capabilities: {drop: [ALL]}}
+        ports: [{name: https, containerPort: 8443}]
+        resources: {{ .Values.resources | toJson }}
+        startupProbe: {httpGet: {path: /ping, port: https, scheme: HTTPS}, periodSeconds: 5, failureThreshold: 60}
+        readinessProbe: {httpGet: {path: /ping, port: https, scheme: HTTPS}, periodSeconds: 5}
+        livenessProbe: {httpGet: {path: /ping, port: https, scheme: HTTPS}, periodSeconds: 10, failureThreshold: 6}
+        volumeMounts:
+        - {name: data, mountPath: /var/lib/clickhouse}
+        - {name: logs, mountPath: /var/log/clickhouse-server}
+        - {name: tmp, mountPath: /tmp}
+        - {name: config, mountPath: /etc/clickhouse-server/config.d/zz-brain.xml, subPath: brain.xml, readOnly: true}
+        - {name: users, mountPath: /etc/clickhouse-server/users.d/brain-users.xml, subPath: users.xml, readOnly: true}
+        - {name: tls, mountPath: /tls, readOnly: true}
+      volumes:
+      - {name: config, configMap: {name: brain-clickhouse-config}}
+      - {name: users, secret: {secretName: brain-clickhouse-users}}
+      - {name: tls, secret: {secretName: brain-clickhouse-tls}}
+      - {name: logs, emptyDir: {sizeLimit: 128Mi}}
+      - {name: tmp, emptyDir: {sizeLimit: 64Mi}}
+  volumeClaimTemplates:
+  - metadata: {name: data}
+    spec:
+      accessModes: [ReadWriteOnce]
+      resources: {requests: {storage: {{ .Values.storage | quote }}}}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: {name: brain-clickhouse-private}
+spec:
+  podSelector: {matchLabels: {app: brain-clickhouse}}
+  policyTypes: [Ingress]
+  ingress:
+  - from:
+    - namespaceSelector: {matchLabels: {kubernetes.io/metadata.name: brain-apps}}
+      podSelector: {matchLabels: {app.kubernetes.io/name: activity-service}}
+    - namespaceSelector: {matchLabels: {kubernetes.io/metadata.name: brain-apps}}
+      podSelector: {matchLabels: {brain-activity-rebuild: 'true'}}
+    - podSelector: {matchLabels: {brain-activity-validation: 'true'}}
+    ports: [{protocol: TCP, port: 8443}]

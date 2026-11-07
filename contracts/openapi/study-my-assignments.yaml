@@ -1,0 +1,151 @@
+openapi: 3.1.0
+info:
+  title: Study assignments with own submission presence
+  version: 1.0.0
+  description: Fresh current registered Group participants including VIEWER read shared
+    assignments and only their own submission presence. No author selector, peer submission
+    ID/count, answer, score, reason or obligation/progress inference. OPEN_NOT_SUBMITTED
+    default requires OPEN Assignment, non-RETIRED Study and absent own submission.
+    OPEN also excludes retired Study; ALL/SUBMITTED/NOT_SUBMITTED retain existing
+    shared DRAFT/closed/archive read policy. Presence is point-in-time, never permission
+    to submit. Original source rechecks current role/lifecycle and instructions. Eight
+    metadata fields; own submission null triples are all null or positive. Current
+    instruction version and submitted instruction version remain distinct. Single
+    local Collaboration statement, full Study/Space/Group/actor tuple, filters before
+    ascending Assignment UUIDv7 keyset limit+1, default20/max100. No mutation, event,
+    migration, dependency, cross-owner SQL, notification or private progress sharing.
+    Original endpoints remain unchanged.
+servers:
+- url: https://localhost:8443
+security:
+- browserSession: []
+paths:
+  /api/groups/{groupId}/studies/{studyId}/my-assignments:
+    parameters:
+    - name: groupId
+      in: path
+      required: true
+      schema: &id001
+        $ref: assignment-submissions.yaml#/components/schemas/Id
+    - name: studyId
+      in: path
+      required: true
+      schema: *id001
+    get:
+      operationId: getStudyAssignmentsWithOwnSubmission
+      parameters:
+      - name: filter
+        in: query
+        schema:
+          type: string
+          enum:
+          - OPEN_NOT_SUBMITTED
+          - ALL
+          - OPEN
+          - SUBMITTED
+          - NOT_SUBMITTED
+          default: OPEN_NOT_SUBMITTED
+      - name: after
+        in: query
+        schema: *id001
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      responses:
+        '400':
+          description: Malformed/singleton query, limit, cursor or nonempty GET body
+        '401':
+          description: Secure singleton browser session required
+        '403':
+          description: Registered Group participation required
+        '404':
+          description: Missing current Group participation or exact parent scope
+        '503':
+          description: Space authority unavailable
+        '200':
+          description: Shared assignment metadata and only own submission presence;
+            eight fields
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Page'
+components:
+  securitySchemes:
+    browserSession:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest
+  schemas:
+    Row:
+      type: object
+      additionalProperties: false
+      required:
+      - assignmentId
+      - title
+      - state
+      - version
+      - studyState
+      - submissionId
+      - submissionVersion
+      - submittedAssignmentVersion
+      properties:
+        assignmentId: &id002
+          $ref: assignment-submissions.yaml#/components/schemas/Id
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        state:
+          type: string
+          enum:
+          - DRAFT
+          - OPEN
+          - CLOSED
+          - RETIRED
+        version:
+          type: integer
+          format: int64
+          minimum: 1
+        studyState:
+          type: string
+          enum:
+          - PLANNED
+          - ACTIVE
+          - COMPLETED
+          - RETIRED
+        submissionId:
+          anyOf:
+          - *id002
+          - type: 'null'
+        submissionVersion: &id003
+          type:
+          - integer
+          - 'null'
+          format: int64
+          minimum: 1
+        submittedAssignmentVersion: *id003
+    Page:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - nextAfter
+      properties:
+        items:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/Row'
+        nextAfter:
+          anyOf:
+          - *id001
+          - type: 'null'

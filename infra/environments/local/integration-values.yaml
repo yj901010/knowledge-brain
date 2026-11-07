@@ -1,0 +1,73 @@
+replicaCount: 1
+image:
+  repository: knowledge-brain/integration-service
+  tag: ''
+  pullPolicy: Never
+  digest: sha256:c46dbbc749d7734def79f2767333ddc83c72ab239920fd5955db1bd4d4c0854f
+resources:
+  requests:
+    cpu: 50m
+    memory: 256Mi
+  limits:
+    cpu: '1'
+    memory: 512Mi
+env:
+- name: BRAIN_INTEGRATION_PERSISTENCE_ENABLED
+  value: 'true'
+- name: BRAIN_INTEGRATION_API_ENABLED
+  value: 'true'
+- name: BRAIN_INTEGRATION_DATABASE_URL
+  value: jdbc:postgresql://brain-postgres.brain-data.svc:5432/brain_integration
+- name: BRAIN_INTEGRATION_DATABASE_PASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: brain-integration-db
+      key: password
+- name: BRAIN_INTEGRATION_DATABASE_MAXIMUM_POOL_SIZE
+  value: '3'
+- name: BRAIN_INTEGRATION_SPACE_ORIGIN
+  value: https://space-service.brain-apps.svc:8080
+- name: BRAIN_INTEGRATION_SPACE_TRUST_FILE
+  value: /space-trust/ca.crt
+- name: BRAIN_INTEGRATION_SPACE_AUTHORIZATION_KEY
+  valueFrom:
+    secretKeyRef:
+      name: brain-integration-space-authorization
+      key: key
+- name: SERVER_SSL_ENABLED
+  value: 'true'
+- name: SERVER_SSL_CERTIFICATE
+  value: file:/api-tls/tls.crt
+- name: SERVER_SSL_CERTIFICATE_PRIVATE_KEY
+  value: file:/api-tls/tls.key
+- name: SERVER_FORWARD_HEADERS_STRATEGY
+  value: NONE
+- name: BRAIN_INTEGRATION_BROWSER_ORIGIN
+  value: https://localhost:8443
+- name: BRAIN_INTEGRATION_ACTIVITY_EXPORT_ENABLED
+  value: 'true'
+- name: BRAIN_INTEGRATION_ACTIVITY_EXPORT_KEY
+  valueFrom:
+    secretKeyRef:
+      name: brain-integration-activity-export
+      key: key
+- name: MANAGEMENT_ENDPOINT_HEALTH_GROUP_READINESS_INCLUDE
+  value: readinessState,integrationDatabase
+probeScheme: HTTPS
+restrictGuestApiIngress: true
+extraVolumeMounts:
+- name: api-tls
+  mountPath: /api-tls
+  readOnly: true
+- name: space-trust
+  mountPath: /space-trust
+  readOnly: true
+extraVolumes:
+- name: api-tls
+  secret:
+    secretName: brain-integration-api-tls
+- name: space-trust
+  secret:
+    secretName: brain-guest-api-trust
+deploymentStrategy:
+  type: Recreate

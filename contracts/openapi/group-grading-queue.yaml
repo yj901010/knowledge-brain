@@ -1,0 +1,179 @@
+openapi: 3.1.0
+info:
+  title: OWNER Group-wide submission grading queue
+  version: 1.0.0
+  description: Fresh current registered Group OWNER only. Other authors submitted
+    grading metadata across all canonical Studies within one Group/Space, independent
+    of Course binding/enrollment/private progress. Sixteen metadata fields include
+    current Study/Assignment labels and Study state without copying score/reason/answer/files.
+    Existing seven grading filters/default NEEDS_GRADING, direct/rubric0 and exact
+    latest grade-version markers retain meanings; self-grading remains forbidden.
+    Filter before ascending Submission UUIDv7 keyset/default20/max100, local canonical
+    join and fresh active Group/Space scope. Explicit fresh OWNER and original Study/Assignment/Submission
+    navigation. Archives retain reads and original writer restrictions. No roster,
+    writes/events/migrations/dependencies, Course creation, notifications or private
+    progress mutation. Existing endpoints preserved.
+servers:
+- url: https://localhost:8443
+security:
+- browserSession: []
+paths:
+  /api/groups/{groupId}/submissions/grading-queue:
+    parameters:
+    - name: groupId
+      in: path
+      required: true
+      schema: &id001
+        $ref: assignment-submissions.yaml#/components/schemas/Id
+    get:
+      operationId: getOwnerGroupGradingQueue
+      parameters:
+      - name: filter
+        in: query
+        schema:
+          type: string
+          enum:
+          - NEEDS_GRADING
+          - ALL
+          - MISSING
+          - CURRENT
+          - OUTDATED
+          - RETRACTED
+          - UNAVAILABLE
+          default: NEEDS_GRADING
+      - name: after
+        in: query
+        schema: *id001
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      responses:
+        '400':
+          description: Malformed/singleton query, limit, cursor or nonempty GET body
+        '401':
+          description: Secure singleton browser session required
+        '403':
+          description: Current registered Group OWNER required, even for empty results
+        '404':
+          description: Missing current Group participation or exact parent scope
+        '503':
+          description: Space authority unavailable
+        '200':
+          description: Other authors submitted grading metadata across all Studies
+            in the exact Group/Space
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Page'
+components:
+  securitySchemes:
+    browserSession:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest
+  schemas:
+    Row:
+      type: object
+      additionalProperties: false
+      required:
+      - submissionId
+      - authorId
+      - version
+      - assignmentVersion
+      - updatedAt
+      - gradingStatus
+      - gradeVersion
+      - gradedSubmissionVersion
+      - gradeRetractionState
+      - retractionVersion
+      - assignmentId
+      - assignmentTitle
+      - assignmentState
+      - studyState
+      - studyId
+      - studyTitle
+      properties:
+        submissionId: *id001
+        authorId: *id001
+        version: &id002
+          type: integer
+          format: int64
+          minimum: 1
+        assignmentVersion: *id002
+        updatedAt:
+          type: string
+          format: date-time
+        gradingStatus:
+          type: string
+          enum:
+          - MISSING
+          - CURRENT
+          - OUTDATED
+          - RETRACTED
+          - UNAVAILABLE
+        gradeVersion: &id003
+          type:
+          - integer
+          - 'null'
+          format: int64
+          minimum: 1
+        gradedSubmissionVersion: *id003
+        gradeRetractionState:
+          type: string
+          enum:
+          - NONE
+          - RETRACTED
+          - RESTORED
+          - UNKNOWN
+        retractionVersion: *id003
+        assignmentId:
+          $ref: assignment-submissions.yaml#/components/schemas/Id
+        assignmentTitle:
+          type: string
+          minLength: 1
+          maxLength: 200
+        assignmentState:
+          type: string
+          enum:
+          - DRAFT
+          - OPEN
+          - CLOSED
+          - RETIRED
+        studyState:
+          type: string
+          enum:
+          - PLANNED
+          - ACTIVE
+          - COMPLETED
+          - RETIRED
+        studyId:
+          $ref: assignment-submissions.yaml#/components/schemas/Id
+        studyTitle:
+          type: string
+          minLength: 1
+          maxLength: 200
+    Page:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - nextAfter
+      properties:
+        items:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/Row'
+        nextAfter:
+          anyOf:
+          - *id001
+          - type: 'null'

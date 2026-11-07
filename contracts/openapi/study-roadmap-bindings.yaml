@@ -1,0 +1,317 @@
+openapi: 3.1.0
+info:
+  title: Study Reference Roadmap
+  version: 1.0.0
+  description: One current reference relationship per Study, owned by Collaboration.
+    Graphs remain Learning-owned. Fresh registered OWNER/MEMBER/VIEWER read; OWNER
+    changes before Study archive. GET returns binding=null and sr0 when absent. PUT
+    checks a currently ACTIVE Group roadmap link in the exact same Space, checked
+    principal and observed version through a dedicated bounded HTTPS Learning reference
+    API, before a local transaction. Group/Study locks recheck archival and serialize
+    relation updates. If-Match srN is independent of Study stN. PUT same current reference
+    with current version and DELETE already unlinked are no-ops. Replacements/unlink/relink
+    retain one UUIDv7 aggregate and immutable history. After a lost reply refresh
+    GET; do not replay stale preconditions. Archived Study bindings remain readable
+    but immutable. Source retirement after reference validation may race the local
+    commit; no distributed transaction. Existing relationship/provenance remains and
+    separate Learning graph GET reveals current Group link state. No graph/progress/evidence/private
+    content copy, public publication, new downstream projection or auto-detach.
+security:
+- browserSession: []
+paths:
+  /api/groups/{groupId}/studies/{studyId}/roadmap:
+    parameters: &id011
+    - name: groupId
+      in: path
+      schema:
+        $ref: '#/components/schemas/Id'
+      required: true
+    - name: studyId
+      in: path
+      schema:
+        $ref: '#/components/schemas/Id'
+      required: true
+    get:
+      operationId: readStudyRoadmap
+      responses:
+        '200':
+          description: Authorized reference relationship; sr0 means absent
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"sr(0|[1-9][0-9]*)"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Current'
+        '400': &id001
+          description: Invalid UUID/strict body/query/version
+        '401': &id002
+          description: Browser session invalid
+        '403': &id003
+          description: Registered account/Group OWNER required for writes; same-origin
+            HTTPS
+        '404': &id004
+          description: Group membership/configuration, Study scope, or Group roadmap
+            unavailable
+        '409': &id005
+          description: Study archived or source roadmap changed/retired
+        '412': &id006
+          description: Binding version changed; refresh before retrying
+        '413': &id007
+          description: Body >2048 bytes
+        '415': &id008
+          description: JSON required
+        '428': &id009
+          description: Strong If-Match srN required, including sr0 for absent binding
+        '503': &id010
+          description: Space/Learning authority or persistence unavailable; nothing
+            committed before successful reference check
+    put:
+      operationId: setStudyRoadmap
+      responses:
+        '200':
+          description: Authorized reference relationship; sr0 means absent
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"sr(0|[1-9][0-9]*)"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Current'
+        '400': *id001
+        '401': *id002
+        '403': *id003
+        '404': *id004
+        '409': *id005
+        '412': *id006
+        '413': *id007
+        '415': *id008
+        '428': *id009
+        '503': *id010
+      parameters:
+      - name: Origin
+        in: header
+        schema:
+          type: string
+        required: true
+      - name: If-Match
+        in: header
+        schema:
+          type: string
+          pattern: ^"sr(0|[1-9][0-9]*)"$
+        required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Input'
+    delete:
+      operationId: unlinkStudyRoadmap
+      responses:
+        '200':
+          description: Authorized reference relationship; sr0 means absent
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"sr(0|[1-9][0-9]*)"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Current'
+        '400': *id001
+        '401': *id002
+        '403': *id003
+        '404': *id004
+        '409': *id005
+        '412': *id006
+        '413': *id007
+        '415': *id008
+        '428': *id009
+        '503': *id010
+      parameters:
+      - name: Origin
+        in: header
+        schema:
+          type: string
+        required: true
+      - name: If-Match
+        in: header
+        schema:
+          type: string
+          pattern: ^"sr(0|[1-9][0-9]*)"$
+        required: true
+  /api/groups/{groupId}/studies/{studyId}/roadmap/revisions:
+    parameters: *id011
+    get:
+      operationId: readStudyRoadmapHistory
+      parameters:
+      - name: before
+        in: query
+        schema: &id012
+          type: integer
+          format: int64
+          minimum: 1
+        required: false
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 5
+        required: false
+      responses:
+        '200':
+          description: Authorized reference relationship; sr0 means absent
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/History'
+        '400': *id001
+        '401': *id002
+        '403': *id003
+        '404': *id004
+        '409': *id005
+        '412': *id006
+        '413': *id007
+        '415': *id008
+        '428': *id009
+        '503': *id010
+components:
+  securitySchemes:
+    browserSession:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest
+  schemas:
+    Id:
+      type: string
+      format: uuid
+      pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+    Binding:
+      type: object
+      additionalProperties: false
+      required:
+      - bindingId
+      - studyId
+      - groupId
+      - spaceId
+      - version
+      - state
+      - roadmapLinkId
+      - roadmapLinkVersion
+      - sourceSpaceId
+      - sourceRoadmapId
+      - sourceVersion
+      - sourceTitle
+      - visibility
+      - createdAt
+      - updatedAt
+      properties:
+        bindingId:
+          $ref: '#/components/schemas/Id'
+        studyId:
+          $ref: '#/components/schemas/Id'
+        groupId:
+          $ref: '#/components/schemas/Id'
+        spaceId:
+          $ref: '#/components/schemas/Id'
+        version: *id012
+        state:
+          enum:
+          - LINKED
+          - UNLINKED
+        roadmapLinkId:
+          $ref: '#/components/schemas/Id'
+        roadmapLinkVersion: *id012
+        sourceSpaceId:
+          $ref: '#/components/schemas/Id'
+        sourceRoadmapId:
+          $ref: '#/components/schemas/Id'
+        sourceVersion: *id012
+        sourceTitle:
+          type: string
+          maxLength: 200
+        visibility:
+          const: PRIVATE
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    Current:
+      type: object
+      additionalProperties: false
+      required:
+      - binding
+      properties:
+        binding:
+          oneOf:
+          - $ref: '#/components/schemas/Binding'
+          - type: 'null'
+    Input:
+      type: object
+      additionalProperties: false
+      required:
+      - roadmapLinkId
+      - roadmapLinkVersion
+      properties:
+        roadmapLinkId:
+          $ref: '#/components/schemas/Id'
+        roadmapLinkVersion: *id012
+    Revision:
+      type: object
+      additionalProperties: false
+      required:
+      - revisionId
+      - version
+      - actorId
+      - occurredAt
+      - snapshot
+      properties:
+        revisionId:
+          $ref: '#/components/schemas/Id'
+        version: *id012
+        actorId:
+          $ref: '#/components/schemas/Id'
+        occurredAt:
+          type: string
+          format: date-time
+        snapshot:
+          $ref: '#/components/schemas/Binding'
+    History:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - nextBefore
+      properties:
+        items:
+          type: array
+          maxItems: 10
+          items:
+            $ref: '#/components/schemas/Revision'
+        nextBefore:
+          oneOf:
+          - *id012
+          - type: 'null'

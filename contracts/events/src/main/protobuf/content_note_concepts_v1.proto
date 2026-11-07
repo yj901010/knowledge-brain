@@ -1,0 +1,10 @@
+syntax="proto3";
+package knowledgebrain.content.concepts.v1;
+option java_package="io.knowledgebrain.contracts.content.concepts.v1";
+option java_multiple_files=true;
+message ConceptEventEnvelopeV1 {
+ string event_id=1;string event_type=2;uint32 event_version=3;int64 occurred_at_epoch_millis=4;
+ string producer=5;string aggregate_type=6;string aggregate_id=7;string space_id=8;string actor_id=9;string trace_id=10;bytes payload=11;
+}
+message NoteConceptLinkV1 {string link_id=1;string concept_id=2;}
+message NoteConceptsChangedPayloadV1 {string note_id=1;uint64 concept_version=2;uint64 note_version=3;string note_state=4;repeated NoteConceptLinkV1 links=5;string revision_id=6;}

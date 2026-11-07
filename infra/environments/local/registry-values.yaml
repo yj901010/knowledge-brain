@@ -1,0 +1,13 @@
+replicas: 1
+kafka:
+  replicationFactor: 1
+  minInSyncReplicas: 1
+resources:
+  requests: {cpu: 100m, memory: 512Mi}
+  limits: {cpu: 500m, memory: 768Mi}
+# Supply oidc.issuerUrl through a separate deployment values file after Keycloak is provisioned.
+
+oidc:
+  issuerUrl: https://brain-keycloak.brain-data.svc:8443/realms/brain-platform
+  clientId: registry-api
+  trustSecret: brain-keycloak-trust

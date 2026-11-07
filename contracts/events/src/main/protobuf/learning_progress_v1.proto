@@ -1,0 +1,28 @@
+syntax = "proto3";
+package knowledgebrain.learning.progress.v1;
+option java_package = "io.knowledgebrain.contracts.learning.progress.v1";
+option java_multiple_files = true;
+message ProgressEventEnvelopeV1 {
+ string event_id = 1;
+ string event_type = 2;
+ uint32 event_version = 3;
+ int64 occurred_at_epoch_millis = 4;
+ string producer = 5;
+ string aggregate_type = 6;
+ string aggregate_id = 7;
+ string space_id = 8;
+ string actor_id = 9;
+ string trace_id = 10;
+ bytes payload = 11;
+}
+// Manual private progress. Session logging does not imply completion or verification.
+message ProgressChangedPayloadV1 {
+ string progress_id = 1;
+ string revision_id = 2;
+ string roadmap_id = 3;
+ string node_id = 4;
+ uint64 version = 5;
+ string status = 6;
+ string visibility = 7;
+ string updated_at = 8;
+}

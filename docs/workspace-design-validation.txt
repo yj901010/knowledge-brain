@@ -1,0 +1,68 @@
+Workspace and graph design validation — 2026-11-02 (Asia/Seoul)
+State: COMPLETE
+Cluster kube-system UID: ee84ca44-bb83-4712-a572-10169a6e2542
+Gateway image: knowledge-brain/gateway-service:local-82bc439de93da2c5
+
+Delivered
+- Shared dark/light workspace on Personal, Knowledge, Roadmaps and Groups routes.
+  Persistent/compact sidebar, mobile drawer, skip link, Ctrl/Cmd+K route/section palette.
+  Repeated reopen, empty filter, Escape/focus return and drawer hidden boundary passed.
+- Graph-first Personal Brain with original inspector/editor and grouped features.
+  Existing writes, drafts, ownership, visibility and session/Space clearing retained.
+- Common deterministic force layout for Note, integrated personal, public Knowledge
+  and public Roadmap graphs. Selection highlights neighbors/incident relations.
+  Local node drag/pan/zoom/fit, at most18 automatic dense labels, readable label
+  scale, type colors, full accessible titles and keyboard interaction.
+- Browser storage contains only user-changed theme/sidebar preferences. No content,
+  titles, IDs, account/Space selection or graph geometry stored by the new UI.
+- Light text contrast>4.5 and unselected Note-node contrast>3 verified.
+  All four real routes fit390px; responsive camera matches actual canvas aspect.
+
+Validation:12 browser scenarios passed on the exact image above, no TLS bypass.
+  graph-web-validation-1793546928166977300 / 864f8d7f-005b-454a-ab53-89693e018358 : 11 passed
+  graph-web-validation-1793546822693560100 / fc978748-882f-4f7c-bee6-231de6a66556 : 1 passed
+
+Actual private five-stream graph/search, Note ETag/conflict/history/draft clearing,
+revocation, foreign-Space/failure/late responses and repeated public refresh/domain
+switching passed. Public workbench separately verifies real Keycloak actors,
+explicit consent, independent review/merge, live expert/official capability
+revocation, stale merge denial, source-pin invalidation and retirement history.
+Final read-only Space check confirms the test reviewer/both capabilities inactive.
+
+The200-node/1,000-link dense fixture became visible in194ms in this local run.
+This browser-response fixture measures client interaction, excluding canonical
+publication, backend query latency and production throughput. Exact prerequisite
+direction/undirected RELATED_TO rendering uses a browser-only roadmap fixture;
+real public authorization boundaries are also checked. Graph movement/selection
+issued no owner-domain writes. Original server limits remain unchanged.
+
+Pinned TypeScript/Next static export, CSP hashes and license generation passed.
+143 frontend files and800 scoped runtime files
+match captured immutable build archives. Both existing nodes imported the image;
+owned builders cleaned after evidence capture. Original14 app Deployment UIDs,
+13 other app images,7 monitoring Deployment UIDs and all13 PVC UIDs unchanged.
+Two nodes,14 apps,7 monitoring,13 JVM metric sources and10 CDC connectors/tasks healthy.
+No firing alerts. App/login/Headlamp/MinIO/Grafana host HTTPS200 passed; anonymous
+Grafana denied401. No owner schema/API/event, dependency, service, publication
+policy or AI change. Prior649 backend checks remain historical, not new tests.
+No cluster/PVC reset, canonical migration or backup restoration claimed.
+
+Visual QA
+Desktop dark/light/dense and390px personal/public/roadmap captures inspected.
+Finite theme/sidebar transitions finish before final captures; actual mobile
+drawer hidden boundary is asserted rather than only page scroll width.
+Native dialog close events no longer race a reopened palette; repeated Ctrl+K,
+Escape, focus return and section-focus checks cover this correction.
+
+Evidence
+.local/workspace-design-validation.json
+.local/workspace-design-deployment.json
+.local/workspace-design-baseline.json
+.local/workspace-design-builder-evidence/*.json, *.tar.gz, *.log
+.local/graph-ui-results/workspace-*.png
+.local/workspace-design-forward.json
+docs/workspace-design.md
+
+Substantive public knowledge curation, feature-specific workflow refinement,
+broader sustained accessibility/performance checks, CI/GHCR/Argo CD, Valkey and
+wider HA/SLO/off-host/PITR work remain separate.

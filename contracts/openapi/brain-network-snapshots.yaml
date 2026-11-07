@@ -1,0 +1,199 @@
+openapi: 3.1.0
+info:
+  title: Canonical Brain Network Operator Feeds
+  version: 1.0.0
+paths:
+  /internal/knowledge/brain-snapshots:
+    get:
+      operationId: knowledgeCanonicalBrainSnapshots
+      description: Operator-only fixed-origin HTTPS feed. Separate service credential;
+        browser Cookie and duplicate Authorization rejected. The live Query deployment
+        holds neither feed key. UUIDv7 stable bounded scan cursor; includes retired
+        state. Encodes existing canonical revision snapshots as Protobuf envelopes
+        without publishing new Kafka events. Five rows maximum; missing or unresolved
+        canonical state fails the rebuild.
+      security:
+      - knowledgeSnapshotBearer: []
+      parameters:
+      - name: kind
+        in: query
+        required: true
+        schema:
+          type: string
+          enum:
+          - CONCEPT
+          - CLAIM
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 5
+          default: 5
+      - name: after
+        in: query
+        required: false
+        schema: &id001
+          type: string
+          format: uuid
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+      - name: through
+        in: query
+        required: false
+        schema: *id001
+      responses:
+        '200':
+          description: No-store canonical snapshot page
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - through
+                - nextAfter
+                - items
+                properties:
+                  through:
+                    anyOf:
+                    - *id001
+                    - type: 'null'
+                  nextAfter:
+                    anyOf:
+                    - *id001
+                    - type: 'null'
+                  items:
+                    type: array
+                    maxItems: 5
+                    items:
+                      type: object
+                      required:
+                      - entityId
+                      - spaceId
+                      - version
+                      - payload
+                      properties:
+                        entityId: *id001
+                        spaceId: *id001
+                        version:
+                          type: integer
+                          minimum: 1
+                        payload:
+                          type: string
+                          contentEncoding: base64
+                          description: Full existing Protobuf envelope, producer and
+                            aggregate validated by rebuild
+        '400':
+          description: Invalid HTTPS/body/query/cursor boundary
+        '401':
+          description: Invalid dedicated snapshot key
+        '403':
+          description: Browser Cookie rejected
+        '500':
+          description: Canonical snapshot invariant unavailable; no partial rebuild
+            result
+    servers:
+    - url: https://knowledge-service.brain-apps.svc:8080
+  /internal/content/brain-snapshots:
+    get:
+      operationId: contentCanonicalBrainSnapshots
+      description: Operator-only fixed-origin HTTPS feed. Separate service credential;
+        browser Cookie and duplicate Authorization rejected. The live Query deployment
+        holds neither feed key. UUIDv7 stable bounded scan cursor; includes retired
+        state. Encodes existing canonical revision snapshots as Protobuf envelopes
+        without publishing new Kafka events. Five rows maximum; missing or unresolved
+        canonical state fails the rebuild.
+      security:
+      - contentSnapshotBearer: []
+      parameters:
+      - name: kind
+        in: query
+        required: true
+        schema:
+          type: string
+          enum:
+          - NOTE
+          - LINKS
+          - NOTE_CONCEPTS
+          - BOOKMARK
+          - QUESTION
+          - DECISION
+          - BOOKMARK_CONCEPTS
+          - QUESTION_CONCEPTS
+          - DECISION_CONCEPTS
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 5
+          default: 5
+      - name: after
+        in: query
+        required: false
+        schema: *id001
+      - name: through
+        in: query
+        required: false
+        schema: *id001
+      responses:
+        '200':
+          description: No-store canonical snapshot page
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - through
+                - nextAfter
+                - items
+                properties:
+                  through:
+                    anyOf:
+                    - *id001
+                    - type: 'null'
+                  nextAfter:
+                    anyOf:
+                    - *id001
+                    - type: 'null'
+                  items:
+                    type: array
+                    maxItems: 5
+                    items:
+                      type: object
+                      required:
+                      - entityId
+                      - spaceId
+                      - version
+                      - payload
+                      properties:
+                        entityId: *id001
+                        spaceId: *id001
+                        version:
+                          type: integer
+                          minimum: 1
+                        payload:
+                          type: string
+                          contentEncoding: base64
+                          description: Full existing Protobuf envelope, producer and
+                            aggregate validated by rebuild
+        '400':
+          description: Invalid HTTPS/body/query/cursor boundary
+        '401':
+          description: Invalid dedicated snapshot key
+        '403':
+          description: Browser Cookie rejected
+        '500':
+          description: Canonical snapshot invariant unavailable; no partial rebuild
+            result
+    servers:
+    - url: https://content-service.brain-apps.svc:8080
+components:
+  securitySchemes:
+    contentSnapshotBearer:
+      type: http
+      scheme: bearer
+    knowledgeSnapshotBearer:
+      type: http
+      scheme: bearer

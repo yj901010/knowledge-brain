@@ -1,0 +1,17 @@
+syntax = "proto3";
+package knowledge.public_record.v1;
+option java_package = "io.knowledgebrain.contracts.knowledge.publicrecord.v1";
+option java_multiple_files = true;
+// Public workbench events use a new topic/artifact. Existing PRIVATE and Concept
+// contracts remain immutable. Deduplicate event_id; order aggregate/version.
+message EventEnvelopeV1 {
+ string event_id=1; string event_type=2; uint32 event_version=3;
+ int64 occurred_at_epoch_millis=4; string producer=5; string aggregate_type=6;
+ string aggregate_id=7; string space_id=8; string actor_id=9; string trace_id=10; bytes payload=11;
+}
+message PublicRecordChangedPayloadV1 {
+ string record_id=1; string kind=2; uint64 version=3; string state=4;
+ string title=5; string content_json=6; string revision_id=7;
+ string proposal_id=8; string operation=9; string author_id=10;
+ uint64 base_version=11; uint64 merged_version=12; string reason=13;
+}

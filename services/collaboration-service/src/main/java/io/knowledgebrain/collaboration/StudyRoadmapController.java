@@ -1,0 +1,23 @@
+package io.knowledgebrain.collaboration;
+import java.util.*;import java.io.IOException;import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.web.bind.annotation.*;import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;import org.springframework.http.*;import org.springframework.web.server.ResponseStatusException;import io.micrometer.core.instrument.MeterRegistry;
+@RestController
+@ConditionalOnProperty(name="brain.collaboration.study-roadmap.enabled",havingValue="true")
+@RequestMapping("/api/groups/{groupId}/studies/{studyId}/roadmap")
+final class StudyRoadmapController {
+ private final StudyRoadmapStore store;private final StudyStore studies;private final StudyController browser;private final LearningRoadmapClient learning;private final MeterRegistry metrics;
+ StudyRoadmapController(StudyRoadmapStore store,StudyStore studies,StudyController browser,LearningRoadmapClient learning,MeterRegistry metrics){this.store=store;this.studies=studies;this.browser=browser;this.learning=learning;this.metrics=metrics;}
+ static long expected(HttpServletRequest r){var h=Collections.list(r.getHeaders("If-Match"));if(h.isEmpty())throw new ResponseStatusException(HttpStatus.PRECONDITION_REQUIRED,"If-Match required");if(h.size()!=1||!h.getFirst().matches("\"sr(0|[1-9][0-9]{0,18})\""))throw GroupInput.bad();try{return Long.parseLong(h.getFirst().substring(3,h.getFirst().length()-1));}catch(NumberFormatException e){throw GroupInput.bad();}}
+ private ResponseEntity<?> response(StudyRoadmapStore.Current v){return ResponseEntity.ok().eTag("\"sr"+(v.binding()==null?0:v.binding().version())+"\"").cacheControl(CacheControl.noStore()).body(v);}
+ @GetMapping ResponseEntity<?> get(@PathVariable String groupId,@PathVariable String studyId,HttpServletRequest r)throws IOException{browser.query(r,Set.of());browser.empty(r);UUID group=GroupInput.id(groupId),study=GroupInput.id(studyId);var a=browser.access(group,r,false,browser.trace(r));metrics.counter("brain.collaboration.study.roadmap.reads","type","current").increment();return response(store.get(group,a.space(),study));}
+ @PutMapping ResponseEntity<?> put(@PathVariable String groupId,@PathVariable String studyId,HttpServletRequest r)throws IOException{
+  browser.query(r,Set.of());UUID group=GroupInput.id(groupId),study=GroupInput.id(studyId);String trace=browser.trace(r);var a=browser.access(group,r,true,trace);long version=expected(r);byte[] bytes=browser.jsonBody(r);if(bytes.length>2048)throw new ResponseStatusException(HttpStatus.PAYLOAD_TOO_LARGE,"Binding request too large");var v=GroupInput.json(bytes);
+  if(v==null||!v.isObject()||v.size()!=2||!v.path("roadmapLinkId").isString()||!v.path("roadmapLinkVersion").isIntegralNumber()||!v.path("roadmapLinkVersion").canConvertToLong()||v.path("roadmapLinkVersion").asLong()<1)throw GroupInput.bad();
+  if(studies.get(group,a.space(),study).state().equals("RETIRED"))throw new ResponseStatusException(HttpStatus.CONFLICT,"Study is archived");
+  var source=learning.check(a.space(),GroupInput.id(v.path("roadmapLinkId").asString()),a.actor(),v.path("roadmapLinkVersion").asLong(),browser.token(r),trace);
+  var result=store.change(group,a.space(),study,a.actor(),version,source,trace.substring(3,35));changed("linked",study,trace);return response(result);
+ }
+ @DeleteMapping ResponseEntity<?> remove(@PathVariable String groupId,@PathVariable String studyId,HttpServletRequest r)throws IOException{browser.query(r,Set.of());browser.empty(r);UUID group=GroupInput.id(groupId),study=GroupInput.id(studyId);String trace=browser.trace(r);var a=browser.access(group,r,true,trace);var v=store.change(group,a.space(),study,a.actor(),expected(r),null,trace.substring(3,35));changed("unlinked",study,trace);return response(v);}
+ @GetMapping("/revisions") ResponseEntity<?> history(@PathVariable String groupId,@PathVariable String studyId,HttpServletRequest r)throws IOException{browser.query(r,Set.of("before","limit"));browser.empty(r);UUID group=GroupInput.id(groupId),study=GroupInput.id(studyId);long before=browser.number(r.getParameter("before"),Long.MAX_VALUE,Long.MAX_VALUE);int limit=(int)browser.number(r.getParameter("limit"),5,10);var a=browser.access(group,r,false,browser.trace(r));metrics.counter("brain.collaboration.study.roadmap.reads","type","history").increment();return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(store.history(group,a.space(),study,before,limit));}
+ private void changed(String type,UUID study,String trace){metrics.counter("brain.collaboration.study.roadmap.changes","type",type).increment();org.slf4j.LoggerFactory.getLogger(getClass()).info("study_roadmap type={} study_id={} trace_id={}",type,study,trace.substring(3,35));}
+}

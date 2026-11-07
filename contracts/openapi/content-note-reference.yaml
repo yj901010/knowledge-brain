@@ -1,0 +1,132 @@
+openapi: 3.1.0
+info:
+  title: Content owner Note reference read
+  version: 1.0.0
+servers:
+- url: https://content-service.brain-apps.svc:8080
+paths:
+  /api/spaces/{spaceId}/notes/{noteId}/reference:
+    parameters:
+    - name: spaceId
+      in: path
+      required: true
+      schema: &id001
+        type: string
+        format: uuid
+        pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+    - name: noteId
+      in: path
+      required: true
+      schema: *id001
+    get:
+      operationId: checkLearningNoteReference
+      description: Narrow Content owner read used by Learning over TLS. Gateway does
+        not proxy this path. Same common session Cookie; Content independently checks
+        current PRIVATE PERSONAL Space read permission and ACTIVE Note. Returns no
+        Markdown, presigned URL, credentials or cross-service data. No caller principal/header
+        trusted. Actor equality is checked by Learning to detect claim/auth transitions.
+      security:
+      - sessionCookie: []
+      responses:
+        '200':
+          description: Active authorized Note metadata
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                - spaceId
+                - noteId
+                - principalId
+                - version
+                - title
+                - visibility
+                properties:
+                  spaceId: *id001
+                  noteId: *id001
+                  principalId: *id001
+                  version:
+                    type: integer
+                    format: int64
+                    minimum: 1
+                  title:
+                    type: string
+                    minLength: 1
+                    maxLength: 200
+                  visibility:
+                    const: PRIVATE
+        '400':
+          description: Invalid strict JSON, UUIDv7, key, ETag, duplicate/unknown query,
+            memo or numeric version
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '401':
+          description: Common browser credential unavailable
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '403':
+          description: Origin or current Space role denied
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '404':
+          description: Current Space/root/node/note/evidence unavailable for this
+            operation
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '409':
+          description: Different payload for request key, active duplicate node-note-version
+            pin, or current Note version changed
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '412':
+          description: Evidence ETag is stale
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '413':
+          description: Body over 65536 bytes
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '415':
+          description: JSON required
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '428':
+          description: Strong evN If-Match required
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '503':
+          description: Owner authorization/reference check or persistence unavailable;
+            no partial write
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest

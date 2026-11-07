@@ -1,0 +1,289 @@
+openapi: 3.1.0
+info:
+  title: Private submission owner feedback
+  version: 1.0.0
+  description: Current Group OWNER records explicit text feedback on the currently
+    reviewed immutable submission attempt. Only that submission author and current
+    OWNER read current/history; peers receive404 and removed authors lose Group access.
+    Same audience as the explicit submitted answer. Separate stable UUIDv7 and independent
+    strong sfN, no implicit creation on reads, exact no-op stable, stale feedback412
+    and stale source409. New submission does not update or rebind prior feedback.
+    Both source versions must match the current submission; assignmentVersion is the
+    instruction version originally submitted, even if Assignment metadata changed
+    later. OPEN/CLOSED Assignments in nonarchived Studies allow feedback; RETIRED/DRAFT
+    Assignment or RETIRED Study is read-only. Current OWNER retains access to removed-author
+    work as in existing Submission review. OWNER may comment on their own submitted
+    answer; text feedback confers no grade, approval, verification or completion.
+    Local Group->Study->Assignment->Submission locks serialize resubmission/feedback/lifecycle;
+    current/full revision/Outbox commit atomically. Space authorization precedes local
+    transaction; no distributed atomic revocation, subsequent requests check again.
+    Separate collaboration.submission-feedback.v1, Registry collaboration/submission-feedback-events/1.
+    No notification/feed publication, personal-content copy, attachment, withdrawal
+    or assessment state.
+security:
+- browserSession: []
+paths:
+  /api/groups/{groupId}/studies/{studyId}/assignments/{assignmentId}/submissions/{submissionId}/feedback:
+    parameters: &id012
+    - name: groupId
+      in: path
+      required: true
+      schema: &id001
+        $ref: assignment-submissions.yaml#/components/schemas/Id
+    - name: studyId
+      in: path
+      required: true
+      schema: *id001
+    - name: assignmentId
+      in: path
+      required: true
+      schema: *id001
+    - name: submissionId
+      in: path
+      required: true
+      schema: *id001
+    get:
+      operationId: getSubmissionFeedback
+      responses:
+        '200':
+          description: Current authorized feedback result; no automatic grading/progress/answer
+            change
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"sf(0|[1-9][0-9]*)"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/View'
+        '400': &id002
+          description: Exact duplicate-free JSON, valid Unicode/UTF8<=8192 bytes,
+            UUIDv7, integral positive source versions, bounded query and strong sfN
+            tag required
+        '401': &id003
+          description: Singleton secure browser credential required
+        '403': &id004
+          description: Registered current Group participation required; writes OWNER
+            only and same-origin
+        '404': &id005
+          description: Group/Space/Study/Assignment/Submission unavailable, or actor
+            is neither author nor OWNER
+        '409': &id006
+          description: Reviewed submission/instructions provenance changed, or feedback
+            is read-only for archived/DRAFT parents
+        '412': &id007
+          description: Independent feedback version changed; refresh before explicit
+            reapplication
+        '413': &id008
+          description: JSON body exceeds20480 bytes
+        '415': &id009
+          description: application/json required
+        '428': &id010
+          description: If-Match sfN required; sf0 before first feedback
+        '503': &id011
+          description: Space authority or Collaboration storage unavailable
+    put:
+      operationId: recordSubmissionOwnerFeedback
+      responses:
+        '200':
+          description: Current authorized feedback result; no automatic grading/progress/answer
+            change
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"sf(0|[1-9][0-9]*)"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Feedback'
+        '400': *id002
+        '401': *id003
+        '403': *id004
+        '404': *id005
+        '409': *id006
+        '412': *id007
+        '413': *id008
+        '415': *id009
+        '428': *id010
+        '503': *id011
+      parameters:
+      - name: Origin
+        in: header
+        required: true
+        schema:
+          type: string
+      - name: If-Match
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^"sf(0|[1-9][0-9]*)"$
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Input'
+  /api/groups/{groupId}/studies/{studyId}/assignments/{assignmentId}/submissions/{submissionId}/feedback/revisions:
+    parameters: *id012
+    get:
+      operationId: getSubmissionFeedbackHistory
+      responses:
+        '200':
+          description: Current authorized feedback result; no automatic grading/progress/answer
+            change
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/History'
+        '400': *id002
+        '401': *id003
+        '403': *id004
+        '404': *id005
+        '409': *id006
+        '412': *id007
+        '413': *id008
+        '415': *id009
+        '428': *id010
+        '503': *id011
+      parameters:
+      - name: before
+        in: query
+        required: false
+        schema: &id013
+          type: integer
+          format: int64
+          minimum: 1
+          maximum: 9223372036854775807
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 5
+components:
+  securitySchemes:
+    browserSession:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest
+  schemas:
+    Feedback:
+      type: object
+      additionalProperties: false
+      required:
+      - feedbackId
+      - submissionId
+      - assignmentId
+      - studyId
+      - groupId
+      - spaceId
+      - authorId
+      - reviewerId
+      - version
+      - submissionVersion
+      - assignmentVersion
+      - content
+      - audience
+      - createdAt
+      - updatedAt
+      properties:
+        feedbackId: *id001
+        submissionId: *id001
+        assignmentId: *id001
+        studyId: *id001
+        groupId: *id001
+        spaceId: *id001
+        authorId: *id001
+        reviewerId: *id001
+        version: *id013
+        submissionVersion: *id013
+        assignmentVersion: *id013
+        content: &id015
+          type: string
+          minLength: 1
+          description: Explicit nonblank owner comment. Valid Unicode, no NUL or unpaired
+            surrogate; UTF-8<=8192 bytes. Render literally.
+        audience:
+          const: AUTHOR_AND_OWNER
+        createdAt: &id014
+          type: string
+          format: date-time
+        updatedAt: *id014
+    Input:
+      type: object
+      additionalProperties: false
+      required:
+      - content
+      - submissionVersion
+      - assignmentVersion
+      properties:
+        content: *id015
+        submissionVersion: *id013
+        assignmentVersion: *id013
+    View:
+      type: object
+      additionalProperties: false
+      required:
+      - submissionVersion
+      - assignmentVersion
+      - feedback
+      - canWrite
+      properties:
+        submissionVersion: *id013
+        assignmentVersion: *id013
+        feedback:
+          oneOf:
+          - $ref: '#/components/schemas/Feedback'
+          - type: 'null'
+        canWrite:
+          type: boolean
+          description: Current OWNER with nonarchived Study and OPEN/CLOSED Assignment.
+            The source versions are from the current submission, not the latest Assignment
+            definition. Writes recheck locally.
+    Revision:
+      type: object
+      additionalProperties: false
+      required:
+      - revisionId
+      - version
+      - actorId
+      - occurredAt
+      - snapshot
+      properties:
+        revisionId: *id001
+        version: *id013
+        actorId: *id001
+        occurredAt: *id014
+        snapshot:
+          $ref: '#/components/schemas/Feedback'
+    History:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - nextBefore
+      properties:
+        items:
+          type: array
+          maxItems: 10
+          items:
+            $ref: '#/components/schemas/Revision'
+        nextBefore:
+          oneOf:
+          - *id013
+          - type: 'null'

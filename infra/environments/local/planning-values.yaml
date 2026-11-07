@@ -1,0 +1,82 @@
+replicaCount: 1
+image:
+  repository: knowledge-brain/planning-service
+  tag: ''
+  pullPolicy: Never
+  digest: sha256:cc14a44d8da53d319bcc2e3db5196aed815119fcc284e9857c293bc9e74aa7e7
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: '1'
+    memory: 768Mi
+env:
+- name: BRAIN_PLANNING_PERSISTENCE_ENABLED
+  value: 'true'
+- name: BRAIN_PLANNING_API_ENABLED
+  value: 'true'
+- name: BRAIN_PLANNING_DATABASE_URL
+  value: jdbc:postgresql://brain-postgres.brain-data.svc:5432/brain_planning
+- name: BRAIN_PLANNING_DATABASE_PASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: brain-planning-db
+      key: password
+- name: BRAIN_PLANNING_DATABASE_MAXIMUM_POOL_SIZE
+  value: '3'
+- name: BRAIN_PLANNING_SPACE_ORIGIN
+  value: https://space-service.brain-apps.svc:8080
+- name: BRAIN_PLANNING_SPACE_TRUST_FILE
+  value: /space-trust/ca.crt
+- name: BRAIN_PLANNING_SPACE_AUTHORIZATION_KEY
+  valueFrom:
+    secretKeyRef:
+      name: brain-planning-space-authorization
+      key: key
+- name: SERVER_SSL_ENABLED
+  value: 'true'
+- name: SERVER_SSL_CERTIFICATE
+  value: file:/api-tls/tls.crt
+- name: SERVER_SSL_CERTIFICATE_PRIVATE_KEY
+  value: file:/api-tls/tls.key
+- name: SERVER_FORWARD_HEADERS_STRATEGY
+  value: NONE
+- name: MANAGEMENT_ENDPOINT_HEALTH_GROUP_READINESS_INCLUDE
+  value: readinessState,planningDatabase,planningDispatch
+- name: BRAIN_PLANNING_BROWSER_ORIGIN
+  value: https://localhost:8443
+- name: BRAIN_PLANNING_ACTIVITY_EXPORT_ENABLED
+  value: 'true'
+- name: BRAIN_PLANNING_ACTIVITY_EXPORT_KEY
+  valueFrom:
+    secretKeyRef:
+      name: brain-planning-activity-export
+      key: key
+- name: BRAIN_PLANNING_DISPATCH_ENABLED
+  value: 'true'
+- name: BRAIN_PLANNING_DISPATCH_EXPORT_ENABLED
+  value: 'true'
+- name: BRAIN_PLANNING_DISPATCH_EXPORT_KEY
+  valueFrom:
+    secretKeyRef:
+      name: brain-planning-dispatch-export
+      key: key
+probeScheme: HTTPS
+restrictGuestApiIngress: true
+extraVolumeMounts:
+- name: api-tls
+  mountPath: /api-tls
+  readOnly: true
+- name: space-trust
+  mountPath: /space-trust
+  readOnly: true
+extraVolumes:
+- name: api-tls
+  secret:
+    secretName: brain-planning-api-tls
+- name: space-trust
+  secret:
+    secretName: brain-guest-api-trust
+deploymentStrategy:
+  type: Recreate

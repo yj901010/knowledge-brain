@@ -1,0 +1,14 @@
+syntax = "proto3";
+package knowledgebrain.space.groupprogresspolicy.v1;
+option java_package = "io.knowledgebrain.contracts.space.groupprogresspolicy.v1";
+option java_multiple_files = true;
+message GroupProgressPolicyEnvelopeV1 {
+ string event_id = 1; string event_type = 2; uint32 event_version = 3;
+ int64 occurred_at_epoch_millis = 4; string producer = 5; string aggregate_type = 6;
+ string aggregate_id = 7; string space_id = 8; string actor_id = 9; string trace_id = 10; bytes payload = 11;
+}
+// Permission policy only; never includes individual progress.
+message GroupProgressPolicySnapshotV1 {
+ string policy_id = 1; string group_id = 2; string space_id = 3;
+ int64 version = 4; string mode = 5; string audience = 6; string updated_at = 7;
+}

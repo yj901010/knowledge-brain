@@ -1,0 +1,21 @@
+Local backup and actual isolated restore — verified 2026-11-01T07:02:00.006046+00:00
+Current2026-11-01 dataset, not the dataset lost in the earlier external Docker reset.
+Encrypted complete backup: 4704389859 bytes,26 pinned workload images,7 cold PVCs,11,266 regular-file hashes.
+Backup folder: %USERPROFILE%/Documents/Codex/backups/knowledge-brain/20261101-restore-drill-v2
+Separate key: %USERPROFILE%/Documents/Codex/recovery-keys/knowledge-brain-20261101.key (contents not logged).
+Source Kubernetes UID: ee84ca44-bb83-4712-a572-10169a6e2542
+Isolated target UID: 0a24c123-a624-4e5b-9bf4-daa2c32b2f55
+Target: knowledge-brain-restore-261101a, separate network/API6650, now stopped and retained.
+Before applications: all7 restored volume fingerprints match;14 PostgreSQL databases and282 tables match row counts and ordered-row fingerprints.
+Target runtime:14 Ready applications,76 Registry artifact bytes/rules match,10 Outbox connector/tasks RUNNING.
+Runtime verifier Job: recovery-runtime-1793516029 UID=f85f0846-9bff-4098-b54b-6c4153693dc7
+Browser Job: recovery-verify-1793516049 UID=8549ca35-c843-4930-ad08-f97e74f6e7c6,1 full persistent recovery scenario passed.
+Existing Keycloak password login, stable Space/Note IDs, v2/v1 revisions, private Concept link, sealed binary SHA256, original guest credential and foreign-Space denial verified.
+New post-restore Note v3 traversed Outbox/Connect/Kafka/Activity; stale v2 write rejected.
+Source return:2 Ready nodes,14 Ready apps,all7 original PVC UIDs unchanged,76 Registry schemas and10 RUNNING connector/tasks.
+Original Note remains v2 while isolated target is v3: clone writes did not reach source.
+Host Graph8443/Login8445/Headlamp8444/MinIO9443 return200 with verified current-CA TLS.
+10 focused fail-closed unit checks passed. No API/event/database migration or application image/version changes.
+Host-disk backup survives Docker reset; no off-host copy, automated retention, online PITR or production RTO/RPO guarantee claimed.
+Detailed ignored evidence: .local/local-backup-recovery-validation.json
+Runbook: docs/local-backup-recovery.md

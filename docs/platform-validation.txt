@@ -1,0 +1,8 @@
+Local Kubernetes foundation — 2026-10-06
+Project files installed: k3d configuration; five namespaces; independent-service Helm chart; local resource values; startup and verification scripts.
+Helm lint/render: 13 services x 2 value sets, passed.
+PowerShell scripts: syntax passed.
+k3d: native config loading passed.
+Tool downloads: k3d 5.9.0 and Helm 3.19.0 SHA256 verified.
+Live cluster: NOT CREATED. Docker Desktop Linux engine named pipe denied access to current execution account; startup preflight stops before cluster mutation.
+Full data/event/observability/auth/GitOps platform provisioning remains pending. Java service source unchanged; Java 25 build results remain in prior report.

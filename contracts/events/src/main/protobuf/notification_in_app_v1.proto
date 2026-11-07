@@ -1,0 +1,15 @@
+syntax = "proto3";
+package notification.inapp.v1;
+option java_package = "io.knowledgebrain.contracts.notification.inapp.v1";
+option java_multiple_files = true;
+message InAppNotificationEnvelopeV1 {
+ string event_id=1;string event_type=2;uint32 event_version=3;int64 occurred_at_epoch_millis=4;
+ string producer=5;string aggregate_type=6;string aggregate_id=7;string space_id=8;
+ string actor_id=9;string trace_id=10;bytes payload=11;
+}
+message InAppNotificationPayloadV1 {
+ string notification_id=1;string revision_id=2;uint64 version=3;string visibility=4;string state=5;
+ bool read=6;string delivered_at=7;string updated_at=8;string dispatch_id=9;string source_event_id=10;
+ // Exact immutable planning.reminder-delivery.v1 ReminderDispatched envelope.
+ bytes source_dispatch_envelope=11;
+}

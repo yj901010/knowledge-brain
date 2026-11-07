@@ -1,0 +1,62 @@
+V1 source/evidence and contract reconciliation — 2026-11-07 KST
+
+Status: this work package passed; the whole V1 goal remains active.
+
+Current source audit covers original Knowledge/Personal/Learning/Planning/Group,
+Identity/Space/Media/GitHub, owner DB/events and derived-model requirements.
+Source, substantive tests and current versus historical evidence are separated in
+v1-source-audit.md. Full completion is not inferred from a source search or old log.
+
+Three concrete response-contract defects corrected, application behavior unchanged:
+- Space by-ID response now admits actual visible Group roles. Personal remains private OWNER.
+- Public search success is SearchPage; graph remains GraphView; shared errors unchanged.
+- Note-to-Concept history is a bounded revision array; current snapshot remains unchanged.
+Four OpenAPI documents have patch-version increments; Gateway history references the canonical declaration.
+
+51 delivery/Helm/runtime/contract/installer/curation boundary tests passed: 0 failed, 0 errors, 0 skipped.
+Includes 11 focused contract checks, 12 installer checks, 8 draft-integrity checks and 20 existing delivery/runtime checks.
+Installer tests execute 42 actual entry points and 14 selector cases with all external commands,
+Cluster construction and writes trapped. Later affected-service errors stop earlier work.
+Current on-disk digest defaults also reject all 42 historical installers in a read-only check.
+This is a compatibility guard, not a new deployment or image/provenance/security verifier.
+
+Six actual current-image trusted-CA HTTPS response checks passed, including a nonempty
+Note-to-Concept revision history. Reintroducing the two old incompatible declarations
+rejects the actual wire shapes. Fresh private fixture only, no public writes; its new
+guest session was revoked and subsequent personal read returned 401. No payload or credentials logged.
+Scope is the specific response-shape keywords under test, not full OpenAPI conformance.
+
+Actual browser Job: graph-web-validation-1793986300951834300
+33 scenarios passed from 16 current test files, serially, in 4.1 minutes; exit code 0.
+Gateway: knowledge-brain/gateway-service@sha256:1658fe8e9579aa0e8d1bb00463fe4c44c1aa60fab0340e1bd0dd0a63df2dddf9
+The Job/ConfigMap UIDs, live image, source cluster UID and normalized test-source hashes match.
+Coverage: real TLS MinIO upload/resume/sealed download, Daily/Journal/timezones, Note library
+beyond the bounded graph, metadata/exact decimals and property queries, private Bookmarks/
+Questions/Decisions, Concept associations/reverse reads, real CDC graph/search, typed Claims,
+Source citations and Qualifiers. Histories, true conflicts, drafts, foreign/revoked access,
+escaping and mobile paths are included. No public reviewer/capability grant was needed.
+
+Final original environment: 43 workload UID/spec pairs and all 13 PVC UID/spec pairs unchanged;
+13 JVM services, 14 Ready apps, 10 running CDC connector/tasks, zero firing alerts.
+All five existing HTTPS entries pass trusted-CA reads; kubeconfig is unchanged.
+No application image, service boundary, canonical API behavior, migration, event version,
+credential policy, public data or AI changed. No cluster/data/backup deletion or remote publication.
+No new dependency or dataset is needed for the contract/guard work; reviewed PyYAML is reused.
+
+Separate authoring artifact: 21 short sourced Korean factual drafts, three for each initial
+medical/development topic, 33 unresolved local terms and eight primary-source references.
+Offline validation passed with 32–133 derived words per source (bound 180), 54,257 JSON bytes
+(bound 128 KiB), retained rights/scope notes and the NCI nonendorsement field. All remain
+DRAFT, unpublished and NOT_REVIEWED; no canonical IDs, importer, treatment recommendations,
+project license assignment, external full text/images/code or API/runtime writes were added.
+These integrity tests do not establish professional factual verification or legal clearance.
+
+Remaining: substantive sourced-content author/reviewer workflow; rule-based Learning guidance
+beyond rating ranking; real hosted delivery and explicit repository/licensing/adoption decisions;
+any genuinely uncovered original requirements or required production settings.
+Organization model values do not establish a delivered organization administration workflow.
+Future mobile/audio/private GitHub App/AI/site HA are not silently added to this package.
+
+Private operator evidence: .local/v1-audit/evidence-index.json, unit-tests.log,
+personal-browser.json/log, contract-runtime.json, current-installer-preflight.json and final-health.json.
+Earlier operations/usability evidence indices remain preserved separately.

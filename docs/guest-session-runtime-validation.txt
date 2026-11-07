@@ -1,0 +1,59 @@
+2026-10-06, local k3d-knowledge-brain; Java 25, real PostgreSQL/Kafka/HTTPS.
+AGENTS.md and PROJECT.md read first; existing service boundaries, database ownership,
+PRIVATE defaults, UUIDv7, Outbox/CDC and at-least-once decisions preserved.
+
+Migration V2 applied to Identity's owned database: absolute 180-day credential
+lifetime from creation and nullable revocation time. Guest/Outbox publication still
+commits in one local transaction. Raw opaque browser credentials are not persisted.
+
+backend-validation-1791291500: COMPLETE, BUILD SUCCESS; all 13 services, 58 tests,
+zero failures/errors/skips. Includes five guest-session PostgreSQL/security tests,
+real Identity Outbox-to-Kafka transport, durable Space Inbox/replay/privacy and
+byte-exact Space CDC verification. Kafka verifier observed 40 retained guest events.
+backend-validation-1791291694: BUILD SUCCESS, targeted Identity 10 passed; one
+Kafka test intentionally disabled without --cdc. Additional duplicate Origin and
+duplicate service-Authorization rejection assertions passed within the five tests.
+
+guest-api-validation-1791291264: COMPLETE, all phases PASS over verified HTTPS:
+- Secure host-only __Host-brain_guest cookie, HttpOnly, SameSite=Lax, 180-day Max-Age.
+- Same browser restores identical application GUEST principal without reissuance.
+- Two browsers provision distinct PRIVATE PERSONAL Spaces with OWNER membership.
+- Another browser cannot read the first Space; spoofed principal/user headers fail.
+- Missing/malformed/unknown/duplicate credentials rejected with 401.
+- Missing/null/other Origin and cross-site fetch metadata rejected with 403.
+- Browser cookie alone and wrong service bearer cannot access internal introspection.
+- Identity scaled to zero: Space authentication returns 503, fails closed.
+- Identity restored and Space Pod replaced: identical principal and Space IDs restored.
+- Revocation expires cookie and immediately rejects old credential in both services;
+  independent browser remains active. Credentials remain in verifier memory, not logs.
+
+guest-api-validation-1791291496: COMPLETE, PASS NetworkPolicy denial. Unlabeled
+brain-data Pod cannot connect to Identity while Space control readiness is reachable.
+Positive labeled verifier and actual Space-to-Identity HTTPS path succeeded.
+
+Final image tag local-2b48206f2553d4e8 for both independently built services;
+Identity import jobs 1791291553-0/-1 and Space import jobs 1791291554-0/-1 COMPLETE
+on agent/server, with verified archive checksums. Identity Helm revision 2 and
+Space revision 4 deployed Ready 1/1, service-owned bounded pools, TLS probes,
+non-root containers, read-only root filesystems and no Kubernetes API token.
+
+guest-api-validation-1791291693: COMPLETE; final images pass browser/Space/privacy,
+authorization and revocation checks again. Invalid Space UUID and malformed
+introspection JSON return generic 400 responses. Persistence failures have generic
+503 handlers; no SQL or credentials are included in their response bodies.
+
+Certificate verification initially detected missing AKI/SKI in local certificates;
+bootstrap corrected CA/server extensions and retained strict hostname/CA checks.
+No TLS verification was disabled. CA public certificate only exported to ignored
+.local; private key stays in the operator namespace. Bootstrap rerun succeeds and
+reuses active credentials/certificates. Public application ingress and system/browser
+root trust modification are not introduced. Temporary image artifacts removed.
+
+Both Identity and Space Helm values lint successfully; Python helpers compile.
+OpenAPI 3.1 contracts recorded under contracts/openapi, independent per service.
+backend-validation-1791291791: COMPLETE + BUILD SUCCESS after final application
+deployment and browser validation; Space 14 tests, zero failures/errors/skips.
+All 50 retained guest events, including API-created guests, have durable Inbox
+entries and byte-exact PersonalSpaceCreated Kafka events with matching traces.
+No Keycloak guest user, direct cross-service SQL, permissive CORS, frontend,
+registered claiming or production GHCR/Argo CD deployment is claimed by this step.

@@ -1,0 +1,17 @@
+syntax = "proto3";
+package knowledgebrain.collaboration.submission.v1;
+option java_package = "io.knowledgebrain.contracts.collaboration.submission.v1";
+option java_multiple_files = true;
+message SubmissionEnvelopeV1 {
+ string event_id = 1; string event_type = 2; uint32 event_version = 3;
+ int64 occurred_at_epoch_millis = 4; string producer = 5; string aggregate_type = 6;
+ string aggregate_id = 7; string space_id = 8; string actor_id = 9; string trace_id = 10; bytes payload = 11;
+}
+// Private explicit answer. AUTHOR_AND_OWNER must never become an all-member feed.
+// Deduplicate event_id and apply only increasing aggregate versions on replay.
+message SubmissionSnapshotV1 {
+ string submission_id = 1; string assignment_id = 2; string study_id = 3;
+ string group_id = 4; string space_id = 5; string author_id = 6; int64 version = 7;
+ int64 assignment_version = 8; string content = 9; string audience = 10;
+ string created_at = 11; string updated_at = 12;
+}

@@ -1,0 +1,23 @@
+package io.knowledgebrain.media;
+import java.util.*;import java.security.MessageDigest;import java.nio.charset.StandardCharsets;import java.io.IOException;
+import jakarta.servlet.http.HttpServletRequest;import org.springframework.beans.factory.annotation.Value;import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;import org.springframework.web.bind.annotation.*;import org.springframework.http.*;import org.springframework.web.server.ResponseStatusException;import io.micrometer.core.instrument.MeterRegistry;
+@RestController
+@ConditionalOnProperty(name="brain.media.domain-files.enabled",havingValue="true")
+final class DomainMediaController {
+ record Created(DomainMediaStore.Reference reference,ObjectStorage.UploadForm upload){}
+ private final DomainMediaStore scopes;private final MediaStore media;private final ObjectStorage storage;private final byte[] credential;private final MeterRegistry metrics;
+ DomainMediaController(DomainMediaStore scopes,MediaStore media,ObjectStorage storage,@Value("${brain.media.domain-authorization-key}")String key,MeterRegistry metrics){if(!key.matches("[A-Za-z0-9_-]{43}"))throw new IllegalArgumentException("Service key required");this.scopes=scopes;this.media=media;this.storage=storage;this.metrics=metrics;credential=("Bearer "+key).getBytes(StandardCharsets.US_ASCII);}
+ @PostMapping("/internal/media/domain-files/{operation}") ResponseEntity<?> execute(@PathVariable String operation,HttpServletRequest r)throws IOException{
+  var auth=Collections.list(r.getHeaders("Authorization"));if(!r.isSecure()||auth.size()!=1||!MessageDigest.isEqual(credential,auth.getFirst().getBytes(StandardCharsets.US_ASCII)))throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,"Service authentication required");
+  if(!Set.of("create","get","upload","complete","download").contains(operation))throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Operation unavailable");if(!r.getParameterMap().isEmpty())throw bad();
+  if(!MediaType.APPLICATION_JSON_VALUE.equalsIgnoreCase(Optional.ofNullable(r.getContentType()).orElse("").split(";",2)[0].trim()))throw new ResponseStatusException(HttpStatus.UNSUPPORTED_MEDIA_TYPE,"JSON required");var bytes=r.getInputStream().readNBytes(4097);if(bytes.length>4096)throw new ResponseStatusException(HttpStatus.PAYLOAD_TOO_LARGE,"Request too large");
+  var traces=Collections.list(r.getHeaders("traceparent"));if(traces.size()!=1||!traces.getFirst().matches("00-[0-9a-f]{32}-[0-9a-f]{16}-[0-9a-f]{2}")||traces.getFirst().substring(3,35).equals("0".repeat(32))||traces.getFirst().substring(36,52).equals("0".repeat(16)))throw bad();String trace=traces.getFirst().substring(3,35);
+  tools.jackson.databind.JsonNode n;try{n=tools.jackson.databind.json.JsonMapper.builder().enable(tools.jackson.databind.DeserializationFeature.FAIL_ON_TRAILING_TOKENS).enable(tools.jackson.core.StreamReadFeature.STRICT_DUPLICATE_DETECTION).build().readTree(bytes);}catch(RuntimeException e){throw bad();}
+  boolean create=operation.equals("create");if(n==null||!n.isObject()||n.size()!=(create?5:4))throw bad();var scope=new DomainMediaStore.Scope(id(n,"spaceId"),id(n,"contextId"),id(n,"ownerId"));Object result;
+  if(create){if(!n.path("key").isString())throw bad();var upload=MediaInput.parse(n.path("upload").toString().getBytes(StandardCharsets.UTF_8));var ref=scopes.create(scope,n.path("key").asString(),upload,trace);result=new Created(ref,"PENDING".equals(ref.media().state())?storage.upload(ref.media()):null);}
+  else {UUID id=id(n,"mediaId");var ref=scopes.get(scope,id);result=switch(operation){case "get"->ref;case "upload"->{if(!ref.media().state().equals("PENDING"))throw new ResponseStatusException(HttpStatus.CONFLICT,"Upload already complete");yield storage.upload(ref.media());}case "complete"->{if(!ref.media().state().equals("AVAILABLE")){var version=storage.verifyAndSeal(ref.media());media.complete(scope.spaceId(),id,scope.ownerId(),version,trace);}yield scopes.get(scope,id);}case "download"->{media.available(scope.spaceId(),id);yield storage.download(media.stored(scope.spaceId(),id));}default->throw bad();};}
+  metrics.counter("brain.media.domain.files","operation",operation).increment();return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(result);
+ }
+ private static UUID id(tools.jackson.databind.JsonNode n,String field){try{if(!n.path(field).isString())throw bad();String raw=n.path(field).asString();UUID v=UUID.fromString(raw);MediaStore.id(v);if(!v.toString().equals(raw))throw bad();return v;}catch(IllegalArgumentException e){throw bad();}}
+ private static ResponseStatusException bad(){return new ResponseStatusException(HttpStatus.BAD_REQUEST,"Invalid scoped file request");}
+}

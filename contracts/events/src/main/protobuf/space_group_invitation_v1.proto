@@ -1,0 +1,18 @@
+syntax="proto3";
+package knowledgebrain.space.group.invitation.v1;
+option java_package="io.knowledgebrain.contracts.space.group.invitation.v1";
+option java_multiple_files=true;
+// Immutable v1. Invitation credentials and hashes never enter domain events.
+message EventEnvelopeV1 {
+ string event_id=1; string event_type=2; uint32 event_version=3;
+ int64 occurred_at_epoch_millis=4; string producer=5; string aggregate_type=6;
+ string aggregate_id=7; optional string space_id=8; optional string actor_id=9;
+ string trace_id=10; bytes payload=11;
+}
+
+message GroupInvitationSnapshotV1 {
+ string invitation_id=1; string group_id=2; string space_id=3;
+ string creator_principal_id=4; string role=5; string state=6; uint64 version=7;
+ int64 created_at_epoch_millis=8; int64 expires_at_epoch_millis=9;
+ optional string accepted_principal_id=10;
+}

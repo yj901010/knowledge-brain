@@ -1,0 +1,286 @@
+openapi: 3.1.0
+info:
+  title: Private Source Citation Discovery API
+  version: 1.0.0
+  description: Knowledge-owned read-only discovery of active Claim citations that
+    reference a known PRIVATE Source in an authorized PERSONAL Space. The common guest
+    or registered principal requires fresh CONCEPT_READ authority and HTTPS. A known
+    Source may be ACTIVE or RETIRED. Responses use no-store and have no ETag; current
+    subject discovery metadata and immutable revision pins are distinguished explicitly.
+    Reads preserve canonical data, revisions, versions and Outbox events.
+servers:
+- url: https://localhost:8443
+security:
+- sessionCookie: []
+paths:
+  /api/spaces/{spaceId}/sources/{sourceId}/citations:
+    parameters:
+    - $ref: '#/components/parameters/SpaceId'
+    - $ref: '#/components/parameters/SourceId'
+    get:
+      operationId: listPersonalSourceCitations
+      description: List ACTIVE PRIVATE citations to this known PRIVATE Source in ascending
+        citation UUIDv7 order. The Source may be ACTIVE or RETIRED. Every returned
+        citation must have a current ACTIVE PRIVATE Claim and all three current referenced
+        Concepts ACTIVE PRIVATE within this Space. after is exclusive. A known Source
+        without effective citations returns an empty page. Only singleton after and
+        limit query keys are accepted. UUIDs must be canonical lowercase UUIDv7s;
+        limit must be a canonical positive decimal within bounds. A nonempty request
+        body returns 400. No ETag is emitted because subjectTitle and currentClaimVersion
+        are current discovery metadata; claim and source retain the exact immutable
+        revisions pinned by the citation. Existing nested Claim citation item and
+        revision endpoints provide full pinned detail and retained history using the
+        returned subjectConceptId, claimId and citationId.
+      parameters:
+      - name: after
+        in: query
+        description: Exclusive last returned citation UUIDv7; a cursor need not identify
+          an existing row.
+        schema:
+          $ref: '#/components/schemas/UuidV7'
+      - name: limit
+        in: query
+        description: Exactly one canonical positive decimal query value. Leading zeros,
+          signs, decimals, exponents, whitespace, overflow and repeated keys are invalid.
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      responses:
+        '200':
+          description: Authorized active citation discovery page for a known PRIVATE
+            Source
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/NoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SourcePage'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/Unavailable'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest
+      description: Secure HttpOnly common guest/registered session cookie
+  parameters:
+    SpaceId:
+      name: spaceId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/UuidV7'
+    SourceId:
+      name: sourceId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/UuidV7'
+  headers:
+    NoStore:
+      schema:
+        type: string
+        const: no-store
+  responses:
+    BadRequest:
+      description: Non-HTTPS request, noncanonical UUIDv7, unknown/repeated query
+        key, invalid cursor/limit or nonempty GET body.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: Missing, duplicate, expired or revoked session credential.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Forbidden:
+      description: Fresh Space permission denied.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unavailable:
+      description: Unknown or foreign Source, non-PERSONAL/public Space, or Source
+        outside the PRIVATE scope.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    BadGateway:
+      description: Gateway cannot reach Knowledge.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    ServiceUnavailable:
+      description: Persistence or fresh Space/Identity authority unavailable.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    GatewayTimeout:
+      description: Gateway complete-response timeout.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+  schemas:
+    UuidV7:
+      type: string
+      format: uuid
+      pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+    Version:
+      type: integer
+      minimum: 1
+      maximum: 9223372036854775807
+    Timestamp:
+      type: string
+      format: date-time
+    ObjectValue:
+      $ref: personal-concept-claims.yaml#/components/schemas/ClaimObject
+    ClaimSnapshot:
+      type: object
+      additionalProperties: false
+      required:
+      - revisionId
+      - version
+      - subjectConceptId
+      - predicateConceptId
+      - object
+      properties:
+        revisionId:
+          $ref: '#/components/schemas/UuidV7'
+        version:
+          $ref: '#/components/schemas/Version'
+        subjectConceptId:
+          $ref: '#/components/schemas/UuidV7'
+        predicateConceptId:
+          $ref: '#/components/schemas/UuidV7'
+        object:
+          $ref: '#/components/schemas/ObjectValue'
+      description: Exact immutable Claim revision pinned by this citation. Later Claim
+        edits or Concept title/lifecycle changes do not replace this snapshot. These
+        IDs must not be paired with current triple titles as if those titles were
+        pinned.
+    SourcePin:
+      type: object
+      additionalProperties: false
+      required:
+      - sourceId
+      - revisionId
+      - version
+      properties:
+        sourceId:
+          $ref: '#/components/schemas/UuidV7'
+        revisionId:
+          $ref: '#/components/schemas/UuidV7'
+        version:
+          $ref: '#/components/schemas/Version'
+      description: Exact immutable Source revision identity and version pinned by
+        this citation. It remains unchanged by later Source edits or retirement. Full
+        pinned Source metadata is available from the existing nested Claim citation
+        item/history API and is omitted from this bounded discovery summary.
+    SourceCitation:
+      type: object
+      additionalProperties: false
+      required:
+      - citationId
+      - spaceId
+      - subjectConceptId
+      - subjectTitle
+      - claimId
+      - version
+      - claim
+      - source
+      - currentClaimVersion
+      - visibility
+      - state
+      - createdAt
+      - updatedAt
+      properties:
+        citationId:
+          $ref: '#/components/schemas/UuidV7'
+        spaceId:
+          $ref: '#/components/schemas/UuidV7'
+        subjectConceptId:
+          $ref: '#/components/schemas/UuidV7'
+        subjectTitle:
+          type: string
+          minLength: 1
+          maxLength: 200
+          pattern: ^[^\u0000]*$
+          description: Current owning subject Concept title for discovery; not an
+            immutable pinned title. Unicode code point bounds apply.
+        claimId:
+          $ref: '#/components/schemas/UuidV7'
+        version:
+          allOf:
+          - $ref: '#/components/schemas/Version'
+          description: Current Citation aggregate version; no new aggregate or version
+            is created by discovery.
+        claim:
+          $ref: '#/components/schemas/ClaimSnapshot'
+        source:
+          $ref: '#/components/schemas/SourcePin'
+        currentClaimVersion:
+          allOf:
+          - $ref: '#/components/schemas/Version'
+          description: Current canonical Claim version for discovery; it may differ
+            from claim.version, the immutable pinned version.
+        visibility:
+          type: string
+          const: PRIVATE
+        state:
+          type: string
+          const: ACTIVE
+        createdAt:
+          $ref: '#/components/schemas/Timestamp'
+        updatedAt:
+          $ref: '#/components/schemas/Timestamp'
+      description: Existing Citation identity, version and exact Claim/Source pins,
+        with current subject title and Claim version kept as separately named discovery
+        fields. Current effective lifecycle filtering is applied within the same SQL
+        snapshot.
+    SourcePage:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - nextAfter
+      properties:
+        items:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/SourceCitation'
+        nextAfter:
+          description: Last returned citation UUIDv7 when another effective active
+            row exists, otherwise null.
+          anyOf:
+          - $ref: '#/components/schemas/UuidV7'
+          - type: 'null'
+    Error:
+      type: object
+      required:
+      - error
+      properties:
+        error:
+          type: string

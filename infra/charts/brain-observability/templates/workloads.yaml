@@ -1,0 +1,87 @@
+{{- range $name, $component := .Values.components }}
+{{- if $component.storage }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata: {name: {{ printf "brain-%s-data" $name }}}
+spec:
+  accessModes: [ReadWriteOnce]
+  resources: {requests: {storage: {{ $component.storage }}}}
+{{- end }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: {name: {{ printf "brain-%s" $name }}}
+spec:
+  replicas: 1
+  strategy: {type: Recreate}
+  selector: {matchLabels: {app: {{ printf "brain-%s" $name }}}}
+  template:
+    metadata:
+      labels: {app: {{ printf "brain-%s" $name }}, brain-observability: 'true'}
+      annotations:
+        checksum/config: {{ ($.Files.Glob "files/*").AsConfig | sha256sum }}
+    spec:
+      {{- if $component.serviceAccount }}
+      serviceAccountName: {{ $component.serviceAccount }}
+      automountServiceAccountToken: true
+      {{- else }}
+      automountServiceAccountToken: false
+      {{- end }}
+      securityContext: {runAsNonRoot: true, runAsUser: {{ $component.uid }}, runAsGroup: {{ $component.uid }}, fsGroup: {{ $component.uid }}, seccompProfile: {type: RuntimeDefault}}
+      containers:
+        - name: {{ $name }}
+          image: {{ $component.image | quote }}
+          imagePullPolicy: IfNotPresent
+          {{- with $component.command }}
+          command: {{ . | toJson }}
+          {{- end }}
+          {{- with $component.args }}
+          args: {{ . | toJson }}
+          {{- end }}
+          {{- with $component.env }}
+          env: {{ . | toJson }}
+          {{- end }}
+          securityContext: {allowPrivilegeEscalation: false, readOnlyRootFilesystem: true, capabilities: {drop: [ALL]}}
+          ports: {{ $component.ports | toJson }}
+          resources: {{ $component.resources | toJson }}
+          startupProbe:
+            {{- toYaml $component.probe | nindent 12 }}
+            periodSeconds: 5
+            failureThreshold: 90
+          readinessProbe:
+            {{- toYaml $component.probe | nindent 12 }}
+            periodSeconds: 5
+          livenessProbe:
+            {{- toYaml $component.probe | nindent 12 }}
+            periodSeconds: 15
+            failureThreshold: 6
+          volumeMounts:
+            - {name: config, mountPath: /config, readOnly: true}
+            - {name: temporary, mountPath: /tmp}
+            {{- if $component.storage }}
+            - {name: data, mountPath: {{ $component.dataPath }}}
+            {{- end }}
+            {{- with $component.mounts }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+      volumes:
+        - {name: config, configMap: {name: brain-observability-config}}
+        - {name: temporary, emptyDir: {sizeLimit: 128Mi}}
+        {{- if $component.storage }}
+        - {name: data, persistentVolumeClaim: {claimName: {{ printf "brain-%s-data" $name }}}}
+        {{- end }}
+        {{- with $component.volumes }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata: {name: {{ printf "brain-%s" $name }}}
+spec:
+  selector: {app: {{ printf "brain-%s" $name }}}
+  ports:
+    {{- range $component.ports }}
+    - {name: {{ .name }}, port: {{ .containerPort }}, targetPort: {{ .name }}}
+    {{- end }}
+{{- end }}

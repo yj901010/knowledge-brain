@@ -1,0 +1,13 @@
+package io.knowledgebrain.collaboration;
+import java.util.*;import org.junit.jupiter.api.*;import static org.junit.jupiter.api.Assertions.*;import static org.mockito.Mockito.*;
+import org.springframework.mock.web.MockHttpServletRequest;import org.springframework.web.server.ResponseStatusException;import org.springframework.http.ResponseEntity;
+class SubmissionInstructionsApiTest {
+ SubmissionApiTest f;
+ @BeforeEach void setup(){f=new SubmissionApiTest();f.setup();}
+ ResponseEntity<?> get(String version,MockHttpServletRequest r)throws Exception{return f.api.instructions(f.f.group.toString(),f.study.toString(),f.assignment.toString(),f.f.id.toString(),version,r);}
+ void status(int code,org.junit.jupiter.api.function.Executable action){assertEquals(code,assertThrows(ResponseStatusException.class,action).getStatusCode().value());}
+ @Test void ownerCanReadExactAttemptWithoutWriteOriginOrMutablePrecondition()throws Exception{var v=new SubmissionStore.Instructions(f.f.id,7,4,null);when(f.store.instructions(f.f.group,f.f.space,f.study,f.assignment,f.f.id,f.f.actor,true,7)).thenReturn(v);var r=f.req("GET",null);r.removeHeader("Origin");r.removeHeader("If-Match");var response=get("7",r);assertEquals(v,response.getBody());assertEquals("no-store",response.getHeaders().getCacheControl());verify(f.store).instructions(f.f.group,f.f.space,f.study,f.assignment,f.f.id,f.f.actor,true,7);}
+ @Test void memberAndViewerReadsRemainAuthorScoped()throws Exception{for(var role:List.of("MEMBER","VIEWER")){f.f.role(role);get("1",f.req("GET",null));}verify(f.store,times(2)).instructions(f.f.group,f.f.space,f.study,f.assignment,f.f.id,f.f.actor,false,1);}
+ @Test void exactPositiveAttemptAndEmptyReadBodyQueryAreRequired(){for(var version:List.of("0","01","-1","1.0","+1"," 1","1e3","9999999999999999999","9223372036854775808","1,2"))status(400,()->get(version,f.req("GET",null)));var query=f.req("GET",null);query.addParameter("authorId",f.f.actor.toString());status(400,()->get("1",query));status(400,()->get("1",f.req("GET","{}")));verifyNoInteractions(f.store);}
+ @Test void secureSingletonCredentialAndFreshMembershipAreRequired(){var insecure=f.req("GET",null);insecure.setSecure(false);var duplicate=f.req("GET",null);duplicate.addHeader("Cookie","__Host-brain_guest="+f.f.token);for(var r:List.of(insecure,duplicate))assertThrows(ResponseStatusException.class,()->get("1",r));verifyNoInteractions(f.f.auth,f.store);when(f.f.auth.participation(any(),anyList(),anyString())).thenReturn(new GroupSpaceClient.Access(f.f.actor,"REGISTERED",List.of()));status(404,()->get("1",f.req("GET",null)));verifyNoInteractions(f.store);}
+}

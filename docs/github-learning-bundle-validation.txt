@@ -1,0 +1,12 @@
+GitHub learning bundle — verified 2026-11-01
+595 backend checks passed;5 existing optional Space checks skipped;zero failures.
+13 browser scenarios passed in one worker with real Keycloak and verified HTTPS.
+Real imported GitHub commit→private Evidence/memo/history/CAS/retirement→StudySession pin/unlink/history; reverse commit→Learning; both eventual Activity streams and fresh sources.
+Legacy Note/Concept/Media session and Activity/GitHub sync-history regressions passed.
+LearningV12→V13 preserves legacy IDs/keys/snapshots/session pins/Outbox bytes; failure rollback checked in isolated schema.
+Real PG→Connect→Kafka exact bytes for both additive streams; Registry2 artifacts;25 topics;10 connectors/tasks RUNNING.
+Full five-owner canonical Activity warmup without deletion/reset: {"learning": 33972, "planning": 9726, "content": 105847, "knowledge": 16363, "integration": 127}
+Five exact-source images imported on both k3d nodes;all14 apps Ready;owned builders cleaned after source/UID receipt;unrelated9 images unchanged.
+TypeScript/Next/CSP/host HTTPS/mobile390/private scope/guest denial/lost response/CAS/malformed/close/hidden/logout/storage boundaries verified.
+No new dependencies, AI, attribution or automatic private progress changes.
+Evidence: .local/github-learning-bundle-validation.json

@@ -1,0 +1,25 @@
+PASS Note and Daily Note Activity implementation and local Kubernetes validation
+Full backend:716 total,698 passed,0 failures/errors,18 unchanged environment-gated exclusions.
+Content:133/133 including own PostgreSQL, original event export and10 Kafka contracts.
+Activity:35/35 including own PostgreSQL, ClickHouse and16 actual Kafka streams.
+Focused browser:3/3; full browser:92/92 including two real registered Space claims.
+Original Note revision IDs, title/state/actor/trace/time/version,32768-byte canonical body
+with8192-byte complete-code-point preview, size/truncation, empty bodies and frozen control policy.
+Full-wire dedup rejects changed suffixes beyond identical previews. Legacy JSON remains readable.
+Daily journal date and IANA timezone stay literal; save time filters and archive are independent.
+Unchanged reopen adds no event; retired binding/history remain; no inferred link/metadata activity.
+Actual20+6 Note pages, explicit current lookup/404, retained sibling drafts, foreign/revoked
+denial, malformed ETag and delayed-response isolation, escaped body and390px mobile fit.
+Activity restart and two three-owner canonical replays preserve8 original Note/Daily events,
+full source revision bodies/IDs/actors, current original source and archived journal binding.
+Operator reuses bounded existing Hikari configuration (3 max/1 idle/10s limits); actual
+owner PG connections are reused and resources close. Exact replay durations recorded in proof.
+Existing active-job guard verified before mutation, with consistent Job/Pod labels.
+Operator Jobs have no Kafka capability or API Service selector. No canonical, Inbox, ClickHouse,
+PVC, topic, CDC slot or checkpoint reset. All10 Content Protobuf v1 schemas unchanged.
+All12 app Deployments Ready, all8 Connectors/tasks RUNNING; Content connector unchanged.
+Both-node exact image imports and three owned build cleanups verified. HTTPS graph200;
+anonymous private401/internal403. Initial Daily test route and300s operator wait corrected;
+actual retained-history warmup completes without resetting data. Activity wait now900s.
+Evidence:.local/note-activity-proof.json, note-activity-runtime-proof.json,
+note-activity-contract-proof.json, note-activity-build-cleanup.json; docs/note-activity.md.

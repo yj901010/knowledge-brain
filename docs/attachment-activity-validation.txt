@@ -1,0 +1,24 @@
+PASS immutable Note attachment Activity and local Kubernetes validation.
+Full backend:743 total,725 passed,0 failures/errors,18 unchanged environment-gated exclusions.
+Content137/137 own PostgreSQL and10 Kafka contracts; Activity58/58 own PostgreSQL,
+ClickHouse and20 actual Kafka streams. Full browser100/100; focused2/2; two real registered
+Space claims preserve original guest attachment IDs/revisions/events and registered actor audit.
+Full ordered immutable filename/MIME/size/SHA-256 and attachment/Media IDs; all six MIME values,
+file/count/duplicate bounds, independent attachment/body versions, stable reorder IDs, empty clear,
+new re-added ID and empty retirement. Original Outbox bytes and canonical audit snapshots preserved.
+Actual25 revisions use20+5 timeline pages. Explicit current same-Note a-ETag validation keeps
+history separate, never fetches Media/binaries automatically, escapes filenames, preserves sibling
+drafts, fits390px and discards failed/malformed/late/revoked replies. Foreign resources404.
+Actual sealed MinIO upload/download bytes stay identical after Note archive/shared-file reuse,
+Activity restart and two complete pooled three-owner canonical replays.21 original activities,
+including7 attachment snapshots, full Note/audit/Media metadata and Daily binding remain exact.
+No source/Inbox/ClickHouse/PVC/topic/CDC slot/checkpoint reset. Concurrent replay rejected before
+mutation. All10 Content Protobuf schemas unchanged; all OpenAPI references resolved. One literal
+Read/Describe topic added; Content connector unchanged.12 apps Ready,8 connectors/tasks RUNNING.
+Exact image imports on both nodes; three owned builder sets removed. Verified HTTPS graph200,
+anonymous private401 and internal export403. Object transport never uses browser cookies.
+Evidence:.local/attachment-activity-proof.json and runtime/contract/cleanup proofs.
+
+Measured complete canonical recoveries:
+activity-timeline-replay-1792417842: 441.0 seconds; 110783 original events (learning=25225, planning=7617, content=77941).
+activity-timeline-replay-1792418320: 449.0 seconds; 110783 original events (learning=25225, planning=7617, content=77941).

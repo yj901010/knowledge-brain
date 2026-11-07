@@ -1,0 +1,31 @@
+package io.knowledgebrain.brainquery;
+import java.util.*;
+import java.nio.file.*;
+import java.time.Duration;
+import org.apache.kafka.clients.consumer.*;
+import org.apache.kafka.common.TopicPartition;
+import org.postgresql.ds.PGSimpleDataSource;
+import org.springframework.jdbc.core.JdbcTemplate;
+
+/** Existing canonical feeds + captured nine-topic tails; no synthetic Kafka publication. */
+public final class BrainRebuildRunner {
+ static String env(String key){return GraphRebuildRunner.env(key);}
+ public static void main(String[] args)throws Exception{
+  String host=env("BRAIN_QUERY_GRAPH_HOST");
+  if(args.length==1&&(args[0].equals("--initialize")||args[0].equals("--reset-graph"))){String directory="/graph-admin",trust=GraphConfiguration.truststore(directory);try(var g=NoteGraphStore.open(host,Files.readString(Path.of(directory,"username")).strip(),Files.readString(Path.of(directory,"password")).strip(),trust,Files.readString(Path.of(directory,"password")).strip())){BrainGraphStore.initialize(g);if(args[0].equals("--reset-graph"))try(var adapter=new BrainGraphStore(g)){adapter.reset();}System.out.println("PASS typed network schema/graph operator operation");}return;}
+  if(args.length>1||args.length==1&&!Set.of("--preflight","--drain-only","--refresh-records").contains(args[0]))throw new IllegalArgumentException("Unknown network operator command");
+  var d=new PGSimpleDataSource();d.setURL(env("BRAIN_QUERY_DATABASE_URL"));d.setUser("brain_brainquery");d.setPassword(env("BRAIN_QUERY_DATABASE_PASSWORD"));var store=new BrainProjectionStore(d);var search=new NoteSearchClient(env("BRAIN_QUERY_SEARCH_ORIGIN"),Path.of("/search-projector"));String trust=GraphConfiguration.truststore("/graph-projector");
+  if(args.length==1&&args[0].equals("--drain-only")){try(var graph=BrainNetworkConfiguration.graph(host,"/graph-projector",trust)){store.drain(graph,search);System.out.println("PASS durable pending queue drained without reset, source credentials or Kafka checkpoint changes");}return;}
+  var content=new BrainSnapshotClient(env("BRAIN_QUERY_CONTENT_ORIGIN"),env("BRAIN_QUERY_CONTENT_TRUST_FILE"),env("BRAIN_QUERY_CONTENT_SNAPSHOT_KEY"),"content");if(args.length==1&&args[0].equals("--refresh-records")){long count=0;for(String kind:BrainProjection.KINDS)if(kind.startsWith("BOOKMARK")||kind.startsWith("QUESTION")||kind.startsWith("DECISION")){UUID after=null,through=null;do{var page=content.page(kind,after,through);through=page.through();for(var item:page.items()){byte[] wire=Base64.getDecoder().decode(item.payload());store.stage(BrainSnapshotClient.topic(kind,wire),wire);count++;}after=page.nextAfter();}while(after!=null);System.out.println("PASS canonical record feed staged; kind="+kind);}try(var graph=BrainNetworkConfiguration.graph(host,"/graph-projector",trust)){store.drain(graph,search);}System.out.println("PASS non-destructive canonical record refresh; count="+count+"; existing Kafka offsets unchanged");return;}
+  var knowledge=new BrainSnapshotClient(env("BRAIN_QUERY_KNOWLEDGE_ORIGIN"),env("BRAIN_QUERY_CONTENT_TRUST_FILE"),env("BRAIN_QUERY_KNOWLEDGE_SNAPSHOT_KEY"),"knowledge");var options=GraphConfiguration.kafka(env("BRAIN_QUERY_KAFKA_BOOTSTRAP_SERVERS"),"/network-kafka");options.put("group.id",BrainProjectionConsumer.GROUP);
+  // Preflight every feed before the coordinator performs any destructive reset.
+  if(args.length==1&&args[0].equals("--preflight")){for(String kind:BrainProjection.KINDS)(kind.equals("CONCEPT")||kind.equals("CLAIM")?knowledge:content).page(kind,null,null);System.out.println("PASS all canonical feed credentials and boundaries");return;}
+  try(var graph=BrainNetworkConfiguration.graph(host,"/graph-projector",trust);var c=new KafkaConsumer<String,byte[]>(options)){
+   var partitions=new ArrayList<TopicPartition>();for(var topic:BrainProjection.TOPICS){var ps=c.partitionsFor(topic);if(ps.isEmpty())throw new IllegalStateException("Network topic unavailable");for(var p:ps)partitions.add(new TopicPartition(p.topic(),p.partition()));}c.assign(partitions);var start=c.endOffsets(partitions);for(var p:partitions)c.seek(p,start.get(p));
+   new org.springframework.transaction.support.TransactionTemplate(new org.springframework.jdbc.datasource.DataSourceTransactionManager(d)).executeWithoutResult(s->{var sql=new JdbcTemplate(d);sql.update("DELETE FROM brain_network_work");sql.update("DELETE FROM brain_network_relation");sql.update("DELETE FROM brain_network_snapshot");sql.update("DELETE FROM brain_network_inbox");});
+   long count=0;for(String kind:BrainProjection.KINDS){UUID after=null,through=null;do{var page=(kind.equals("CONCEPT")||kind.equals("CLAIM")?knowledge:content).page(kind,after,through);through=page.through();for(var item:page.items()){byte[] wire=Base64.getDecoder().decode(item.payload());store.stage(BrainSnapshotClient.topic(kind,wire),wire);count++;}after=page.nextAfter();}while(after!=null);System.out.println("PASS canonical source staged; kind="+kind+" cumulative_count="+count);}System.out.println("BRAIN_REBUILD_SNAPSHOTS_STAGED");store.drain(graph,search);System.out.println("PASS canonical typed snapshots projected; count="+count);
+   if("true".equals(System.getenv("BRAIN_REBUILD_PAUSE"))){System.out.println("BRAIN_REBUILD_SNAPSHOT_READY");for(int i=0;!Files.exists(Path.of("/tmp/rebuild.resume"));i++){if(i>=180)throw new IllegalStateException("Rebuild handshake deadline");Thread.sleep(1000);}}
+   var end=c.endOffsets(partitions);long deadline=System.nanoTime()+Duration.ofSeconds(300).toNanos();while(partitions.stream().anyMatch(p->c.position(p)<end.get(p))){if(System.nanoTime()>deadline)throw new IllegalStateException("Network replay deadline");for(var r:c.poll(Duration.ofSeconds(1))){var h=new HashMap<String,String>();for(var header:r.headers())if(header.value()==null||h.putIfAbsent(header.key(),new String(header.value(),java.nio.charset.StandardCharsets.UTF_8))!=null)throw BrainProjection.invalid();store.stage(BrainProjection.decode(r.topic(),r.value(),r.key(),h),r.value());}store.drain(graph,search);}var checkpoints=new HashMap<TopicPartition,OffsetAndMetadata>();for(var p:partitions)checkpoints.put(p,new OffsetAndMetadata(c.position(p)));c.commitSync(checkpoints);System.out.println("PASS nine captured Kafka tails replayed; durable graph/search queue and checkpoint");
+  }
+ }
+}

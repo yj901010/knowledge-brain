@@ -1,0 +1,32 @@
+spring:
+  application:
+    name: space-service
+  threads:
+    virtual:
+      enabled: true
+  main:
+    keep-alive: true
+server:
+  port: ${PORT:8080}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+      probes:
+        enabled: true
+
+---
+spring:
+  config:
+    activate:
+      on-profile: consumer
+management:
+  endpoint:
+    health:
+      group:
+        readiness:
+          include: readinessState,spaceConsumer

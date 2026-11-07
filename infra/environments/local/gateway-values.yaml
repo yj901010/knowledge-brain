@@ -1,0 +1,38 @@
+replicaCount: 1
+image:
+  repository: knowledge-brain/gateway-service
+  tag: ''
+  pullPolicy: Never
+  digest: sha256:466049bd04b131a018569ab75c95f8f4ea28d54153a7d25f4101461735c62c71
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: '1'
+    memory: 768Mi
+env:
+- name: BRAIN_GATEWAY_API_ENABLED
+  value: 'true'
+- name: BRAIN_GATEWAY_IDENTITY_ORIGIN
+  value: https://identity-service.brain-apps.svc:8080
+- name: BRAIN_GATEWAY_SPACE_ORIGIN
+  value: https://space-service.brain-apps.svc:8080
+- name: BRAIN_GATEWAY_TRUST_FILE
+  value: /backend-trust/ca.crt
+- name: SERVER_SSL_ENABLED
+  value: 'true'
+- name: SERVER_SSL_CERTIFICATE
+  value: file:/api-tls/tls.crt
+- name: SERVER_SSL_CERTIFICATE_PRIVATE_KEY
+  value: file:/api-tls/tls.key
+- name: SERVER_FORWARD_HEADERS_STRATEGY
+  value: none
+- name: BRAIN_GATEWAY_BROWSER_ORIGIN
+  value: https://localhost:8443
+- name: BRAIN_GATEWAY_CONTENT_ORIGIN
+  value: https://content-service.brain-apps.svc:8080
+- name: BRAIN_GATEWAY_QUERY_ORIGIN
+  value: https://brain-query-service.brain-apps.svc:8080
+- name: BRAIN_GATEWAY_MEDIA_PUBLIC_ORIGIN
+  value: https://localhost:9443

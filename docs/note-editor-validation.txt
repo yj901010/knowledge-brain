@@ -1,0 +1,33 @@
+Graph Note editor delivery: local Kubernetes validation
+Existing Content ownership, API, schema, V1 Protobuf Outbox/CDC and authorization unchanged.
+New frontend dependency: none.
+
+JOB=backend-validation-1791478250
+[INFO] Tests run: 13, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.335 s -- in io.knowledgebrain.gateway.GatewayProxyTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.510 s -- in io.knowledgebrain.gateway.ServiceBoundaryTest
+[INFO] Tests run: 16, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+JOB=graph-web-validation-1791478937
+  ✓  1 tests/graph.spec.ts:2:5 › private graph create, explore, mobile, outage and revoke (7.2s)
+NOTE_EDITOR_VERIFIED: strong ETag, private UUID preserved, conflict draft retained, explicit restart, canonical paged history, failure retry, cancel, Note-switch draft clearing, revocation clear, escaped text
+  ✓  3 tests/editor.spec.ts:3:5 › private Note edit, conflict recovery, immutable paged history and draft privacy (8.7s)
+PUBLIC_REVIEWER_READY=01a11c77-b4ab-7ca8-8156-b128fdd56f02
+PUBLIC_NOTE_REFERENCES_VERIFIED: guest/registered, unpublished/foreign-private denial, stable IDs, revision independence, persistence, removal, private Note isolation
+PUBLIC_REVIEWER_REVOKE_READY=01a11c77-b4ab-7ca8-8156-b128fdd56f02
+PUBLIC_WORKFLOW_VERIFIED
+  ✓  2 tests/public.spec.ts:3:5 › public Concept proposal, designated review, atomic merge and reviewer revocation (24.4s)
+  3 passed (26.3s)
+
+PASS strong ETag conflict preserves draft; latest inspection does not overwrite draft; explicit restart takes latest version.
+PASS canonical revisions v1..v7 paginated 5+2; cancelled/transient failure attempts do not write.
+PASS old draft and body removed on Note switching; real revoked guest session clears private editor and view.
+PASS JSX sibling keys unique; regression identified during Note switch and corrected.
+PASS public contribution fixture found using actual catalog pagination after accumulated fixtures exceeded one page.
+PASS all temporary reviewer roles retired on successful and failed browser runs.
+PASS verified HTTPS; no localStorage/sessionStorage credentials/drafts; script text escaped.
+PASS TypeScript/Next static export + CSP; desktop/mobile screenshots inspected.
+Ready=1 gateway knowledge-brain/gateway-service:local-6051f2813607c56a
+Ready=1 content knowledge-brain/content-service:local-1c1cb6f0fb453711
+Ready=1 knowledge knowledge-brain/knowledge-service:local-e57082e64f5fdd4f
+PASS imported gateway-image-import-1791478607-0 k3d-knowledge-brain-agent-0
+PASS imported gateway-image-import-1791478607-1 k3d-knowledge-brain-server-0

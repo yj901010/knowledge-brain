@@ -1,0 +1,167 @@
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaUser
+metadata:
+  name: brain-group-validator
+  namespace: brain-events
+  labels:
+    strimzi.io/cluster: brain-kafka
+spec:
+  authentication:
+    type: tls
+  authorization:
+    type: simple
+    acls:
+    - resource:
+        type: topic
+        name: collaboration.group.v1
+        patternType: literal
+      operations:
+      - Read
+      - Describe
+    - resource:
+        type: topic
+        name: space.group-space.v1
+        patternType: literal
+      operations:
+      - Read
+      - Describe
+    - resource:
+        type: group
+        name: group-validation-
+        patternType: prefix
+      operations:
+      - Read
+      - Describe
+    - resource:
+        type: topic
+        name: space.group-invitation.v1
+        patternType: literal
+      operations:
+      - Read
+      - Describe
+    - resource:
+        type: topic
+        name: space.group-membership.v1
+        patternType: literal
+      operations:
+      - Read
+      - Describe
+    - resource:
+        type: topic
+        name: collaboration.study.v1
+        patternType: literal
+      operations:
+      - Read
+      - Describe
+    - resource:
+        type: topic
+        name: collaboration.study-roadmap.v1
+        patternType: literal
+      operations:
+      - Read
+      - Describe
+    - resource:
+        type: topic
+        name: collaboration.assignment.v1
+        patternType: literal
+      operations:
+      - Read
+      - Describe
+    - resource:
+        type: topic
+        name: collaboration.submission.v1
+        patternType: literal
+      operations:
+      - Read
+      - Describe
+    - resource:
+        type: topic
+        name: collaboration.discussion.v1
+        patternType: literal
+      operations:
+      - Read
+      - Describe
+    - resource:
+        type: topic
+        name: collaboration.discussion-reply.v1
+        patternType: literal
+      operations:
+      - Read
+      - Describe
+    - resource:
+        type: topic
+        name: collaboration.course.v1
+        patternType: literal
+      operations:
+      - Read
+      - Describe
+    - resource:
+        type: topic
+        name: collaboration.course-enrollment.v1
+        patternType: literal
+      operations:
+      - Read
+      - Describe
+    - resource:
+        type: topic
+        name: space.group-progress-policy.v1
+        patternType: literal
+      operations:
+      - Read
+      - Describe
+    - resource:
+        type: topic
+        name: collaboration.submission-feedback.v1
+        patternType: literal
+      operations:
+      - Read
+      - Describe
+    - resource:
+        type: topic
+        name: collaboration.resubmission-request.v1
+        patternType: literal
+      operations:
+      - Read
+      - Describe
+    - resource:
+        type: topic
+        name: collaboration.feedback-retraction.v1
+        patternType: literal
+      operations:
+      - Read
+      - Describe
+    - resource:
+        type: topic
+        name: collaboration.submission-grade.v1
+        patternType: literal
+      operations:
+      - Read
+      - Describe
+    - resource:
+        type: topic
+        name: collaboration.grade-retraction.v1
+        patternType: literal
+      operations:
+      - Read
+      - Describe
+    - resource:
+        type: topic
+        name: collaboration.assignment-rubric.v1
+        patternType: literal
+      operations:
+      - Read
+      - Describe
+    - resource:
+        type: topic
+        name: collaboration.rubric-assessment.v1
+        patternType: literal
+      operations:
+      - Read
+      - Describe
+    - resource:
+        type: topic
+        name: collaboration.submission-files.v1
+        patternType: literal
+      operations:
+      - Read
+      - Describe

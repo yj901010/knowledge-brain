@@ -1,0 +1,27 @@
+{
+  "mappings": {
+    "dynamic": "strict",
+    "properties": {
+      "spaceId": {
+        "type": "keyword"
+      },
+      "noteId": {
+        "type": "keyword"
+      },
+      "visibility": {
+        "type": "keyword"
+      },
+      "state": {
+        "type": "keyword"
+      },
+      "title": {
+        "type": "text",
+        "analyzer": "standard"
+      },
+      "markdown": {
+        "type": "text",
+        "analyzer": "standard"
+      }
+    }
+  }
+}

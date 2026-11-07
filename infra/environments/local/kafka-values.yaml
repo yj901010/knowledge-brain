@@ -1,0 +1,19 @@
+replicationFactor: 1
+minInSyncReplicas: 1
+storageClass: local-path
+controllers:
+  replicas: 1
+  storage: 2Gi
+  heap: 256m
+  resources:
+    requests: {cpu: 100m, memory: 384Mi}
+    limits: {cpu: 500m, memory: 512Mi}
+brokers:
+  replicas: 1
+  storage: 5Gi
+  heap: 512m
+  resources:
+    requests: {cpu: 100m, memory: 768Mi}
+    limits: {cpu: "1", memory: 1Gi}
+kafkaExporter:
+  enabled: true

@@ -1,0 +1,19 @@
+syntax = "proto3";
+package knowledgebrain.collaboration.submissiongrade.v1;
+option java_package = "io.knowledgebrain.contracts.collaboration.submissiongrade.v1";
+option java_multiple_files = true;
+message SubmissionGradeEnvelopeV1 {
+ string event_id = 1; string event_type = 2; uint32 event_version = 3;
+ int64 occurred_at_epoch_millis = 4; string producer = 5; string aggregate_type = 6;
+ string aggregate_id = 7; string space_id = 8; string actor_id = 9; string trace_id = 10; bytes payload = 11;
+}
+// Explicit OWNER score for another author; never an all-member/public feed.
+// Immutable submission/instruction basis. Score 0..100, no private progress effect.
+// Deduplicate event_id and apply increasing grade versions on replay.
+message SubmissionGradeSnapshotV1 {
+ string grade_id = 1; string submission_id = 2; string assignment_id = 3;
+ string study_id = 4; string group_id = 5; string space_id = 6;
+ string author_id = 7; string grader_id = 8; int64 version = 9;
+ int64 submission_version = 10; int64 assignment_version = 11;
+ string reason = 12; string audience = 13; string created_at = 14; string updated_at = 15; uint32 score = 16;
+}

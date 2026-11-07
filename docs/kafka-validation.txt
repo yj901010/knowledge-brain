@@ -1,0 +1,11 @@
+2026-10-06 Kafka configuration validation
+Strimzi 1.2.0 / Kafka 4.3.1; Apache-2.0 LICENSE files checked from pinned upstream tags.
+PASS: Helm lint with base values.
+PASS: Helm lint with local values.
+PASS: Helm template base and local, three custom resources each.
+PASS: pinned upstream v1 CRD required/known fields, enums and integer/string checks (limited structural checker, not full JSON Schema or Kubernetes admission).
+PASS: separate controller/broker roles; base 3+3 / local 1+1; retained PVCs.
+PASS: internal TLS client authentication, simple ACL authorization, automatic topic creation disabled.
+PASS: replication factor 4 with three brokers rejected during Helm rendering.
+NOT RUN: Kubernetes server dry-run, readiness, TLS/ACL integration tests, message delivery, failover and metrics.
+BLOCKER: Docker Linux engine unavailable to this execution environment.

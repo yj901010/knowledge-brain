@@ -1,0 +1,104 @@
+2026-10-06/07 Asia/Seoul: Wiki Links and Backlink milestone, local k3d context
+
+Content final image knowledge-brain/content-service:local-f4dc9c93746a2f7e, Helm revision 3.
+Gateway image knowledge-brain/gateway-service:local-09457a49de0df649, Helm revision 3.
+Gateway implementation unchanged between initial and final full suites; later source
+change preserved old normalized title key during legacy dirty rename catch-up.
+Connect revision 4, private topic content.note-links.v1 and scoped client ACL added.
+All four applications Ready 1/1. Build/import happened in Linux Kubernetes with
+JDK25; no host Docker/protoc success is assumed.
+
+Final full suite backend-validation-1791298884:
+13 modules, 94 tests, 0 failures/errors/skips; real owning PostgreSQL and mTLS Kafka.
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.960 s -- in io.knowledgebrain.gateway.GatewayProxyTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.902 s -- in io.knowledgebrain.gateway.ServiceBoundaryTest
+[INFO] Tests run: 11, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.242 s -- in io.knowledgebrain.identity.GuestSessionIntegrationTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.201 s -- in io.knowledgebrain.identity.GuestOutboxIntegrationTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 13.93 s -- in io.knowledgebrain.identity.KafkaOutboxIntegrationTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.021 s -- in io.knowledgebrain.identity.UuidV7Test
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.957 s -- in io.knowledgebrain.identity.ServiceBoundaryTest
+[INFO] Tests run: 11, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.124 s -- in io.knowledgebrain.space.GuestIdentityEventTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.276 s -- in io.knowledgebrain.space.PersonalSpaceIntegrationTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 22.90 s -- in io.knowledgebrain.space.SpaceKafkaIntegrationTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.998 s -- in io.knowledgebrain.space.ServiceBoundaryTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.603 s -- in io.knowledgebrain.space.ContentAuthorizationTest
+[INFO] Tests run: 15, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.561 s -- in io.knowledgebrain.knowledge.ServiceBoundaryTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.982 s -- in io.knowledgebrain.content.NoteApiTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.889 s -- in io.knowledgebrain.content.WikiKafkaIntegrationTest
+[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.758 s -- in io.knowledgebrain.content.NoteLinksIntegrationTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.703 s -- in io.knowledgebrain.content.NoteKafkaIntegrationTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.007 s -- in io.knowledgebrain.content.WikiLinksTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.992 s -- in io.knowledgebrain.content.ServiceBoundaryTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.718 s -- in io.knowledgebrain.content.NoteStoreIntegrationTest
+[INFO] Tests run: 30, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.331 s -- in io.knowledgebrain.learning.ServiceBoundaryTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.413 s -- in io.knowledgebrain.planning.ServiceBoundaryTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.388 s -- in io.knowledgebrain.collaboration.ServiceBoundaryTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.397 s -- in io.knowledgebrain.activity.ServiceBoundaryTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.491 s -- in io.knowledgebrain.media.ServiceBoundaryTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.608 s -- in io.knowledgebrain.integration.ServiceBoundaryTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.672 s -- in io.knowledgebrain.notification.ServiceBoundaryTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.356 s -- in io.knowledgebrain.brainquery.ServiceBoundaryTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+
+Contract registration wiki-contract-validation-1791298548:
+PASS token issued: registry-publisher
+PASS token issued: registry-reader
+PASS VALIDITY=FULL
+PASS COMPATIBILITY=FULL_TRANSITIVE
+PASS content/note-links-events version 1 SHA256=69fa68736670be833ae97f6b72f9aa4e95e117bc4bb19e4b50b9ff3285331416
+
+Actual common-origin HTTPS wiki-api-validation-1791298937:
+PASS real Wiki parsing, alias/fragment, code exclusions, pagination, stable rename/edit binding, future-note resolution and unchanged source version
+PASS duplicate-title ambiguity, explicit stable-ID selection, cross-Space privacy and declared read-only Gateway routes
+PHASE1_WAITING_FOR_RESTART
+PASS Content replacement preserves link IDs, target IDs, source/link versions and backlinks without duplicate backfill
+PASS retired targets never retarget, unlink/source retirement clears backlinks, and revoked guest cannot read link metadata
+
+Existing Note API regression notes-api-validation-1791299111:
+PASS HTTPS guest identity, private Markdown CRUD setup, cross-Space isolation, Origin, bounds and safe pagination
+PASS If-Match required, stale edit rejected, simultaneous edit has one winner, immutable revision snapshots and pagination
+PASS soft deletion keeps private revisions, hides active reads/list, and guest revocation immediately denies Notes while other browser stays active
+
+V2 migration applied with real PostgreSQL, legacy notes backfilled without changing
+Note IDs/versions/history. Parser exclusions, NFC/case rules, explicit UUIDv7,
+ambiguity, stable target/link IDs across rename/source edit, same-Space FK/privacy,
+target/source retirement/unlink, pagination, rollback and concurrent opposite links
+passed. Dirty legacy rename catch-up and clean restart idempotence are covered.
+WikiKafkaIntegrationTest verified byte-identical source snapshots for link versions
+1/2/3 through Debezium, Note keys and schema/trace headers, without direct producers.
+Note and Identity/Space Kafka regressions passed in the same full suite.
+
+The paused Wiki HTTPS verifier created fixtures on the initial feature image and
+completed after final Content upgrade/replacement, retaining exact link metadata.
+Credentials stayed only in verifier memory. No raw browser cookies or Secret values
+were printed or written to evidence. Synthetic test data/audit history is retained.
+
+Initial API Jobs wiki-api-validation-1791298820 and notes-api-validation-1791298821
+ran during Recreate rollout and failed with 502 before Content became Ready. Runner
+now waits Content/Gateway rollout before starting fixtures; complete reruns passed.
+POSTs were not retried and service errors/authorization guards were not weakened.
+
+Existing content/note-events v1 UTF-8 content SHA256 (publisher-normalized line endings) remains
+e62519e0ec755f41dabb2aafcec3b5503cbfbcea6934f1669978a8e9b80fd8d9.
+No mutation of its immutable contract; links have a separate artifact and topic.
+Helm lint, OpenAPI YAML/local references and Python compilation passed.
+Temporary image artifact resources removed after all node imports succeeded.
+No frontend, cross-Space links, tags/properties or Graph/search projector is claimed.
+Host access still requires user-run Gateway forwarding; Kubernetes HTTPS was tested.
+
+Final immutable prior-artifact readback: content-contract-validation-1791299277
+completed, FULL/FULL_TRANSITIVE rules and existing content/note-events v1 content
+matched SHA256 e62519e0ec755f41dabb2aafcec3b5503cbfbcea6934f1669978a8e9b80fd8d9.

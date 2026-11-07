@@ -1,0 +1,66 @@
+2026-10-07 local k3d-knowledge-brain validation
+Architecture checked against AGENTS.md / PROJECT.md: unchanged ownership and PRIVATE default.
+backend-validation-1791371487: 127 tests; 0 failures/errors/skips; actual PostgreSQL, TLS MinIO and mTLS Kafka.
+
+attachments-api-validation-1791371850: Complete
+PASS private Media, exact signed upload bounds/key, SHA-256 completion, immutable replay-safe download, cross-Space/Origin denial, independent attachment ETags, concurrent winner, shared Daily attachment and history
+PASS replacement of Media, Content and MinIO Pods retains exact metadata, relation IDs, versions, history and SHA-256 verified blob from persistent storage
+PASS retiring one Note preserves shared Media and old relation history; guest revocation denies new Media capabilities and attachment reads
+
+notes-api-validation-1791371942: Complete
+PASS HTTPS guest identity, private Markdown CRUD setup, cross-Space isolation, Origin, bounds and safe pagination
+PASS If-Match required, stale edit rejected, simultaneous edit has one winner, immutable revision snapshots and pagination
+PASS soft deletion keeps private revisions, hides active reads/list, and guest revocation immediately denies Notes while other browser stays active
+
+wiki-api-validation-1791371943: Complete
+PASS real Wiki parsing, alias/fragment, code exclusions, pagination, stable rename/edit binding, future-note resolution and unchanged source version
+PASS duplicate-title ambiguity, explicit stable-ID selection, cross-Space privacy and declared read-only Gateway routes
+PASS retired targets never retarget, unlink/source retirement clears backlinks, and revoked guest cannot read link metadata
+
+metadata-api-validation-1791371945: Complete
+PASS HTTPS typed properties, canonical stable tags, Space privacy, Origin, metadata ETags, validation, schema conflict rollback, pagination and concurrent writers
+PASS clear retains definitions with zero usage; retirement retains private history; revocation fails closed
+
+daily-api-validation-1791371947: Complete
+PASS explicit timezone today without mutation, date validation, Origin/privacy, one concurrent creation, no-overwrite reopen, immutable timezone, date pagination and normal Note links/tags/properties
+PASS retirement hides Daily entry and Journal list, prevents accidental recreation, keeps private revision history, and guest revocation denies all Daily reads
+
+media-contract-validation-1791371363: Complete
+PASS token issued: registry-publisher
+PASS token issued: registry-reader
+PASS VALIDITY=FULL
+PASS COMPATIBILITY=FULL_TRANSITIVE
+PASS media/file-events version 1 SHA256=db0ee1f000795f2d7d22f5f3d51d9e18e31ed37496179d09c7769eaa63c79eae
+
+attachments-contract-validation-1791371363: Complete
+PASS token issued: registry-publisher
+PASS token issued: registry-reader
+PASS VALIDITY=FULL
+PASS COMPATIBILITY=FULL_TRANSITIVE
+PASS content/note-attachments-events version 1 SHA256=ab2b00c4fbad16250b0d9bfefdf28f081d4c4db725ab77e565585bb19fee2007
+
+media-cdc-bootstrap-1791371361: Complete
+PASS CDC outbox SELECT, Media note SELECT denial, 12 other owner DB connection denials, publication restricted to one outbox
+
+media-connector-config-1791371477: Complete
+PASS media-outbox connector and task RUNNING
+
+Verified actual Pod replacement (old deletion + different new Pod Ready):
+content-service: content-service-6c477bdc7f-82gxc -> content-service-6c477bdc7f-nvvt8 Ready
+media-service: media-service-77c758d9c5-zpbnl -> media-service-77c758d9c5-hwqkb Ready
+brain-minio: brain-minio-69bcbc4b98-m2z2f -> brain-minio-69bcbc4b98-sm4gh Ready
+content-service Ready 1/1 image=knowledge-brain/content-service:local-6ddaf0af077315cf
+gateway-service Ready 1/1 image=knowledge-brain/gateway-service:local-6ddaf0af077315cf
+identity-service Ready 1/1 image=knowledge-brain/identity-service:local-2b48206f2553d4e8
+media-service Ready 1/1 image=knowledge-brain/media-service:local-6ddaf0af077315cf
+space-service Ready 1/1 image=knowledge-brain/space-service:local-6ddaf0af077315cf
+brain-minio Ready 1/1 image=knowledge-brain/minio:local-6399128ab0c1eb67
+Helm revisions: Space 7, Media 1, Content 7, Gateway 6, MinIO 1, Connect 7.
+
+Normalized UTF-8 immutable contracts:
+content_note_v1.proto e62519e0ec755f41dabb2aafcec3b5503cbfbcea6934f1669978a8e9b80fd8d9
+content_note_links_v1.proto 69fa68736670be833ae97f6b72f9aa4e95e117bc4bb19e4b50b9ff3285331416
+content_note_metadata_v1.proto 80ceaaa95dec8f9a4bb71fed2ff2100d882310b53d0ca09da87913d2c946ffa4
+content_daily_note_v1.proto d90b7403b7117b1c272606cc224481a087d016fc0123bc5782f3f418b53c669d
+content_note_attachments_v1.proto ab2b00c4fbad16250b0d9bfefdf28f081d4c4db725ab77e565585bb19fee2007
+media_file_v1.proto db0ee1f000795f2d7d22f5f3d51d9e18e31ed37496179d09c7769eaa63c79eae

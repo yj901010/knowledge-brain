@@ -1,0 +1,424 @@
+openapi: 3.1.0
+info:
+  title: Private Planning goals
+  version: 1.0.0
+  description: Planning owns goals, immutable revisions and Transactional Outbox.
+    Personal/private only; all requests reauthorize against Space using the common
+    guest/registered application principal. Date is a business date, not an instant.
+    Completed goals remain active until explicitly retired. No publishing, Task/Goal
+    linking, scheduling, reminders or automatic Learning completion in this step.
+servers:
+- url: https://localhost:8443
+security:
+- sessionCookie: []
+paths:
+  /api/spaces/{spaceId}/goals:
+    parameters:
+    - &id009
+      name: spaceId
+      in: path
+      required: true
+      schema: &id001
+        type: string
+        format: uuid
+        pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+    get:
+      operationId: listPrivateGoals
+      description: Fresh GOAL_READ. Current owner catalog, not a frozen snapshot.
+        Ascending UUID keyset; UI resets cursor when status/state changes. Empty body;
+        singleton known query only.
+      parameters:
+      - name: state
+        in: query
+        schema:
+          type: string
+          enum:
+          - ACTIVE
+          - RETIRED
+          default: ACTIVE
+      - name: status
+        in: query
+        schema:
+          type: string
+          enum:
+          - ALL
+          - NOT_STARTED
+          - IN_PROGRESS
+          - COMPLETED
+          default: ALL
+      - name: after
+        in: query
+        schema: *id001
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      responses:
+        '200':
+          description: Space-scoped active or archived catalog
+          headers:
+            Cache-Control: &id002
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Page'
+        '400': &id004
+          description: Invalid strict UUID/JSON/date/status/query, duplicate fields/headers
+            or body
+          headers:
+            Cache-Control: *id002
+        '401': &id005
+          description: Missing/ambiguous/expired common application session
+          headers:
+            Cache-Control: *id002
+        '403': &id006
+          description: Same-origin write or current private Space permission denied
+          headers:
+            Cache-Control: *id002
+        '404': &id007
+          description: Goal or PERSONAL/PRIVATE Space unavailable
+          headers:
+            Cache-Control: *id002
+        '503': &id008
+          description: Planning or live Space/Identity dependency unavailable
+          headers:
+            Cache-Control: *id002
+    post:
+      operationId: createPrivateGoal
+      description: Fresh GOAL_WRITE; exact browser Origin and same-origin fetch context
+        required. Stable opaque key belongs to Space, so lost-create retries survive
+        guest Space claiming. Same key/input returns original immutable v1 representation
+        even if current Goal was later edited or retired. No duplicate aggregate/revision/event;
+        read current Goal separately. Title/description/status/nullable targetDate
+        are the only fields.
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^[0-9a-f]{32}$
+      requestBody: &id010
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Input'
+      responses:
+        '201':
+          description: 'Created: goal, first revision and Outbox committed atomically'
+          headers:
+            Cache-Control: *id002
+            ETag: &id003
+              schema:
+                type: string
+                pattern: ^"gl[1-9][0-9]*"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Goal'
+        '200':
+          description: Original create representation replayed without writing
+          headers:
+            Cache-Control: *id002
+            ETag: *id003
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Goal'
+        '400': *id004
+        '401': *id005
+        '403': *id006
+        '404': *id007
+        '503': *id008
+        '409':
+          description: Creation key already represents different input in this Space
+          headers:
+            Cache-Control: *id002
+        '413': &id011
+          description: JSON request exceeds 262144 bytes
+          headers:
+            Cache-Control: *id002
+        '415': &id012
+          description: JSON content type required
+          headers:
+            Cache-Control: *id002
+  /api/spaces/{spaceId}/goals/{goalId}:
+    parameters:
+    - *id009
+    - &id016
+      name: goalId
+      in: path
+      required: true
+      schema: *id001
+    get:
+      operationId: readPrivateGoal
+      description: Fresh GOAL_READ. Active Goal only; retired goals return 404. No
+        query or body.
+      responses:
+        '200':
+          description: Current Goal with strong glN version
+          headers:
+            Cache-Control: *id002
+            ETag: *id003
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Goal'
+        '400': *id004
+        '401': *id005
+        '403': *id006
+        '404': *id007
+        '503': *id008
+    put:
+      operationId: updatePrivateGoal
+      description: Fresh GOAL_WRITE. All four input fields required. Strong glN is
+        checked before no-op comparison. Identical input at current version makes
+        no revision/event. Completion/reopening/date clearing are manual; no Learning
+        progress/time or other domain data changes.
+      parameters:
+      - &id013
+        name: If-Match
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^"gl[1-9][0-9]*"$
+      requestBody: *id010
+      responses:
+        '200':
+          description: Updated or unchanged current Goal
+          headers:
+            Cache-Control: *id002
+            ETag: *id003
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Goal'
+        '400': *id004
+        '401': *id005
+        '403': *id006
+        '404': *id007
+        '503': *id008
+        '412': &id014
+          description: Current version differs from strong glN If-Match; no partial
+            write
+          headers:
+            Cache-Control: *id002
+        '413': *id011
+        '415': *id012
+        '428': &id015
+          description: Required strong glN If-Match missing
+          headers:
+            Cache-Control: *id002
+    delete:
+      operationId: retirePrivateGoal
+      description: Fresh GOAL_WRITE; empty body/query. Marks lifecycle RETIRED, retaining
+        last progress/date/description and all immutable history. Known and archived
+        discovery remain private. No physical delete, restore or automatic cancellation.
+      parameters:
+      - *id013
+      responses:
+        '204':
+          description: Retirement, revision and Outbox committed atomically
+          headers:
+            Cache-Control: *id002
+            ETag: *id003
+        '400': *id004
+        '401': *id005
+        '403': *id006
+        '404': *id007
+        '503': *id008
+        '412': *id014
+        '428': *id015
+  /api/spaces/{spaceId}/goals/{goalId}/revisions:
+    parameters:
+    - *id009
+    - *id016
+    get:
+      operationId: readPrivateGoalRevisions
+      description: Fresh GOAL_READ for known active or retired Goal. Descending exclusive
+        version cursor; empty body. Historical snapshots are independent of current
+        Goal edits/retirement.
+      parameters:
+      - name: before
+        in: query
+        schema:
+          type: integer
+          format: int64
+          minimum: 1
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 5
+      responses:
+        '200':
+          description: Bounded immutable revisions
+          headers:
+            Cache-Control: *id002
+          content:
+            application/json:
+              schema:
+                type: array
+                maxItems: 10
+                items:
+                  $ref: '#/components/schemas/Revision'
+        '400': *id004
+        '401': *id005
+        '403': *id006
+        '404': *id007
+        '503': *id008
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest
+  schemas:
+    Input:
+      type: object
+      additionalProperties: false
+      required:
+      - title
+      - description
+      - status
+      - targetDate
+      properties:
+        title: &id017
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: Nonblank, at most 800 UTF-8 bytes; no control characters or
+            unpaired surrogates. Whitespace is preserved.
+        description: &id018
+          type: string
+          maxLength: 32768
+          description: At most 32768 UTF-8 bytes. Plain text; CR/LF/tab allowed; whitespace
+            preserved.
+        status: &id019
+          type: string
+          enum:
+          - NOT_STARTED
+          - IN_PROGRESS
+          - COMPLETED
+        targetDate: &id020
+          type:
+          - string
+          - 'null'
+          format: date
+          description: Literal Gregorian YYYY-MM-DD, year 0001..9999; null means no
+            target date. No timezone or time of day.
+    Goal:
+      type: object
+      additionalProperties: false
+      required:
+      - goalId
+      - spaceId
+      - visibility
+      - state
+      - version
+      - title
+      - description
+      - status
+      - targetDate
+      - createdAt
+      - updatedAt
+      properties:
+        goalId: *id001
+        spaceId: *id001
+        visibility:
+          const: PRIVATE
+        state: &id023
+          type: string
+          enum:
+          - ACTIVE
+          - RETIRED
+        version: &id021
+          type: integer
+          format: int64
+          minimum: 1
+        title: *id017
+        description: *id018
+        status: *id019
+        targetDate: *id020
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt: &id022
+          type: string
+          format: date-time
+    Summary:
+      type: object
+      additionalProperties: false
+      required:
+      - goalId
+      - title
+      - status
+      - targetDate
+      - version
+      - updatedAt
+      - state
+      properties:
+        goalId: *id001
+        title: *id017
+        status: *id019
+        targetDate: *id020
+        version: *id021
+        updatedAt: *id022
+        state: *id023
+    Page:
+      type: object
+      additionalProperties: false
+      required:
+      - spaceId
+      - state
+      - status
+      - items
+      - nextAfter
+      properties:
+        spaceId: *id001
+        state: *id023
+        status:
+          type: string
+          enum:
+          - ALL
+          - NOT_STARTED
+          - IN_PROGRESS
+          - COMPLETED
+        items:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/Summary'
+        nextAfter:
+          oneOf:
+          - *id001
+          - type: 'null'
+    Revision:
+      type: object
+      additionalProperties: false
+      required:
+      - revisionId
+      - goalId
+      - version
+      - actorId
+      - occurredAt
+      - snapshot
+      properties:
+        revisionId: *id001
+        goalId: *id001
+        version: *id021
+        actorId: *id001
+        occurredAt:
+          type: string
+          format: date-time
+        snapshot:
+          $ref: '#/components/schemas/Goal'

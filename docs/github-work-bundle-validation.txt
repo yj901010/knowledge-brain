@@ -1,0 +1,11 @@
+GitHub PR/Issue bundle and approved fresh local environment — verified 2026-11-01T06:05:19.297734+00:00
+Fresh environment after external Docker GUI factory reset; no original-data restoration claimed.
+13 separately built application images plus brain-login:14 Ready application deployments; both Kubernetes nodes Ready.
+76 domain Registry artifacts from72 proto files verified; existing schema/dependency/migration bytes preserved.
+10 Outbox connectors and all tasks RUNNING. Fresh five-owner canonical Activity warmup complete.
+Fresh backend checks:363 passed, zero failures/errors/skips (Integration53, Gateway235, Activity75).
+Fresh browser regression:17 scenarios passed, one worker, real Keycloak, verified HTTPS and public GitHub imports.
+PR/Issue catalogs, histories, independent CAS, exact-key retry, Activity, privacy/disconnect/mobile and existing commit/learning flows verified.
+PostgreSQL owner isolation, Registry authorization, private object storage and scoped ClickHouse bootstrap passed.
+Host https://localhost:8443/graph returns200 using the current public CA; original dataset is not restored.
+Detailed evidence: .local/github-work-bundle-validation.json

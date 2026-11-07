@@ -1,0 +1,103 @@
+name: Validate source
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      revision:
+        type: string
+        required: false
+        default: ''
+permissions:
+  contents: read
+concurrency:
+  group: validate-${{ github.ref }}-${{ inputs.revision || 'branch' }}
+  cancel-in-progress: true
+jobs:
+  delivery:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    outputs:
+      matrix: ${{ steps.matrix.outputs.value }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.revision || github.sha }}
+          persist-credentials: false
+      - run: python -m pip install --require-hashes -r scripts/ci/requirements.txt
+      - run: python scripts/ci/bootstrap.py helm
+      - run: python scripts/ci/bootstrap.py actionlint
+      - run: .local/ci-tools/actionlint -shellcheck= -pyflakes=
+      - run: python -m unittest discover -s tests/delivery -v
+        env:
+          HELM: .local/ci-tools/helm
+      - id: matrix
+        run: echo "value=$(python scripts/ci/delivery.py matrix)" >> "$GITHUB_OUTPUT"
+  frontend:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.revision || github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24.10.0
+      - run: python scripts/ci/delivery.py frontend
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: verified-web
+          path: .local/ci-web
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 7
+  backend:
+    needs: [delivery, frontend]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix: ${{ fromJSON(needs.delivery.outputs.matrix) }}
+    services:
+      postgres:
+        image: postgres:17.11-bookworm@sha256:665dc7b37ac52a17e298511414c21d23ffa4e6a6ef6225b3e5d59c7afb35e994
+        env:
+          POSTGRES_DB: ${{ matrix.database }}
+          POSTGRES_USER: ${{ matrix.database }}
+          POSTGRES_PASSWORD: ci-ephemeral-only
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready --health-interval 5s
+          --health-timeout 5s --health-retries 12
+    env:
+      CI_MAVEN_IMAGE: maven:3.10.0-eclipse-temurin-25@sha256:0396dcd8cd0d46a0d2026449b714b2a5bbe53cce030975b5a41f8ffa3f5f0525
+      CI_DATABASE_PASSWORD: ci-ephemeral-only
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.revision || github.sha }}
+          persist-credentials: false
+      - if: matrix.name == 'gateway-service'
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: verified-web
+          path: .local/download-web
+      - if: matrix.name == 'gateway-service'
+        run: python scripts/ci/delivery.py restore-web --directory .local/download-web
+      - run: python scripts/ci/delivery.py backend --service "$SERVICE"
+        env:
+          SERVICE: ${{ matrix.name }}
+      - if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: tests-${{ matrix.name }}
+          path: |
+            .local/ci-reports/*.json
+            services/${{ matrix.name }}/target/surefire-reports/*.xml
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 7

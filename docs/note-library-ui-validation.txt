@@ -1,0 +1,11 @@
+Canonical Note library UI validation - 2026-10-09
+AGENTS.md and PROJECT.md checked first. Existing Content summary/after-cursor API, Space authority and bounded Brain Query graph retained. No API/schema/event/dependency/ownership change.
+Ready=1: knowledge-brain/gateway-service:local-1c2f7a1e95db0b1b
+Job PASS: gateway-image-import-1791539137-0
+Job PASS: gateway-image-import-1791539137-1
+Job PASS: graph-static-build-1791539022943253900
+Job PASS: graph-web-validation-1791539190
+Browser: 9 passed (library/attachments/editor/graph/Journal/links/metadata/public/search), trusted-CA HTTPS without bypass. Scoped public reviewer fixture permission retired.
+Library: actual 202 Notes including Daily; actual 200-node truncated graph; full 20-item UUID cursor pagination to 202 without duplicate rows; canonical outside-graph immutable-ID open without graph injection; rename refresh resets first page; read failure clears rows and recovers; delayed response cannot overwrite a new failed read across close/reopen; retired exclusion and foreign denial; mobile overflow check, revoked-session clearing and no browser storage.
+Desktop/mobile library screenshots inspected; rows and controls fit the existing functional layout.
+Owned Gateway image builder resources cleaned; validation Jobs retain existing TTL. No backend code changed; tests use existing real canonical APIs and live projections.

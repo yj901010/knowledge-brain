@@ -1,0 +1,90 @@
+openapi: 3.1.0
+info: {title: Registered account login and guest claiming, version: 1.0.0}
+servers: [{url: 'https://localhost:8443'}]
+paths:
+  /api/identity/login:
+    post:
+      operationId: beginRegisteredLoginAndClaim
+      description: Explicitly connect this browser's active guest Space. HTTPS and exact browser Origin are required. Returns an authorization code + S256 PKCE URL and sets a five-minute Secure/HttpOnly browser-binding cookie. Tokens never appear in JSON. Account and Space data stay private.
+      security: [{browserSession: []}]
+      parameters: [{name: Origin, in: header, required: true, schema: {type: string, format: uri}}]
+      requestBody: {required: true, content: {application/json: {schema: {type: object, maxProperties: 0}}}}
+      responses:
+        '200':
+          description: Login started; Cache-Control no-store
+          headers: {Set-Cookie: {schema: {type: string}}}
+          content: {application/json: {schema: {type: object, required: [authorizationUrl], properties: {authorizationUrl: {type: string, format: uri}}}}}
+        '401': {description: An active guest credential is required}
+        '403': {description: Wrong or ambiguous browser Origin}
+        '503': {description: Authentication or persistence unavailable}
+  /api/identity/login/callback:
+    get:
+      operationId: completeRegisteredLoginAndClaim
+      description: Browser navigation only. One-time state, browser-binding cookie and the original guest credential must all match. Verify ID-token signature, issuer, audience, expiry and nonce, and introspect the access token. Identity atomically claims the guest, rotates the opaque session and emits GuestSpaceClaimRequested; Space ownership transfer is eventual.
+      security: [{browserSession: [], loginBinding: []}]
+      parameters:
+        - {name: state, in: query, required: true, schema: {type: string, pattern: '^[A-Za-z0-9_-]{43}$'}}
+        - {name: code, in: query, required: true, schema: {type: string, maxLength: 2048}}
+        - {name: session_state, in: query, schema: {type: string}}
+        - {name: iss, in: query, schema: {type: string, format: uri}}
+      responses:
+        '303':
+          description: Fixed redirect to /graph; secure rotated session cookie; login-binding cookie cleared; no-store
+          headers: {Location: {schema: {type: string, const: /graph}}, Set-Cookie: {schema: {type: string}}}
+        '401': {description: Invalid, expired, revoked or replayed login proof}
+        '503': {description: Keycloak or persistence unavailable; no unauthenticated claim}
+  /api/identity/account-session:
+    get:
+      operationId: registeredSession
+      description: Fresh server-side Keycloak introspection, bounded encrypted-token refresh and no-store. The legacy guest-session/introspection endpoints also accept this common opaque browser credential.
+      security: [{browserSession: []}]
+      responses:
+        '200':
+          description: Registered principal and this session's guest claim target
+          content: {application/json: {schema: {$ref: '#/components/schemas/AccountSession'}}}
+        '401': {description: No active registered session}
+        '503': {description: Registered authentication unavailable}
+  /api/spaces/personal/all:
+    get:
+      operationId: ownedPersonalSpaces
+      security: [{browserSession: []}]
+      responses:
+        '200':
+          description: Up to 100 active owned Personal Spaces, newest ID first; no-store
+          content: {application/json: {schema: {type: object, properties: {items: {type: array, maxItems: 100, items: {$ref: '#/components/schemas/Space'}}}}}}
+        '401': {description: No active common principal}
+        '503': {description: Authentication or persistence unavailable}
+  /api/spaces/claims/{guestId}:
+    get:
+      operationId: waitForClaimedSpace
+      security: [{browserSession: []}]
+      parameters: [{name: guestId, in: path, required: true, schema: {type: string, format: uuid}}]
+      responses:
+        '200':
+          description: Claim has applied to the current registered owner; original Space ID preserved; no-store
+          content: {application/json: {schema: {$ref: '#/components/schemas/Space'}}}
+        '202': {description: No matching applied claim; Retry-After 1; no-store}
+        '401': {description: No active principal}
+        '403': {description: Registered account required}
+        '503': {description: Authentication or persistence unavailable}
+components:
+  securitySchemes:
+    browserSession: {type: apiKey, in: cookie, name: __Host-brain_guest}
+    loginBinding: {type: apiKey, in: cookie, name: __Host-brain_oidc}
+  schemas:
+    AccountSession:
+      type: object
+      required: [principalId, kind, expiresAt, claimGuestId]
+      properties:
+        principalId: {type: string, format: uuid}
+        kind: {type: string, const: REGISTERED}
+        expiresAt: {type: string, format: date-time}
+        claimGuestId: {type: string, format: uuid}
+    Space:
+      type: object
+      required: [spaceId, kind, visibility, role]
+      properties:
+        spaceId: {type: string, format: uuid}
+        kind: {type: string, const: PERSONAL}
+        visibility: {type: string, const: PRIVATE}
+        role: {type: string, const: OWNER}

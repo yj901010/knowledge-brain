@@ -1,0 +1,96 @@
+openapi: 3.1.0
+info:
+  title: Dedicated Space authority for Planning goals
+  version: 1.0.0
+security:
+- serviceBearer: []
+paths:
+  /internal/space/planning-authorization:
+    post:
+      operationId: authorizePrivatePlanningGoal
+      description: Internal HTTPS only; constant-time dedicated Planning bearer credential. Browser
+        Cookie header rejected. Resolve common Identity principal freshly and require visible PERSONAL/PRIVATE
+        Space. GOAL_READ/TASK_READ support visible roles; GOAL_WRITE/TASK_WRITE require OWNER/ADMIN/EDITOR.
+        No Gateway route.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - spaceId
+              - token
+              - action
+              properties:
+                spaceId: &id001
+                  type: string
+                  format: uuid
+                  pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+                token:
+                  type: string
+                  pattern: ^[A-Za-z0-9_-]{43}$
+                action:
+                  type: string
+                  enum:
+                  - GOAL_READ
+                  - GOAL_WRITE
+                  - TASK_READ
+                  - TASK_WRITE
+                  - SCHEDULE_READ
+                  - SCHEDULE_WRITE
+      responses:
+        '200':
+          description: Live scoped decision
+          headers:
+            Cache-Control: &id002
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - spaceId
+                - principalId
+                - action
+                - visibility
+                properties:
+                  spaceId: *id001
+                  principalId: *id001
+                  action:
+                    type: string
+                    enum:
+                    - GOAL_READ
+                    - GOAL_WRITE
+                    - TASK_READ
+                    - TASK_WRITE
+                    - SCHEDULE_READ
+                    - SCHEDULE_WRITE
+                  visibility:
+                    const: PRIVATE
+        '400':
+          description: Invalid strict UUID/JSON/date/status/query, duplicate fields/headers or body
+          headers:
+            Cache-Control: *id002
+        '401':
+          description: Missing/ambiguous/expired common application session
+          headers:
+            Cache-Control: *id002
+        '403':
+          description: Same-origin write or current private Space permission denied
+          headers:
+            Cache-Control: *id002
+        '404':
+          description: Goal or PERSONAL/PRIVATE Space unavailable
+          headers:
+            Cache-Control: *id002
+        '503':
+          description: Planning or live Space/Identity dependency unavailable
+          headers:
+            Cache-Control: *id002
+components:
+  securitySchemes:
+    serviceBearer:
+      type: http
+      scheme: bearer

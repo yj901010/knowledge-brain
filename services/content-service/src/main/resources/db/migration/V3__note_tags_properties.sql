@@ -1,0 +1,7 @@
+ALTER TABLE note ADD COLUMN metadata_version bigint NOT NULL DEFAULT 0 CHECK(metadata_version>=0);
+CREATE TABLE content_tag(tag_id uuid PRIMARY KEY,space_id uuid NOT NULL,name text NOT NULL,name_key text NOT NULL,UNIQUE(space_id,name_key),UNIQUE(space_id,tag_id));
+CREATE TABLE property_definition(property_id uuid PRIMARY KEY,space_id uuid NOT NULL,name text NOT NULL,value_type text NOT NULL CHECK(value_type IN ('STRING','NUMBER','BOOLEAN','DATE','STRING_LIST')),UNIQUE(space_id,name),UNIQUE(space_id,property_id));
+CREATE TABLE note_tag(space_id uuid NOT NULL,note_id uuid NOT NULL,tag_id uuid NOT NULL,PRIMARY KEY(note_id,tag_id),FOREIGN KEY(space_id,note_id) REFERENCES note(space_id,note_id),FOREIGN KEY(space_id,tag_id) REFERENCES content_tag(space_id,tag_id));
+CREATE TABLE note_property(space_id uuid NOT NULL,note_id uuid NOT NULL,property_id uuid NOT NULL,value jsonb NOT NULL CHECK(value<>'null'::jsonb),PRIMARY KEY(note_id,property_id),FOREIGN KEY(space_id,note_id) REFERENCES note(space_id,note_id),FOREIGN KEY(space_id,property_id) REFERENCES property_definition(space_id,property_id));
+CREATE INDEX note_tag_lookup ON note_tag(space_id,tag_id,note_id);
+CREATE TABLE note_metadata_revision(revision_id uuid PRIMARY KEY,space_id uuid NOT NULL,note_id uuid NOT NULL,metadata_version bigint NOT NULL CHECK(metadata_version>0),actor_id uuid NOT NULL,occurred_at timestamptz NOT NULL,snapshot jsonb NOT NULL,UNIQUE(note_id,metadata_version),FOREIGN KEY(space_id,note_id) REFERENCES note(space_id,note_id));

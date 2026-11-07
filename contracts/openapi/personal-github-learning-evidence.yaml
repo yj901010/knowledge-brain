@@ -1,0 +1,857 @@
+openapi: 3.1.0
+info:
+  title: Private GitHub Learning Evidence Bundle
+  version: 1.0.0
+  description: Additive Learning-owned immutable imported-commit pins; NOTE/CONCEPT/MEDIA
+    and their published contracts remain unchanged. No cross-owner database access,
+    progress inference or public publication.
+servers:
+- url: https://localhost:8443
+security:
+- sessionCookie: []
+paths:
+  /api/spaces/{spaceId}/roadmaps/{roadmapId}/github-evidence:
+    parameters:
+    - &id002
+      name: spaceId
+      in: path
+      required: true
+      schema: &id001
+        type: string
+        format: uuid
+        pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+    - &id003
+      name: roadmapId
+      in: path
+      required: true
+      schema: *id001
+    get:
+      operationId: listGitHubLearningEvidence
+      description: Fresh common-session ROADMAP and GITHUB_EVIDENCE authority; registered
+        PRIVATE PERSONAL OWNER only. Ascending UUID keyset, active default; known
+        retired root/node retain historical reads.
+      parameters:
+      - name: state
+        in: query
+        required: false
+        schema:
+          enum:
+          - ACTIVE
+          - RETIRED
+          default: ACTIVE
+      - name: after
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      responses:
+        '200':
+          description: '200'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Page'
+        '400':
+          description: '400'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '401':
+          description: '401'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '403':
+          description: '403'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '404':
+          description: '404'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '409':
+          description: '409'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '412':
+          description: '412'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '428':
+          description: '428'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '503':
+          description: '503'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+    post:
+      operationId: createGitHubLearningEvidence
+      description: Fresh common-session ROADMAP and GITHUB_EVIDENCE authority; registered
+        PRIVATE PERSONAL OWNER only. Exact key/body replay before source read; global
+        per-roadmap evidence key namespace. Fresh Integration owner reference on first
+        create; immutable imported fact remains usable after disconnect. Atomic Learning
+        Evidence/revision/Outbox; duplicate active node+repo+commit409. No progress
+        or attribution changes.
+      parameters:
+      - name: Origin
+        in: header
+        required: true
+        schema:
+          type: string
+          format: uri
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^[0-9a-f]{32}$
+      responses:
+        '201':
+          description: '201'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"ge[1-9][0-9]*"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Evidence'
+        '400':
+          description: '400'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '401':
+          description: '401'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '403':
+          description: '403'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '404':
+          description: '404'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '409':
+          description: '409'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '412':
+          description: '412'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '428':
+          description: '428'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '503':
+          description: '503'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '200':
+          description: Exact original key/body replay, current Evidence snapshot.
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"ge[1-9][0-9]*"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Evidence'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Create'
+  /api/spaces/{spaceId}/roadmaps/{roadmapId}/github-evidence/{evidenceId}:
+    parameters:
+    - *id002
+    - *id003
+    - name: evidenceId
+      in: path
+      required: true
+      schema: *id001
+    get:
+      operationId: getGitHubLearningEvidence
+      description: Fresh common-session ROADMAP and GITHUB_EVIDENCE authority; registered
+        PRIVATE PERSONAL OWNER only. Known RETIRED evidence remains200 with geN.
+      parameters: []
+      responses:
+        '200':
+          description: '200'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"ge[1-9][0-9]*"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Evidence'
+        '400':
+          description: '400'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '401':
+          description: '401'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '403':
+          description: '403'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '404':
+          description: '404'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '409':
+          description: '409'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '412':
+          description: '412'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '428':
+          description: '428'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '503':
+          description: '503'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+    put:
+      operationId: editGitHubLearningEvidenceMemo
+      description: Fresh common-session ROADMAP and GITHUB_EVIDENCE authority; registered
+        PRIVATE PERSONAL OWNER only. Memo only. Active root and evidence, geN CAS.
+        No-op preserves version/revision/event.
+      parameters:
+      - name: Origin
+        in: header
+        required: true
+        schema:
+          type: string
+          format: uri
+      - name: If-Match
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^"ge[1-9][0-9]*"$
+      responses:
+        '200':
+          description: '200'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"ge[1-9][0-9]*"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Evidence'
+        '400':
+          description: '400'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '401':
+          description: '401'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '403':
+          description: '403'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '404':
+          description: '404'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '409':
+          description: '409'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '412':
+          description: '412'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '428':
+          description: '428'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '503':
+          description: '503'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Memo'
+    delete:
+      operationId: retireGitHubLearningEvidence
+      description: Fresh common-session ROADMAP and GITHUB_EVIDENCE authority; registered
+        PRIVATE PERSONAL OWNER only. Soft retirement preserves immutable source pins,
+        memo/history/session relationship. Empty request body;204 with resulting geN.
+      parameters:
+      - name: Origin
+        in: header
+        required: true
+        schema:
+          type: string
+          format: uri
+      - name: If-Match
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^"ge[1-9][0-9]*"$
+      responses:
+        '204':
+          description: '204'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"ge[1-9][0-9]*"$
+        '400':
+          description: '400'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '401':
+          description: '401'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '403':
+          description: '403'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '404':
+          description: '404'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '409':
+          description: '409'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '412':
+          description: '412'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '428':
+          description: '428'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '503':
+          description: '503'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+  /api/spaces/{spaceId}/roadmaps/{roadmapId}/github-evidence/{evidenceId}/revisions:
+    parameters:
+    - *id002
+    - *id003
+    - name: evidenceId
+      in: path
+      required: true
+      schema: *id001
+    get:
+      operationId: listGitHubLearningEvidenceRevisions
+      description: Fresh common-session ROADMAP and GITHUB_EVIDENCE authority; registered
+        PRIVATE PERSONAL OWNER only. Descending immutable evidence version; default5
+        max10; known retired roots remain readable.
+      parameters:
+      - name: before
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 9007199254740991
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 5
+      responses:
+        '200':
+          description: '200'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                type: array
+                maxItems: 10
+                items:
+                  $ref: '#/components/schemas/Revision'
+        '400':
+          description: '400'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '401':
+          description: '401'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '403':
+          description: '403'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '404':
+          description: '404'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '409':
+          description: '409'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '412':
+          description: '412'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '428':
+          description: '428'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '503':
+          description: '503'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+  /api/spaces/{spaceId}/github-learning-evidence:
+    parameters:
+    - name: spaceId
+      in: path
+      required: true
+      schema: *id001
+    get:
+      operationId: listLearningForImportedGitHubCommit
+      description: Fresh common-session ROADMAP and GITHUB_EVIDENCE authority; registered
+        PRIVATE PERSONAL OWNER only. Learning-local reverse read; exact tenant and
+        imported IDs. Current roadmap title/state, pinned node label, no memo in catalog;
+        inspect original for current detail. No Integration fanout.
+      parameters:
+      - name: repositoryId
+        in: query
+        required: true
+        schema: &id004
+          type: string
+          format: uuid
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+      - name: commitId
+        in: query
+        required: true
+        schema: *id004
+      - name: state
+        in: query
+        required: false
+        schema:
+          enum:
+          - ACTIVE
+          - RETIRED
+          default: ACTIVE
+      - name: after
+        in: query
+        required: false
+        schema: *id004
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      responses:
+        '200':
+          description: '200'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RelatedPage'
+        '400':
+          description: '400'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '401':
+          description: '401'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '403':
+          description: '403'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '404':
+          description: '404'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '409':
+          description: '409'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '412':
+          description: '412'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '428':
+          description: '428'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '503':
+          description: '503'
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest
+  schemas:
+    Evidence:
+      type: object
+      additionalProperties: false
+      required:
+      - evidenceId
+      - roadmapId
+      - spaceId
+      - nodeId
+      - repositoryId
+      - commitId
+      - nodeTitle
+      - visibility
+      - state
+      - version
+      - commitVersion
+      - repositoryFullName
+      - sha
+      - subject
+      - authorLogin
+      - committedAt
+      - importedAt
+      - url
+      - memo
+      - createdAt
+      - updatedAt
+      properties:
+        evidenceId:
+          type: string
+          format: uuid
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+        roadmapId:
+          type: string
+          format: uuid
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+        spaceId:
+          type: string
+          format: uuid
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+        nodeId: &id006
+          type: string
+          format: uuid
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+        repositoryId: &id007
+          type: string
+          format: uuid
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+        commitId: &id008
+          type: string
+          format: uuid
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+        nodeTitle:
+          type: string
+          minLength: 1
+          maxLength: 200
+        visibility:
+          const: PRIVATE
+        state:
+          enum:
+          - ACTIVE
+          - RETIRED
+        version: &id010
+          type: integer
+          minimum: 1
+          maximum: 9007199254740991
+        commitVersion:
+          const: 1
+        repositoryFullName: &id012
+          type: string
+          pattern: ^[A-Za-z0-9-]{1,39}/[A-Za-z0-9_.-]{1,100}$
+        sha: &id013
+          type: string
+          pattern: ^([0-9a-f]{40}|[0-9a-f]{64})$
+        subject:
+          type: string
+          maxLength: 500
+        authorLogin:
+          type:
+          - string
+          - 'null'
+        committedAt: &id005
+          type: string
+          format: date-time
+        importedAt: *id005
+        url:
+          type: string
+          format: uri
+        memo: &id009
+          type: string
+          description: At most8192 UTF-8 bytes; no controls except tab/CR/LF.
+        createdAt: *id005
+        updatedAt: *id005
+    Create:
+      type: object
+      additionalProperties: false
+      required:
+      - nodeId
+      - repositoryId
+      - commitId
+      - memo
+      properties:
+        nodeId: *id006
+        repositoryId: *id007
+        commitId: *id008
+        memo: *id009
+    Memo:
+      type: object
+      additionalProperties: false
+      required:
+      - memo
+      properties:
+        memo: *id009
+    Revision:
+      type: object
+      additionalProperties: false
+      required:
+      - revisionId
+      - evidenceId
+      - version
+      - actorId
+      - occurredAt
+      - snapshot
+      properties:
+        revisionId: *id001
+        evidenceId: *id001
+        version: *id010
+        actorId: *id001
+        occurredAt: *id005
+        snapshot:
+          $ref: '#/components/schemas/Evidence'
+    Related:
+      type: object
+      additionalProperties: false
+      required:
+      - evidenceId
+      - roadmapId
+      - roadmapTitle
+      - roadmapState
+      - nodeId
+      - nodeTitle
+      - evidenceState
+      - evidenceVersion
+      - repositoryId
+      - commitId
+      - repositoryFullName
+      - sha
+      properties:
+        evidenceId: *id001
+        roadmapId: *id001
+        roadmapTitle: &id011
+          type: string
+        roadmapState:
+          enum:
+          - ACTIVE
+          - RETIRED
+        nodeId: *id001
+        nodeTitle: *id011
+        evidenceState:
+          enum:
+          - ACTIVE
+          - RETIRED
+        evidenceVersion: *id010
+        repositoryId: *id001
+        commitId: *id001
+        repositoryFullName: *id012
+        sha: *id013
+    Page:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - nextAfter
+      properties:
+        items:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/Evidence'
+        nextAfter:
+          anyOf:
+          - *id001
+          - type: 'null'
+    RelatedPage:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - nextAfter
+      properties:
+        items:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/Related'
+        nextAfter:
+          anyOf:
+          - *id001
+          - type: 'null'

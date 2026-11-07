@@ -1,0 +1,381 @@
+openapi: 3.1.0
+info:
+  title: Private Space in-app notification preferences and missed deliveries
+  version: 1.0.0
+  description: 'Notification-owned PERSONAL/PRIVATE Space-wide preference, not per-browser
+    or per-account. Fresh NOTIFICATION_READ/WRITE via the dedicated Space capability
+    on every request. Default enabled version zero is virtual: GET/no-op never inserts
+    rows, revisions or events. Exact boolean JSON, strong npN including np0, no-store,
+    TLS, same-origin writes and one opaque session. Current no-op emits nothing; stale
+    write fails even if requested value already matches. Preference mutation and first-time
+    dispatch consumption serialize under one own-DB Space lock. A previously unseen
+    ReminderDispatched is judged at processing time, including late recovery; disabled
+    commits Inbox+immutable suppression+Outbox, with exact source envelope and preference
+    revision. Duplicate/recovery bytes never reconsider a prior outcome. Re-enabling
+    affects newly processed events only, does not backfill missed items or erase existing
+    inbox/read/archive state, change Planning intents, cancel pending dispatches or
+    recall dispatched facts. Missed history is immutable and read-only, 20 default/100
+    max ascending cursor bound to Space/type; settings audit 5 default/10 max descending
+    exclusive before. Empty reads, exact singleton queries, unknown/ambiguous fields
+    rejected. Lost write response requires current setting refresh; never blindly
+    retry an opposite value. Settings/IDs/audit survive guest account claim. No external
+    delivery channel or AI.'
+servers:
+- url: https://localhost:8443
+security:
+- browserSession: []
+paths:
+  /api/spaces/{spaceId}/notification-preference:
+    parameters:
+    - &id002
+      name: spaceId
+      in: path
+      required: true
+      schema: &id006
+        type: string
+        format: uuid
+        pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+    get:
+      operationId: getPrivateNotificationPreference
+      responses:
+        '200':
+          description: Canonical private result
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            ETag: &id001
+              schema:
+                type: string
+                pattern: ^"np(0|[1-9][0-9]*)"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Preference'
+        '400':
+          description: Malformed, duplicate, unknown query or non-empty read body
+        '401':
+          description: No valid common browser session
+        '403':
+          description: Bad origin or insufficient current write permission
+        '404':
+          description: Space unavailable
+        '503':
+          description: Owner storage or required authority unavailable; no partial
+            mutation, inspect current preference before retrying an uncertain write
+    put:
+      operationId: setPrivateNotificationPreference
+      responses:
+        '200':
+          description: Canonical private result
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            ETag: *id001
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Preference'
+        '400':
+          description: Malformed, duplicate, unknown query or non-empty read body
+        '401':
+          description: No valid common browser session
+        '403':
+          description: Bad origin or insufficient current write permission
+        '404':
+          description: Space unavailable
+        '412':
+          description: Current version changed; refresh before another write
+        '413':
+          description: Request exceeds 1024 bytes
+        '415':
+          description: JSON required
+        '428':
+          description: Missing If-Match
+        '503':
+          description: Owner storage or required authority unavailable; no partial
+            mutation, inspect current preference before retrying an uncertain write
+      parameters:
+      - name: If-Match
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^"np(0|[1-9][0-9]*)"$
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - inAppEnabled
+              properties:
+                inAppEnabled:
+                  type: boolean
+  /api/spaces/{spaceId}/notification-preference/revisions:
+    parameters:
+    - *id002
+    get:
+      operationId: getPrivateNotificationPreferenceRevisions
+      responses:
+        '200':
+          description: Canonical private result
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+          content:
+            application/json:
+              schema:
+                type: array
+                maxItems: 10
+                items:
+                  $ref: '#/components/schemas/PreferenceRevision'
+        '400':
+          description: Malformed, duplicate, unknown query or non-empty read body
+        '401':
+          description: No valid common browser session
+        '403':
+          description: Bad origin or insufficient current write permission
+        '404':
+          description: Space unavailable
+        '503':
+          description: Owner storage or required authority unavailable; no partial
+            mutation, inspect current preference before retrying an uncertain write
+      parameters:
+      - name: before
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 9223372036854775807
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 5
+  /api/spaces/{spaceId}/notification-suppressions:
+    parameters:
+    - *id002
+    get:
+      operationId: listPrivateMissedNotifications
+      responses:
+        '200':
+          description: Canonical private result
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuppressionPage'
+        '400':
+          description: Malformed, duplicate, unknown query or non-empty read body
+        '401':
+          description: No valid common browser session
+        '403':
+          description: Bad origin or insufficient current write permission
+        '404':
+          description: Space unavailable
+        '503':
+          description: Owner storage or required authority unavailable; no partial
+            mutation, inspect current preference before retrying an uncertain write
+      parameters:
+      - name: after
+        in: query
+        required: false
+        schema:
+          type: string
+          maxLength: 256
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+components:
+  securitySchemes:
+    browserSession:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest
+  schemas:
+    Source:
+      type: object
+      additionalProperties: false
+      required:
+      - deliveryId
+      - reminderId
+      - reminderVersion
+      - scheduleId
+      - scheduleVersion
+      - minutesBefore
+      - title
+      - startsAt
+      - endsAt
+      - timeZone
+      - startsLocal
+      - endsLocal
+      - startsOffset
+      - endsOffset
+      - remindsAt
+      - remindsLocal
+      - remindsOffset
+      - armedAt
+      - dispatchedAt
+      - armedBy
+      properties:
+        deliveryId: &id003
+          type: string
+          format: uuid
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+        reminderId: *id003
+        reminderVersion: &id004
+          type: integer
+          format: int64
+          minimum: 1
+        scheduleId: *id003
+        scheduleVersion: *id004
+        minutesBefore:
+          type: integer
+          minimum: 0
+          maximum: 10080
+        title:
+          type: string
+          maxLength: 200
+        startsAt: &id005
+          type: string
+          format: date-time
+        endsAt: *id005
+        timeZone:
+          type: string
+        startsLocal:
+          type: string
+        endsLocal:
+          type: string
+        startsOffset:
+          type: string
+        endsOffset:
+          type: string
+        remindsAt: *id005
+        remindsLocal:
+          type: string
+        remindsOffset:
+          type: string
+        armedAt: *id005
+        dispatchedAt: *id005
+        armedBy: *id003
+    Preference:
+      type: object
+      additionalProperties: false
+      required:
+      - preferenceId
+      - spaceId
+      - visibility
+      - version
+      - inAppEnabled
+      - updatedAt
+      properties:
+        preferenceId:
+          anyOf:
+          - *id006
+          - type: 'null'
+        spaceId: *id006
+        visibility:
+          type: string
+          const: PRIVATE
+        version:
+          type: integer
+          minimum: 0
+        inAppEnabled:
+          type: boolean
+        updatedAt:
+          type:
+          - string
+          - 'null'
+          format: date-time
+    PreferenceRevision:
+      type: object
+      additionalProperties: false
+      required:
+      - revisionId
+      - version
+      - actorId
+      - occurredAt
+      - snapshot
+      properties:
+        revisionId: *id006
+        version:
+          type: integer
+          minimum: 1
+        actorId: *id006
+        occurredAt:
+          type: string
+          format: date-time
+        snapshot:
+          $ref: '#/components/schemas/Preference'
+    Suppression:
+      type: object
+      additionalProperties: false
+      required:
+      - suppressionId
+      - spaceId
+      - visibility
+      - originEventId
+      - source
+      - preferenceId
+      - preferenceVersion
+      - reason
+      - processedAt
+      properties:
+        suppressionId: *id006
+        spaceId: *id006
+        visibility:
+          type: string
+          const: PRIVATE
+        originEventId: *id006
+        source:
+          $ref: '#/components/schemas/Source'
+        preferenceId: *id006
+        preferenceVersion:
+          type: integer
+          minimum: 1
+        reason:
+          type: string
+          const: PREFERENCE_DISABLED
+        processedAt:
+          type: string
+          format: date-time
+    SuppressionPage:
+      type: object
+      additionalProperties: false
+      required:
+      - spaceId
+      - items
+      - nextAfter
+      properties:
+        spaceId: *id006
+        items:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/Suppression'
+        nextAfter:
+          type:
+          - string
+          - 'null'
+          maxLength: 256

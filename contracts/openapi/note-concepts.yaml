@@ -1,0 +1,512 @@
+openapi: 3.1.0
+info:
+  title: Private Concepts and Private Note Concept References
+  version: 1.2.1
+servers:
+- url: https://localhost:8443
+security:
+- guestCookie: []
+paths:
+  /api/spaces/{spaceId}/concepts:
+    parameters:
+    - &id005
+      name: spaceId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: UUIDv7 PERSONAL PRIVATE Space, fresh Space/Identity authorization
+    get:
+      responses:
+        '200':
+          description: Authorized response; Cache-Control no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConceptPage'
+        '400': &id001
+          description: Malformed bounded request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401': &id002
+          description: Missing/revoked guest or registered session credential
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404': &id003
+          description: Space or object unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503': &id004
+          description: Authority/storage unavailable; no mutation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: after
+        in: query
+        schema:
+          type: string
+          format: uuid
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      - name: state
+        in: query
+        schema:
+          type: string
+          enum:
+          - ACTIVE
+          - RETIRED
+          default: ACTIVE
+      description: Defaults to ACTIVE. Explicit RETIRED lists only PRIVATE retired
+        Concepts in this authorized Space, ordered by immutable UUIDv7 with an exclusive
+        after cursor. Each request performs fresh authority checks. Unknown or repeated
+        query keys are rejected. No restore or publication.
+    post:
+      responses:
+        '400': *id001
+        '401': *id002
+        '404': *id003
+        '503': *id004
+        '201':
+          description: Created PRIVATE Concept with version 1 and strong ETag
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Concept'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConceptEdit'
+  /api/spaces/{spaceId}/concepts/{conceptId}:
+    parameters:
+    - *id005
+    - name: conceptId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: Immutable UUIDv7
+    get:
+      responses:
+        '200':
+          description: Authorized response; Cache-Control no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Concept'
+        '400': *id001
+        '401': *id002
+        '404': *id003
+        '503': *id004
+    put:
+      responses:
+        '200':
+          description: Authorized response; Cache-Control no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Concept'
+        '400': *id001
+        '401': *id002
+        '404': *id003
+        '503': *id004
+        '412':
+          description: Concurrent modification
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '428':
+          description: Missing If-Match
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: If-Match
+        in: header
+        required: true
+        schema:
+          type: string
+        description: Strong Concept version ETag or independent reference ETag "cN"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConceptEdit'
+    delete:
+      responses:
+        '400': *id001
+        '401': *id002
+        '404': *id003
+        '503': *id004
+        '204':
+          description: Retired; canonical revision/event retained
+        '412':
+          description: Concurrent modification
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '428':
+          description: Missing If-Match
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: If-Match
+        in: header
+        required: true
+        schema:
+          type: string
+        description: Strong Concept version ETag or independent reference ETag "cN"
+  /api/spaces/{spaceId}/concepts/{conceptId}/revisions:
+    parameters:
+    - *id005
+    - name: conceptId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: Immutable UUIDv7
+    get:
+      responses:
+        '200':
+          description: Authorized response; Cache-Control no-store
+          content:
+            application/json:
+              schema:
+                type: array
+                maxItems: 10
+                items:
+                  $ref: '#/components/schemas/ConceptRevision'
+        '400': *id001
+        '401': *id002
+        '404': *id003
+        '503': *id004
+      parameters:
+      - name: before
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 5
+      description: Immutable history remains readable for a known retired Concept
+        after fresh Space authorization. Current Concept GET and writes stay active-only.
+  /api/spaces/{spaceId}/notes/{noteId}/concepts:
+    description: The Note remains PRIVATE. Content stores immutable Knowledge IDs
+      only. New IDs must be ACTIVE same-Space PRIVATE or canonical PUBLIC Concepts
+      validated by Knowledge and fresh Space authority. Existing IDs may be retained,
+      reordered or removed without revalidating target availability. Maximum 20 unique
+      IDs.
+    parameters:
+    - *id005
+    - name: noteId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: Immutable UUIDv7
+    get:
+      responses:
+        '200': &id006
+          description: Authorized response; Cache-Control no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReferenceSnapshot'
+        '400': *id001
+        '401': *id002
+        '404': *id003
+        '503': *id004
+    put:
+      responses:
+        '200': *id006
+        '400': *id001
+        '401': *id002
+        '404': *id003
+        '503': *id004
+        '412':
+          description: Concurrent modification
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '428':
+          description: Missing If-Match
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: If-Match
+        in: header
+        required: true
+        schema:
+          type: string
+        description: Strong Concept version ETag or independent reference ETag "cN"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConceptReferences'
+  /api/spaces/{spaceId}/notes/{noteId}/concepts/revisions:
+    parameters:
+    - *id005
+    - name: noteId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: Immutable UUIDv7
+    get:
+      responses:
+        '200':
+          description: Descending immutable reference revisions; Cache-Control no-store
+          content:
+            application/json:
+              schema:
+                type: array
+                maxItems: 10
+                items:
+                  $ref: '#/components/schemas/ReferenceRevision'
+        '400': *id001
+        '401': *id002
+        '404': *id003
+        '503': *id004
+      parameters:
+      - name: before
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 5
+components:
+  securitySchemes:
+    guestCookie:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest
+  schemas:
+    ConceptEdit:
+      type: object
+      additionalProperties: false
+      required:
+      - title
+      - description
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+          description: At most 32768 UTF-8 bytes
+    ConceptReferences:
+      type: object
+      additionalProperties: false
+      required:
+      - conceptIds
+      properties:
+        conceptIds:
+          type: array
+          maxItems: 20
+          uniqueItems: true
+          items:
+            type: string
+            format: uuid
+    Concept:
+      type: object
+      required:
+      - conceptId
+      - spaceId
+      - visibility
+      - state
+      - version
+      - title
+      - description
+      - createdAt
+      - updatedAt
+      properties:
+        conceptId: &id007
+          type: string
+          format: uuid
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+        spaceId: *id007
+        visibility:
+          const: PRIVATE
+        state:
+          enum:
+          - ACTIVE
+          - RETIRED
+        version:
+          type: integer
+          minimum: 1
+        title:
+          type: string
+        description:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    ReferenceSnapshot:
+      type: object
+      additionalProperties: false
+      required:
+      - noteId
+      - conceptVersion
+      - items
+      properties:
+        noteId: *id007
+        conceptVersion:
+          type: integer
+          minimum: 0
+        items:
+          type: array
+          maxItems: 20
+          items:
+            type: object
+            additionalProperties: false
+            required:
+            - linkId
+            - conceptId
+            properties:
+              linkId: *id007
+              conceptId: *id007
+    ReferenceRevision:
+      type: object
+      additionalProperties: false
+      required:
+      - revisionId
+      - conceptVersion
+      - actorId
+      - occurredAt
+      - snapshot
+      properties:
+        revisionId: *id007
+        conceptVersion:
+          type: integer
+          minimum: 1
+        actorId: *id007
+        occurredAt:
+          type: string
+          format: date-time
+        snapshot:
+          $ref: '#/components/schemas/ReferenceSnapshot'
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+      - error
+    ConceptSummary:
+      type: object
+      additionalProperties: false
+      required:
+      - conceptId
+      - title
+      - version
+      - updatedAt
+      properties:
+        conceptId: &id008
+          type: string
+          format: uuid
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        version:
+          type: integer
+          minimum: 1
+        updatedAt:
+          type: string
+          format: date-time
+    ConceptPage:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - nextAfter
+      properties:
+        items:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/ConceptSummary'
+        nextAfter:
+          anyOf:
+          - *id008
+          - type: 'null'
+    ConceptRevision:
+      type: object
+      additionalProperties: false
+      required:
+      - revisionId
+      - conceptId
+      - version
+      - state
+      - title
+      - description
+      - actorId
+      - occurredAt
+      properties:
+        revisionId: *id008
+        conceptId: *id008
+        version:
+          type: integer
+          minimum: 1
+        state:
+          type: string
+          enum:
+          - ACTIVE
+          - RETIRED
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+          description: At most 32768 UTF-8 bytes
+        actorId: *id008
+        occurredAt:
+          type: string
+          format: date-time

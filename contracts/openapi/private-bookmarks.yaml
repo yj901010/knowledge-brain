@@ -1,0 +1,439 @@
+openapi: 3.1.0
+info:
+  title: Private Content bookmarks
+  version: 1.0.0
+  description: Content-owned Personal/Private bookmarks, independent UUIDv7 IDs/versions/immutable
+    revisions/Transactional Outbox. Explicit three-field text input, no automatic
+    URL fetch, parsing, publishing or domain linkage. Same URL may have distinct bookmark
+    IDs. Fresh BOOKMARK_READ/WRITE through existing dedicated Space Content capability/common
+    principal for every request; visible members read, OWNER/ADMIN/EDITOR write, no
+    auth cache. TLS, same-origin mutation, secure opaque session, no-store, exact
+    singleton queries/JSON and bounded bodies. Current no-op emits nothing; stale
+    versions checked before no-op. Catalog20 default/100 maximum has compact summaries
+    without memo and ascending opaque cursor bound to Space/lifecycle. History5/10
+    descending exclusive version; live catalog pages are not frozen snapshots. Retired
+    GET/history preserved, edits404, current archival no-op204. Stable32-hex creation
+    key replays original v1 rather than latest; changed intent409. Lost create freezes
+    the same request/key in memory for retry. No private browser storage. IDs/revisions/keys/guest
+    actors survive registered Space claim. Independent Bookmark changes never rewrite
+    Note/Concept/Learning/Planning/Notification facts. Existing event versions remain
+    unchanged.
+servers:
+- url: https://localhost:8443
+security:
+- sessionCookie: []
+paths:
+  /api/spaces/{spaceId}/bookmarks:
+    parameters:
+    - &id004
+      name: spaceId
+      in: path
+      required: true
+      schema: &id005
+        type: string
+        format: uuid
+        pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+    get:
+      operationId: listPrivateBookmarks
+      responses:
+        '200':
+          description: Canonical private result; known retired objects/history remain
+            available
+          headers:
+            Cache-Control: &id001
+              schema:
+                type: string
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Page'
+        '400':
+          description: Malformed, ambiguous/unknown fields, invalid cursor/URL or
+            non-empty read/DELETE body
+        '401':
+          description: No valid common guest/registered browser session
+        '403':
+          description: Origin or current role denied
+        '404':
+          description: Private Space/object unavailable, or editing a retired bookmark
+        '503':
+          description: Canonical storage or current authority unavailable; no partial
+            mutation
+      parameters:
+      - name: state
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - ACTIVE
+          - RETIRED
+          default: ACTIVE
+      - name: after
+        in: query
+        required: false
+        schema:
+          type: string
+          maxLength: 256
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+    post:
+      operationId: createPrivateBookmark
+      responses:
+        '200':
+          description: 'Same key and validated intent: original v1, even after edit/archive/account
+            claim'
+          headers:
+            Cache-Control: *id001
+            ETag: &id002
+              schema: &id007
+                type: string
+                pattern: ^"bm[1-9][0-9]*"$
+            Location:
+              schema:
+                type: string
+          content: &id003
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bookmark'
+        '400':
+          description: Malformed, ambiguous/unknown fields, invalid cursor/URL or
+            non-empty read/DELETE body
+        '401':
+          description: No valid common guest/registered browser session
+        '403':
+          description: Origin or current role denied
+        '404':
+          description: Private Space/object unavailable, or editing a retired bookmark
+        '503':
+          description: Canonical storage or current authority unavailable; no partial
+            mutation
+        '409':
+          description: Creation key used for different validated intent
+        '412':
+          description: Stale current version, including stale unchanged input
+        '413':
+          description: JSON exceeds256 KiB
+        '415':
+          description: JSON required
+        '428':
+          description: Missing strong If-Match
+        '201':
+          description: First creation
+          headers:
+            Cache-Control: *id001
+            ETag: *id002
+            Location:
+              schema:
+                type: string
+          content: *id003
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^[0-9a-f]{32}$
+      requestBody: &id006
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Input'
+  /api/spaces/{spaceId}/bookmarks/{bookmarkId}:
+    parameters:
+    - *id004
+    - &id009
+      name: bookmarkId
+      in: path
+      required: true
+      schema: *id005
+    get:
+      operationId: getPrivateBookmark
+      responses:
+        '200':
+          description: Canonical private result; known retired objects/history remain
+            available
+          headers:
+            Cache-Control: *id001
+            ETag: *id002
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bookmark'
+        '400':
+          description: Malformed, ambiguous/unknown fields, invalid cursor/URL or
+            non-empty read/DELETE body
+        '401':
+          description: No valid common guest/registered browser session
+        '403':
+          description: Origin or current role denied
+        '404':
+          description: Private Space/object unavailable, or editing a retired bookmark
+        '503':
+          description: Canonical storage or current authority unavailable; no partial
+            mutation
+    put:
+      operationId: updatePrivateBookmark
+      responses:
+        '200':
+          description: Canonical private result; known retired objects/history remain
+            available
+          headers:
+            Cache-Control: *id001
+            ETag: *id002
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bookmark'
+        '400':
+          description: Malformed, ambiguous/unknown fields, invalid cursor/URL or
+            non-empty read/DELETE body
+        '401':
+          description: No valid common guest/registered browser session
+        '403':
+          description: Origin or current role denied
+        '404':
+          description: Private Space/object unavailable, or editing a retired bookmark
+        '503':
+          description: Canonical storage or current authority unavailable; no partial
+            mutation
+        '409':
+          description: Creation key used for different validated intent
+        '412':
+          description: Stale current version, including stale unchanged input
+        '413':
+          description: JSON exceeds256 KiB
+        '415':
+          description: JSON required
+        '428':
+          description: Missing strong If-Match
+      requestBody: *id006
+      parameters: &id008
+      - name: If-Match
+        in: header
+        required: true
+        schema: *id007
+    delete:
+      operationId: archivePrivateBookmark
+      responses:
+        '204':
+          description: Canonical private result; known retired objects/history remain
+            available
+          headers:
+            Cache-Control: *id001
+            ETag: *id002
+        '400':
+          description: Malformed, ambiguous/unknown fields, invalid cursor/URL or
+            non-empty read/DELETE body
+        '401':
+          description: No valid common guest/registered browser session
+        '403':
+          description: Origin or current role denied
+        '404':
+          description: Private Space/object unavailable, or editing a retired bookmark
+        '503':
+          description: Canonical storage or current authority unavailable; no partial
+            mutation
+        '409':
+          description: Creation key used for different validated intent
+        '412':
+          description: Stale current version, including stale unchanged input
+        '413':
+          description: JSON exceeds256 KiB
+        '415':
+          description: JSON required
+        '428':
+          description: Missing strong If-Match
+      parameters: *id008
+  /api/spaces/{spaceId}/bookmarks/{bookmarkId}/revisions:
+    parameters:
+    - *id004
+    - *id009
+    get:
+      operationId: getPrivateBookmarkRevisions
+      responses:
+        '200':
+          description: Canonical private result; known retired objects/history remain
+            available
+          headers:
+            Cache-Control: *id001
+          content:
+            application/json:
+              schema:
+                type: array
+                maxItems: 10
+                items:
+                  $ref: '#/components/schemas/Revision'
+        '400':
+          description: Malformed, ambiguous/unknown fields, invalid cursor/URL or
+            non-empty read/DELETE body
+        '401':
+          description: No valid common guest/registered browser session
+        '403':
+          description: Origin or current role denied
+        '404':
+          description: Private Space/object unavailable, or editing a retired bookmark
+        '503':
+          description: Canonical storage or current authority unavailable; no partial
+            mutation
+      parameters:
+      - name: before
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 9223372036854775807
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 5
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest
+  schemas:
+    Input:
+      type: object
+      additionalProperties: false
+      required:
+      - title
+      - url
+      - memo
+      properties:
+        title: &id010
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: Nonblank, at most200 Unicode codepoints/800 UTF-8 bytes; no
+            newline/tab/control/unpaired surrogate
+        url: &id011
+          type: string
+          format: uri
+          maxLength: 2048
+          pattern: ^[\x21-\x7e]+$
+          description: Exact literal ASCII absolute HTTP/HTTPS URI, DNS/IPv4/IPv6
+            host required, no user-info, whitespace, backslash or ambiguous authority;
+            absent port or1..65535. Use percent-encoded path/query and punycode host
+            for international addresses. No normalization, remote fetch, preview or
+            favicon request.
+        memo: &id012
+          type: string
+          maxLength: 32768
+          description: At most32768 UTF-8 bytes; preserves whitespace, CR/LF/tab;
+            rejects other ISO control/unpaired surrogate
+    Bookmark:
+      type: object
+      additionalProperties: false
+      required:
+      - bookmarkId
+      - spaceId
+      - visibility
+      - state
+      - version
+      - title
+      - url
+      - memo
+      - createdAt
+      - updatedAt
+      properties:
+        bookmarkId: *id005
+        spaceId: *id005
+        visibility:
+          type: string
+          const: PRIVATE
+        state: &id013
+          type: string
+          enum:
+          - ACTIVE
+          - RETIRED
+        version: &id014
+          type: integer
+          minimum: 1
+        title: *id010
+        url: *id011
+        memo: *id012
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt: &id015
+          type: string
+          format: date-time
+    Summary:
+      type: object
+      additionalProperties: false
+      required:
+      - bookmarkId
+      - title
+      - url
+      - state
+      - version
+      - updatedAt
+      properties:
+        bookmarkId: *id005
+        title: *id010
+        url: *id011
+        state: *id013
+        version: *id014
+        updatedAt: *id015
+    Revision:
+      type: object
+      additionalProperties: false
+      required:
+      - revisionId
+      - bookmarkId
+      - version
+      - actorId
+      - occurredAt
+      - snapshot
+      properties:
+        revisionId: *id005
+        bookmarkId: *id005
+        version:
+          type: integer
+          minimum: 1
+        actorId: *id005
+        occurredAt:
+          type: string
+          format: date-time
+        snapshot:
+          $ref: '#/components/schemas/Bookmark'
+    Page:
+      type: object
+      additionalProperties: false
+      required:
+      - spaceId
+      - state
+      - items
+      - nextAfter
+      properties:
+        spaceId: *id005
+        state:
+          type: string
+          enum:
+          - ACTIVE
+          - RETIRED
+        items:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/Summary'
+        nextAfter:
+          type:
+          - string
+          - 'null'
+          maxLength: 256

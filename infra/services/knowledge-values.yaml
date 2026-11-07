@@ -1,0 +1,96 @@
+replicaCount: 2
+image:
+  repository: knowledge-brain/knowledge-service
+  tag: ''
+  pullPolicy: IfNotPresent
+resources:
+  requests:
+    cpu: 250m
+    memory: 384Mi
+  limits:
+    cpu: '1'
+    memory: 768Mi
+env:
+- name: BRAIN_KNOWLEDGE_PUBLIC_ENABLED
+  value: 'true'
+- name: BRAIN_KNOWLEDGE_PERSISTENCE_ENABLED
+  value: 'true'
+- name: BRAIN_KNOWLEDGE_API_ENABLED
+  value: 'true'
+- name: BRAIN_KNOWLEDGE_DATABASE_URL
+  value: jdbc:postgresql://brain-postgres.brain-data.svc:5432/brain_knowledge
+- name: BRAIN_KNOWLEDGE_DATABASE_PASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: brain-knowledge-db
+      key: password
+- name: BRAIN_KNOWLEDGE_DATABASE_MAXIMUM_POOL_SIZE
+  value: '10'
+- name: BRAIN_KNOWLEDGE_SPACE_ORIGIN
+  value: https://space-service.brain-apps.svc:8080
+- name: BRAIN_KNOWLEDGE_SPACE_TRUST_FILE
+  value: /space-trust/ca.crt
+- name: BRAIN_KNOWLEDGE_SPACE_AUTHORIZATION_KEY
+  valueFrom:
+    secretKeyRef:
+      name: brain-knowledge-space-authorization
+      key: key
+- name: SERVER_SSL_ENABLED
+  value: 'true'
+- name: SERVER_SSL_CERTIFICATE
+  value: file:/api-tls/tls.crt
+- name: SERVER_SSL_CERTIFICATE_PRIVATE_KEY
+  value: file:/api-tls/tls.key
+- name: SERVER_FORWARD_HEADERS_STRATEGY
+  value: NONE
+- name: MANAGEMENT_ENDPOINT_HEALTH_GROUP_READINESS_INCLUDE
+  value: readinessState,knowledgeDatabase
+- name: BRAIN_KNOWLEDGE_BROWSER_ORIGIN
+  value: https://localhost:8443
+- name: BRAIN_KNOWLEDGE_CONTENT_KEY
+  valueFrom:
+    secretKeyRef:
+      name: brain-content-knowledge-authorization
+      key: key
+- name: BRAIN_KNOWLEDGE_SNAPSHOT_ENABLED
+  value: 'true'
+- name: BRAIN_KNOWLEDGE_SNAPSHOT_KEY
+  valueFrom:
+    secretKeyRef:
+      name: brain-knowledge-network-snapshot
+      key: key
+- name: BRAIN_KNOWLEDGE_ACTIVITY_EXPORT_ENABLED
+  value: 'true'
+- name: BRAIN_KNOWLEDGE_ACTIVITY_EXPORT_KEY
+  valueFrom:
+    secretKeyRef:
+      name: brain-knowledge-activity-export
+      key: key
+- name: BRAIN_KNOWLEDGE_PUBLIC_DISCOVERY_ENABLED
+  value: 'false'
+- name: BRAIN_KNOWLEDGE_PUBLIC_DISCOVERY_SNAPSHOT_KEY
+  valueFrom:
+    secretKeyRef:
+      name: brain-knowledge-public-snapshot
+      key: key
+- name: BRAIN_KNOWLEDGE_PUBLIC_DISCOVERY_CHECK_KEY
+  valueFrom:
+    secretKeyRef:
+      name: brain-knowledge-public-check
+      key: key
+probeScheme: HTTPS
+restrictGuestApiIngress: true
+extraVolumeMounts:
+- name: api-tls
+  mountPath: /api-tls
+  readOnly: true
+- name: space-trust
+  mountPath: /space-trust
+  readOnly: true
+extraVolumes:
+- name: api-tls
+  secret:
+    secretName: brain-knowledge-api-tls
+- name: space-trust
+  secret:
+    secretName: brain-guest-api-trust

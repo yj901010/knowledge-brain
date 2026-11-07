@@ -1,0 +1,100 @@
+Private Claim citations delivery, 2026-10-11 Asia/Seoul
+
+AGENTS.md, PROJECT.md and the existing Claim/Source contracts were read before
+implementation. Knowledge owns the Citation aggregate, pinned local revisions,
+ACID transaction, Outbox and CDC. Existing Space/common-principal authority,
+UUIDv7, service/database ownership and Kubernetes topology are preserved.
+No new dependency, license change, external dataset or automatic network fetch.
+Citation writes preserve Claim DRAFT state and all referenced aggregate versions.
+
+Full Java 25 reactor: backend-validation-1791680499 Complete; BUILD SUCCESS.
+334 discovered, 318 executed, 16 unrelated optional integration cases skipped;
+zero failures/errors. Knowledge126 all passed, including Citation API10, actual
+production servlet filter chain6, real PostgreSQL13 and real Kafka/CDC1.
+GatewayProxyTest18 passed, including exact Citation routes, independent cite
+If-Match forwarding, 4096-byte body limit and bounded cursor/history queries.
+Evidence: .local/citation-backend-full.log, .local/citation-backend-proof.json.
+
+Final Citation-only Java25 Job backend-validation-1791680636 Complete: all30
+passed, no skips/failures/errors. The final PG revision additionally exercises
+actual active uniqueness through a direct canonical update with matching Source
+revision, supplementing Store duplicate409 behavior. Checks cover immutable pins
+through Source/Claim edits and Source retirement, retained known history after
+parent retirement, effective reads, scoped revision FKs, rollback, duplicate
+retire/recreate, pagination, version overflow and independent parents. Deterministic
+Concept/Claim, Source and Citation lock-set races preserve initial-version guards.
+Kafka checks decode the complete19-field payload, envelope, key/schema and trace.
+Evidence: .local/citation-backend-validation-1791680636.log.
+
+Registry Job citation-contract-validation-1791680461806713700 Complete:
+VALIDITY FULL, COMPATIBILITY FULL_TRANSITIVE, immutable knowledge/citation-events/1.
+Citation Proto SHA256:
+a420b00ecb90c788fed9be9bd43e1d52aafa91e74ca864338b871a97570b0d14
+Existing published Concept/Alias/Claim/Source Proto bytes are unchanged:
+concept 4d6e8a70859ac8a4c438e665522208211ab72d10edffd8168290766252ecbc72
+alias c432d80ca20139dd4d167fd3285231f8289928bb1475f8e1bc22e8f952fd3501
+claim 5d561e290384dcbc6f770fd5084d9c84002969879fcf027742271a2e5038edc4
+source 9f85bff46c7b0732a8d5dcfd138781e73b428cacc2238cfec66911c7472e5169
+brain-connect Helm revision19 deployed. knowledge.citation.v1 and the existing
+Connect/Knowledge validator Kafka users Ready; local topic1 partition/1 replica,
+604800000ms delete retention, literal producer/validator ACLs.
+OpenAPI136 local refs, Protobuf compilation, V6 FK/index checks, Helm base/local
+UTF-8 lint/render and final Python helper syntax passed.
+Evidence: .local/citation-contracts-proof.json.
+
+Final static Next.js16.4.0/TypeScript export Job
+ graph-static-build-1791680607974280500 Complete.
+License notices and inline-script CSP hashes passed the existing build checks.
+Knowledge builder knowledge-image-build-1791680523 init exit0, Ready;
+ knowledge-brain/knowledge-service:local-e83505a2bb3dcbcd.
+Gateway builder gateway-image-build-1791680656 init exit0, Ready;
+ knowledge-brain/gateway-service:local-d620013b1345d7fd.
+Knowledge imports1791680579-0/-1 and Gateway imports1791680687-0/-1 Complete,
+covering both local nodes. Install-LocalClaimCitations.py verified exact current
+builder imports before rollout. Knowledge and Gateway Ready1/1; all8 brain-apps
+deployments Ready1/1. Knowledge startup validated6 Flyway migrations, current6.
+Evidence: .local/citation-deployments.json and existing image/import metadata.
+
+Browser delivery verified20 distinct scenarios across the full run and focused
+corrections. Full Job graph-web-validation-1791680759 passed18 existing scenarios;
+Citation failed because its comparison Claim fixture duplicated the edited Claim,
+correctly triggering409. Public workflow failed because its new UPDATE proposal
+was contribution101 and the test searched only the first100 entries. The actual
+API/UI nextAfter paging worked. Public CREATE and UPDATE tests now capture their
+real POST201 identity, without deleting accumulated data or changing product APIs.
+First Citation retry1791680877 verified pins, conflicts, history and parent
+retirement but used a read-mode button after retained history mode. That selector
+now explicitly refreshes history.
+Final Citation Job graph-web-validation-1791680948 Complete:1 passed11.7s.
+Final public-only Job graph-web-validation-1791681019 Complete:1 passed20.2s.
+Reviewer test roles were granted and revoked by the existing scoped runner.
+No product runtime changes were needed after the initial full browser run.
+Evidence: .local/citation-browser-full-validation.txt,
+ .local/citation-browser-citation-first-retry-validation.txt,
+ .local/citation-browser-citation-final-validation.txt,
+ .local/citation-browser-public-final-validation.txt,
+ .local/citation-browser-proof.json.
+
+Citation UI exercised actual22-Source picker and20+2 Citation pages with duplicate
+source titles/stable IDs, successful UI POST, duplicate409, real Claim/Citation412
+with retained selections and explicit latest inspection/restart, nine-version
+history, fresh unlink acknowledgement, and unlink of a retired Source. Pins and
+cite ETag representation remain unchanged after current Claim/Source edits or
+Source retirement. Five sibling Concept/Alias/Claim/Source/Note drafts and unrelated
+canonical snapshots remain independent. Known history survives Claim/Concept
+retirement. Held reads are discarded after selection/close/Claim switch;503 clears
+stale rows with explicit retry; revocation clears private UI and storage remains
+empty. Foreign/public access is denied; untrusted text stays escaped and there
+are no automatic URL requests, JavaScript errors or CSP violations.
+Screenshots claim-citations.png1280x9434 and claim-citations-mobile.png390x12163
+were decoded by the runner and visually checked. Mobile document width fits390px;
+controls, pinned metadata and long identifiers wrap without horizontal overflow.
+
+Host https://localhost:8443/graph returned200 with project CA verification and
+no TLS bypass after the owned Gateway forward was restarted.
+Evidence: .local/citation-https-proof.json.
+
+Temporary build Pod/Service/NetworkPolicy/source ConfigMaps are removed only after
+checking exact metadata, Pod UID, labels/selectors, completed init and owner refs.
+Both final builders plus the superseded initial Gateway build are included.
+Evidence: .local/claim-citations-build-cleanup.json and build-ownership records.

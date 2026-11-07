@@ -1,0 +1,1 @@
+{"mappings":{"dynamic":"strict","properties":{"entityKey":{"type":"keyword"},"entityId":{"type":"keyword"},"kind":{"type":"keyword"},"spaceId":{"type":"keyword"},"visibility":{"type":"keyword"},"state":{"type":"keyword"},"canonicalVersion":{"type":"long"},"title":{"type":"text"},"text":{"type":"text"},"subjectConceptId":{"type":"keyword"}}}}

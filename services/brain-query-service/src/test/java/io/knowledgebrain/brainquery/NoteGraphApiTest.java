@@ -1,0 +1,19 @@
+package io.knowledgebrain.brainquery;
+import java.util.*;
+import jakarta.servlet.http.Cookie;
+import org.junit.jupiter.api.*;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.*;
+class NoteGraphApiTest {
+ UUID space=UUID.fromString("01900000-0000-7000-8000-000000000001");SpaceAuthorizationClient authority;GraphReadClient reader;NoteGraphController api;
+ @BeforeEach void setup(){authority=mock(SpaceAuthorizationClient.class);reader=mock(GraphReadClient.class);api=new NoteGraphController(authority,reader,new SimpleMeterRegistry());}
+ MockHttpServletRequest request(){var r=new MockHttpServletRequest();r.setSecure(true);r.setCookies(new Cookie("__Host-brain_guest","a".repeat(43)));return r;}
+ @Test void freshGraphAuthorityBeforeEveryReadAndNoStoreBoundedDto(){var view=new NoteGraphStore.View(List.of(new NoteGraphStore.Node(space,"<script>text</script>")),List.of(),true);when(reader.read(space,100)).thenReturn(view);var response=api.graph(space,request());api.graph(space,request());var order=inOrder(authority,reader);for(int i=0;i<2;i++){order.verify(authority).authorize(eq(space),eq("a".repeat(43)),anyString(),eq("NOTE_GRAPH"));order.verify(reader).read(space,100);}assertThat(response.getHeaders().getCacheControl()).isEqualTo("no-store");assertThat(response.getBody()).isEqualTo(view);}
+ @Test void authorityDenialOutageAndRevocationNeverReadTitlesEdgesOrCounts(){for(var status:List.of(HttpStatus.UNAUTHORIZED,HttpStatus.NOT_FOUND,HttpStatus.SERVICE_UNAVAILABLE)){when(authority.authorize(eq(space),anyString(),anyString(),eq("NOTE_GRAPH"))).thenThrow(new ResponseStatusException(status));assertThatThrownBy(()->api.graph(space,request())).isInstanceOf(ResponseStatusException.class).satisfies(e->assertThat(((ResponseStatusException)e).getStatusCode()).isEqualTo(status));}verifyNoInteractions(reader);}
+ @Test void malformedQueryCookieAndSpoofedIdentityRejectedBeforeAccess(){for(String v:List.of("0","201","01","-1","2000")){var r=request();r.addParameter("limit",v);assertThatThrownBy(()->api.graph(space,r)).isInstanceOf(ResponseStatusException.class);}var d=request();d.addParameter("limit","10","20");assertThatThrownBy(()->api.graph(space,d)).isInstanceOf(ResponseStatusException.class);var extra=request();extra.addParameter("spaceId",space.toString());assertThatThrownBy(()->api.graph(space,extra)).isInstanceOf(ResponseStatusException.class);var missing=request();missing.setCookies();missing.addHeader("Authorization","Bearer "+"a".repeat(43));assertThatThrownBy(()->api.graph(space,missing)).isInstanceOf(ResponseStatusException.class);var duplicate=request();duplicate.setCookies(new Cookie("__Host-brain_guest","a".repeat(43)),new Cookie("__Host-brain_guest","b".repeat(43)));assertThatThrownBy(()->api.graph(space,duplicate)).isInstanceOf(ResponseStatusException.class);var plain=request();plain.setSecure(false);assertThatThrownBy(()->api.graph(space,plain)).isInstanceOf(ResponseStatusException.class);verifyNoInteractions(authority,reader);}
+ @Test void storageOutageIsGeneric503AndSearchDecisionCannotAuthorizeGraph(){when(reader.read(space,100)).thenThrow(new GraphReadClient.Unavailable());assertThatThrownBy(()->api.graph(space,request())).isInstanceOf(ResponseStatusException.class).satisfies(e->assertThat(((ResponseStatusException)e).getStatusCode().value()).isEqualTo(503));assertThatThrownBy(()->SpaceAuthorizationClient.validate(new SpaceAuthorizationClient.Decision(space,space,"NOTE_SEARCH","PRIVATE"),space,"NOTE_GRAPH")).isInstanceOf(ResponseStatusException.class);}
+}

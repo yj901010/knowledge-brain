@@ -1,0 +1,16 @@
+syntax = "proto3";
+package knowledgebrain.collaboration.courseenrollment.v1;
+option java_package = "io.knowledgebrain.contracts.collaboration.courseenrollment.v1";
+option java_multiple_files = true;
+message CourseEnrollmentEnvelopeV1 {
+ string event_id = 1; string event_type = 2; uint32 event_version = 3;
+ int64 occurred_at_epoch_millis = 4; string producer = 5; string aggregate_type = 6;
+ string aggregate_id = 7; string space_id = 8; string actor_id = 9; string trace_id = 10; bytes payload = 11;
+}
+// Full immutable participation snapshot. Not a Space membership or Learning progress grant.
+// Enforce PARTICIPANT_AND_OWNER, deduplicate stable event_id, apply increasing aggregate versions.
+message CourseEnrollmentSnapshotV1 {
+ string enrollment_id = 1; string course_id = 2; string group_id = 3; string space_id = 4;
+ string participant_id = 5; int64 version = 6; string state = 7; int64 course_version = 8;
+ string audience = 9; string created_at = 10; string updated_at = 11;
+}

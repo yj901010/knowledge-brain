@@ -1,0 +1,17 @@
+Group Studies validation — 2026-10-23
+
+collaboration: 35 passed, 0 failed/errors/skipped; backend-validation-1792755655056671600-410bd944
+gateway: 90 passed, 0 failed/errors/skipped; backend-validation-1792755665415293400-46c93437
+Browser: 4 actual-account Group scenarios passed; graph-web-validation-1792756730467972900
+New Study UI verified uncertain creation-reply retry, immutable original request input, literal title/description, metadata editing, PLANNED -> ACTIVE -> COMPLETED -> RETIRED lifecycle, immutable audit, version checks, read-only MEMBER/VIEWER, cross-Group denial, guest denial, removed-member access clearing and personal Note isolation.
+Existing Group creation, invitation/role/exclusion/rejoin/leave and pinned shared public roadmap workflows passed together. Browser storage remained empty, mobile overflow and page-error checks passed.
+Collaboration tests verify one-winner concurrent creation/editing, stale version rejection, lifecycle no-ops and invalid transitions, original creation retry after edits/archive, bounded catalog/history and exact Group/Space isolation.
+Outbox failures roll back current Study state and revision. Actual CDC verifies five byte-exact Study snapshots, stable event IDs, trace/schema headers and unacknowledged replay on collaboration.study.v1.
+Fresh registered Space participation grant is matched to ACTIVE Collaboration Group/Space on every request. Only OWNER writes; MEMBER/VIEWER read current and archived studies/history. No new Space ownership or Learning data policy.
+V2 adds only Collaboration-owned Study/revision and composite Group/Space FK. New collaboration/study-events/1 Registry artifact has FULL validity and FULL_TRANSITIVE compatibility. Old migrations and published Protobuf bytes are unchanged.
+Kafka topic and Connect producer/Group validator ACLs were Ready before canonical writers. Live literal Study ACLs permit Connect writes and Group validator reads only. No connector offset/slot/publication change.
+CDC cannot SELECT Study/Study revision or Group/Group revision canonical tables; Outbox remains readable. All nine connector/tasks RUNNING after deployment and browser mutations.
+OpenAPI: 59 documents, 1578 local/relative references resolve. Pinned Next/TypeScript static export passed.
+Collaboration and Gateway exact images imported on both k3d nodes and rolled out; deployed module/shared event contract source bytes match build archives. Four owned temporary builder sets removed, including two superseded Gateway builds.
+All 13 application Deployments Ready; trusted host HTTPS /graph and /graph/groups return 200 with no-store/CSP.
+No new dependencies, external dataset, AI, automatic personal sharing, group progress, reopen, Study-roadmap binding or Course/Assignment/Discussion/Submission implementation. These are subsequent slices.

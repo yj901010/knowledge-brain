@@ -1,0 +1,35 @@
+syntax = "proto3";
+package learning.conceptevidence.v1;
+option java_package = "io.knowledgebrain.contracts.learning.conceptevidence.v1";
+option java_multiple_files = true;
+message ConceptEvidenceEventEnvelopeV1 {
+ string event_id = 1;
+ string event_type = 2;
+ uint32 event_version = 3;
+ int64 occurred_at_epoch_millis = 4;
+ string producer = 5;
+ string aggregate_type = 6;
+ string aggregate_id = 7;
+ string space_id = 8;
+ string actor_id = 9;
+ string trace_id = 10;
+ bytes payload = 11;
+}
+message ConceptEvidenceChangedPayloadV1 {
+ string evidence_id = 1;
+ string revision_id = 2;
+ string roadmap_id = 3;
+ string node_id = 4;
+ string node_title = 5;
+ uint64 version = 6;
+ string state = 7;
+ string visibility = 8;
+ string concept_id = 9;
+ uint64 concept_version = 10;
+ string concept_title = 11;
+ string memo = 12;
+ string created_at = 13;
+ string updated_at = 14;
+ string concept_space_id = 15;
+ string concept_visibility = 16;
+}

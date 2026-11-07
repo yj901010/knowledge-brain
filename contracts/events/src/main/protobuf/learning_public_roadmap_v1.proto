@@ -1,0 +1,24 @@
+syntax = "proto3";
+package learning.public_roadmap.v1;
+option java_package = "io.knowledgebrain.contracts.learning.publicroadmap.v1";
+option java_multiple_files = true;
+message PublicRoadmapEnvelopeV1 {
+ string event_id = 1; string event_type = 2; uint32 event_version = 3;
+ int64 occurred_at_epoch_millis = 4; string producer = 5; string aggregate_type = 6;
+ string aggregate_id = 7; string space_id = 8; string actor_id = 9; string trace_id = 10; bytes payload = 11;
+}
+message PublicRoadmapNodeV1 {string node_id = 1; string title = 2; string description = 3;}
+message PublicRoadmapEdgeV1 {string edge_id = 1; string kind = 2; string source_node_id = 3; string target_node_id = 4;}
+message PublicRoadmapSnapshotV1 {
+ string roadmap_id = 1; uint64 version = 2; string visibility = 3; string verification = 4;
+ string title = 5; string description = 6; repeated PublicRoadmapNodeV1 nodes = 7;
+ repeated PublicRoadmapEdgeV1 edges = 8; string created_at = 9; string updated_at = 10;
+}
+message PublicRoadmapChangedV1 {string revision_id = 1; PublicRoadmapSnapshotV1 snapshot = 2;}
+message RoadmapContributionChangedV1 {
+ string contribution_id = 1; string roadmap_id = 2; uint64 base_version = 3;
+ uint64 version = 4; string state = 5; string author_id = 6; string title = 7;
+ string description = 8; string rationale = 9; repeated PublicRoadmapNodeV1 nodes = 10;
+ repeated PublicRoadmapEdgeV1 edges = 11; string review_id = 12; string review_reason = 13;
+ uint64 merged_roadmap_version = 14;
+}

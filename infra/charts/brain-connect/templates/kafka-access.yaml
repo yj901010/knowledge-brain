@@ -1,0 +1,528 @@
+{{- if or (lt (int .Values.kafka.minInSyncReplicas) 1) (gt (int .Values.kafka.minInSyncReplicas) (int .Values.kafka.replicationFactor)) }}
+{{- fail "minInSyncReplicas must be between 1 and replicationFactor" }}
+{{- end }}
+{{- range $topic := list "brain-connect-configs" "brain-connect-offsets" "brain-connect-status" "identity.guest-identity.v1" "space.personal-space.v1" "content.note.v1" "content.note-links.v1" "content.note-metadata.v1" "content.daily-note.v1" "content.note-attachments.v1" "media.file.v1" "knowledge.concept.v1" "knowledge.alias.v1" "knowledge.claim.v1" "knowledge.claim.v2" "knowledge.source.v1" "knowledge.citation.v1" "knowledge.citation.v2" "knowledge.qualifier.v1" "knowledge.qualifier.v2" "knowledge.external-mapping.v1" "content.note-concepts.v1" "identity.account.v1" "space.personal-space-claim.v1" "knowledge.contribution.v1" "space.public-knowledge.v1" "learning.roadmap.v1" "learning.public-roadmap.v1" "learning.roadmap-contribution.v1" "learning.roadmap-rating.v1" "learning.roadmap-adoption.v1" "learning.group-roadmap.v1" "learning.course-progress.v1" "learning.course-progress-share.v1" "space.group-progress-policy.v1" "learning.progress.v1" "learning.study-session.v1" "learning.evidence.v1" "learning.concept-evidence.v1" "learning.media-evidence.v1" "learning.evidence-session.v1" "planning.goal.v1" "planning.task.v1" "planning.schedule.v1" "planning.recurrence.v1" "planning.reminder.v1" "planning.reminder-delivery.v1" "notification.in-app.v1" "notification.delivery-policy.v1" "notification.group-review.v1" "content.bookmark.v1" "content.question.v1" "content.decision.v1" "content.record-concepts.v1" "collaboration.group.v1" "collaboration.study.v1" "collaboration.study-roadmap.v1" "collaboration.assignment.v1" "collaboration.submission.v1" "collaboration.submission-feedback.v1" "collaboration.resubmission-request.v1" "collaboration.feedback-retraction.v1" "collaboration.submission-grade.v1" "collaboration.grade-retraction.v1" "collaboration.assignment-rubric.v1" "collaboration.rubric-assessment.v1" "collaboration.submission-files.v1" "collaboration.course-enrollment.v1" "collaboration.course.v1" "collaboration.discussion.v1" "collaboration.discussion-reply.v1" "space.group-space.v1" "space.group-invitation.v1" "space.group-membership.v1" }}
+---
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaTopic
+metadata:
+  name: {{ $topic }}
+  labels: {strimzi.io/cluster: {{ $.Values.kafka.clusterName }}}
+spec:
+  topicName: {{ $topic }}
+  partitions: {{ if eq $topic "brain-connect-offsets" }}{{ $.Values.kafka.offsetPartitions }}{{ else if or (eq $topic "identity.guest-identity.v1") (eq $topic "space.personal-space.v1") (eq $topic "content.note.v1") (eq $topic "content.note-links.v1") (eq $topic "content.note-metadata.v1") (eq $topic "content.daily-note.v1") (eq $topic "content.note-attachments.v1") (eq $topic "media.file.v1") (eq $topic "knowledge.concept.v1") (eq $topic "knowledge.alias.v1") (eq $topic "knowledge.claim.v1") (eq $topic "knowledge.claim.v2") (eq $topic "knowledge.source.v1") (eq $topic "knowledge.citation.v1") (eq $topic "knowledge.citation.v2") (eq $topic "knowledge.qualifier.v1") (eq $topic "knowledge.qualifier.v2") (eq $topic "knowledge.external-mapping.v1") (eq $topic "content.note-concepts.v1") (eq $topic "identity.account.v1") (eq $topic "space.personal-space-claim.v1") (eq $topic "knowledge.contribution.v1") (eq $topic "space.public-knowledge.v1") (eq $topic "learning.roadmap.v1") (eq $topic "learning.public-roadmap.v1") (eq $topic "learning.roadmap-contribution.v1") (eq $topic "learning.roadmap-rating.v1") (eq $topic "learning.roadmap-adoption.v1") (eq $topic "learning.group-roadmap.v1") (eq $topic "learning.progress.v1") (eq $topic "learning.course-progress.v1") (eq $topic "learning.course-progress-share.v1") (eq $topic "space.group-progress-policy.v1") (eq $topic "learning.study-session.v1") (eq $topic "learning.evidence.v1") (eq $topic "learning.concept-evidence.v1") (eq $topic "learning.media-evidence.v1") (eq $topic "learning.evidence-session.v1") (eq $topic "planning.goal.v1") (eq $topic "planning.task.v1") (eq $topic "planning.schedule.v1") (eq $topic "planning.recurrence.v1") (eq $topic "planning.reminder.v1") (eq $topic "planning.reminder-delivery.v1") (eq $topic "notification.in-app.v1") (eq $topic "notification.delivery-policy.v1") (eq $topic "notification.group-review.v1") (eq $topic "content.bookmark.v1") (eq $topic "content.question.v1") (eq $topic "content.decision.v1") (eq $topic "content.record-concepts.v1") (eq $topic "collaboration.group.v1") (eq $topic "collaboration.study.v1") (eq $topic "collaboration.study-roadmap.v1") (eq $topic "collaboration.assignment.v1") (eq $topic "collaboration.submission.v1") (eq $topic "collaboration.submission-feedback.v1") (eq $topic "collaboration.resubmission-request.v1") (eq $topic "collaboration.feedback-retraction.v1") (eq $topic "collaboration.submission-grade.v1") (eq $topic "collaboration.grade-retraction.v1") (eq $topic "collaboration.assignment-rubric.v1") (eq $topic "collaboration.rubric-assessment.v1") (eq $topic "collaboration.submission-files.v1") (eq $topic "collaboration.discussion.v1") (eq $topic "collaboration.course.v1") (eq $topic "collaboration.course-enrollment.v1") (eq $topic "collaboration.discussion-reply.v1") (eq $topic "space.group-space.v1") (eq $topic "space.group-invitation.v1") (eq $topic "space.group-membership.v1") }}{{ $.Values.kafka.eventPartitions }}{{ else }}1{{ end }}
+  replicas: {{ $.Values.kafka.replicationFactor }}
+  config:
+    min.insync.replicas: {{ $.Values.kafka.minInSyncReplicas }}
+{{- if or (eq $topic "identity.guest-identity.v1") (eq $topic "space.personal-space.v1") (eq $topic "content.note.v1") (eq $topic "content.note-links.v1") (eq $topic "content.note-metadata.v1") (eq $topic "content.daily-note.v1") (eq $topic "content.note-attachments.v1") (eq $topic "media.file.v1") (eq $topic "knowledge.concept.v1") (eq $topic "knowledge.alias.v1") (eq $topic "knowledge.claim.v1") (eq $topic "knowledge.claim.v2") (eq $topic "knowledge.source.v1") (eq $topic "knowledge.citation.v1") (eq $topic "knowledge.citation.v2") (eq $topic "knowledge.qualifier.v1") (eq $topic "knowledge.qualifier.v2") (eq $topic "knowledge.external-mapping.v1") (eq $topic "content.note-concepts.v1") (eq $topic "identity.account.v1") (eq $topic "space.personal-space-claim.v1") (eq $topic "knowledge.contribution.v1") (eq $topic "space.public-knowledge.v1") (eq $topic "learning.roadmap.v1") (eq $topic "learning.public-roadmap.v1") (eq $topic "learning.roadmap-contribution.v1") (eq $topic "learning.roadmap-rating.v1") (eq $topic "learning.roadmap-adoption.v1") (eq $topic "learning.group-roadmap.v1") (eq $topic "learning.progress.v1") (eq $topic "learning.course-progress.v1") (eq $topic "learning.course-progress-share.v1") (eq $topic "space.group-progress-policy.v1") (eq $topic "learning.study-session.v1") (eq $topic "learning.evidence.v1") (eq $topic "learning.concept-evidence.v1") (eq $topic "learning.media-evidence.v1") (eq $topic "learning.evidence-session.v1") (eq $topic "planning.goal.v1") (eq $topic "planning.task.v1") (eq $topic "planning.schedule.v1") (eq $topic "planning.recurrence.v1") (eq $topic "planning.reminder.v1") (eq $topic "planning.reminder-delivery.v1") (eq $topic "notification.in-app.v1") (eq $topic "notification.delivery-policy.v1") (eq $topic "notification.group-review.v1") (eq $topic "content.bookmark.v1") (eq $topic "content.question.v1") (eq $topic "content.decision.v1") (eq $topic "content.record-concepts.v1") (eq $topic "collaboration.group.v1") (eq $topic "collaboration.study.v1") (eq $topic "collaboration.study-roadmap.v1") (eq $topic "collaboration.assignment.v1") (eq $topic "collaboration.submission.v1") (eq $topic "collaboration.submission-feedback.v1") (eq $topic "collaboration.resubmission-request.v1") (eq $topic "collaboration.feedback-retraction.v1") (eq $topic "collaboration.submission-grade.v1") (eq $topic "collaboration.grade-retraction.v1") (eq $topic "collaboration.assignment-rubric.v1") (eq $topic "collaboration.rubric-assessment.v1") (eq $topic "collaboration.submission-files.v1") (eq $topic "collaboration.discussion.v1") (eq $topic "collaboration.course.v1") (eq $topic "collaboration.course-enrollment.v1") (eq $topic "collaboration.discussion-reply.v1") (eq $topic "space.group-space.v1") (eq $topic "space.group-invitation.v1") (eq $topic "space.group-membership.v1") }}
+    cleanup.policy: delete
+    retention.ms: 604800000
+{{- else }}
+    cleanup.policy: compact
+    retention.ms: -1
+{{- end }}
+{{- end }}
+---
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaUser
+metadata:
+  name: brain-connect
+  labels: {strimzi.io/cluster: {{ .Values.kafka.clusterName }}}
+spec:
+  authentication: {type: tls}
+  authorization:
+    type: simple
+    acls:
+      - resource: {type: topic, name: knowledge.public-knowledge.v1, patternType: literal}
+        operations: [Write, Describe, Create]
+      - resource: {type: topic, name: knowledge.public-record.v1, patternType: literal}
+        operations: [Write, Describe, Create]
+      - resource: {type: topic, name: space.public-capability.v1, patternType: literal}
+        operations: [Write, Describe, Create]
+      - resource: {type: topic, name: integration.github-repository.v1, patternType: literal}
+        operations: [Write, Describe, Create]
+      - resource: {type: topic, name: integration.github-commit.v1, patternType: literal}
+        operations: [Write, Describe, Create]
+      - resource: {type: topic, name: integration.github-issue.v1, patternType: literal}
+        operations: [Write, Describe, Create]
+      - resource: {type: topic, name: integration.github-pull-request.v1, patternType: literal}
+        operations: [Write, Describe, Create]
+{{- range $topic := list "brain-connect-configs" "brain-connect-offsets" "brain-connect-status" }}
+      - resource: {type: topic, name: {{ $topic }}, patternType: literal}
+        operations: [Read, Write, Describe, DescribeConfigs]
+{{- end }}
+      - resource: {type: topic, name: collaboration.course-enrollment.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: collaboration.course.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: collaboration.discussion.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: collaboration.discussion-reply.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: collaboration.submission.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: collaboration.submission-feedback.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: collaboration.resubmission-request.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: collaboration.feedback-retraction.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: collaboration.submission-grade.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: collaboration.grade-retraction.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: collaboration.assignment-rubric.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: collaboration.submission-files.v1, patternType: literal}
+        operations: [Write, Describe]
+      - resource: {type: topic, name: collaboration.rubric-assessment.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: collaboration.assignment.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: collaboration.study-roadmap.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: collaboration.study.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: collaboration.group.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: space.group-invitation.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: space.group-membership.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: space.group-space.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: identity.guest-identity.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: identity.account.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: space.personal-space-claim.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: space.personal-space.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: content.note-attachments.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: learning.roadmap.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: learning.public-roadmap.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: learning.roadmap-contribution.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: learning.roadmap-rating.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: learning.group-roadmap.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: learning.roadmap-adoption.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: learning.course-progress.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: learning.course-progress-share.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: space.group-progress-policy.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: learning.progress.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: learning.study-session.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: learning.evidence.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: learning.concept-evidence.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: learning.media-evidence.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: learning.evidence-session.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: learning.github-evidence.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: learning.github-evidence-session.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: planning.goal.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: planning.task.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: planning.schedule.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: planning.recurrence.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: planning.reminder.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: planning.reminder-delivery.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: notification.in-app.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: notification.delivery-policy.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: notification.group-review.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: knowledge.concept.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: knowledge.alias.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: knowledge.claim.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: knowledge.claim.v2, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: knowledge.source.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: knowledge.citation.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: knowledge.citation.v2, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: knowledge.qualifier.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: knowledge.qualifier.v2, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: knowledge.external-mapping.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: knowledge.contribution.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: space.public-knowledge.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: content.note-concepts.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: media.file.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: content.daily-note.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: content.note-metadata.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: content.note-links.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: content.bookmark.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: content.question.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: content.decision.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: content.record-concepts.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: content.note.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: group, name: brain-connect, patternType: literal}
+        operations: [Read, Describe]
+      - resource: {type: cluster}
+        operations: [IdempotentWrite]
+---
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaUser
+metadata:
+  name: brain-cdc-validator
+  labels: {strimzi.io/cluster: {{ .Values.kafka.clusterName }}}
+spec:
+  authentication: {type: tls}
+  authorization:
+    type: simple
+    acls:
+      - resource: {type: topic, name: collaboration.group.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: space.group-invitation.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: space.group-membership.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: space.group-space.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: identity.guest-identity.v1, patternType: literal}
+        operations: [Read, Describe]
+      - resource: {type: group, name: brain-cdc-validation-, patternType: prefix}
+        operations: [Read, Describe]
+
+---
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaUser
+metadata:
+  name: brain-space
+  labels: {strimzi.io/cluster: {{ .Values.kafka.clusterName }}}
+spec:
+  authentication: {type: tls}
+  authorization:
+    type: simple
+    acls:
+      - resource: {type: topic, name: collaboration.group.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: space.group-invitation.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: space.group-membership.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: space.group-space.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: identity.guest-identity.v1, patternType: literal}
+        operations: [Read, Describe]
+      - resource: {type: topic, name: identity.account.v1, patternType: literal}
+        operations: [Read, Describe]
+      - resource: {type: group, name: space-guest-, patternType: prefix}
+        operations: [Read, Describe]
+---
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaUser
+metadata:
+  name: brain-space-validator
+  labels: {strimzi.io/cluster: {{ .Values.kafka.clusterName }}}
+spec:
+  authentication: {type: tls}
+  authorization:
+    type: simple
+    acls:
+      - resource: {type: topic, name: collaboration.group.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: space.group-invitation.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: space.group-membership.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: space.group-space.v1, patternType: literal}
+        operations: [Write, Describe, DescribeConfigs]
+      - resource: {type: topic, name: identity.guest-identity.v1, patternType: literal}
+        operations: [Read, Describe]
+      - resource: {type: topic, name: space.personal-space.v1, patternType: literal}
+        operations: [Read, Describe]
+      - resource: {type: topic, name: space.public-knowledge.v1, patternType: literal}
+        operations: [Read, Describe]
+      - resource: {type: topic, name: space.public-capability.v1, patternType: literal}
+        operations: [Read, Describe]
+      - resource: {type: group, name: space-validation-, patternType: prefix}
+        operations: [Read, Describe]
+
+---
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaUser
+metadata:
+  name: brain-content-validator
+  labels: {strimzi.io/cluster: {{ .Values.kafka.clusterName }}}
+spec:
+  authentication: {type: tls}
+  authorization:
+    type: simple
+    acls:
+      - resource: {type: topic, name: content.note-concepts.v1, patternType: literal}
+        operations: [Read, Describe]
+      - resource: {type: topic, name: content.note-attachments.v1, patternType: literal}
+        operations: [Read, Describe]
+      - resource: {type: topic, name: content.daily-note.v1, patternType: literal}
+        operations: [Read, Describe]
+      - resource: {type: topic, name: content.note-metadata.v1, patternType: literal}
+        operations: [Read, Describe]
+      - resource: {type: topic, name: content.note-links.v1, patternType: literal}
+        operations: [Read, Describe]
+      - resource: {type: topic, name: content.bookmark.v1, patternType: literal}
+        operations: [Read, Describe]
+      - resource: {type: topic, name: content.question.v1, patternType: literal}
+        operations: [Read, Describe]
+      - resource: {type: topic, name: content.decision.v1, patternType: literal}
+        operations: [Read, Describe]
+      - resource: {type: topic, name: content.record-concepts.v1, patternType: literal}
+        operations: [Read, Describe]
+      - resource: {type: topic, name: content.note.v1, patternType: literal}
+        operations: [Read, Describe]
+      - resource: {type: group, name: content-validation-, patternType: prefix}
+        operations: [Read, Describe]
+---
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaUser
+metadata:
+  name: brain-media-validator
+  labels: {strimzi.io/cluster: {{ .Values.kafka.clusterName }}}
+spec:
+  authentication: {type: tls}
+  authorization:
+    type: simple
+    acls:
+      - resource: {type: topic, name: media.file.v1, patternType: literal}
+        operations: [Read, Describe]
+      - resource: {type: group, name: media-validation-, patternType: prefix}
+        operations: [Read, Describe]
+
+---
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaUser
+metadata:
+  name: brain-knowledge-validator
+  labels: {strimzi.io/cluster: {{ .Values.kafka.clusterName }}}
+spec:
+  authentication: {type: tls}
+  authorization:
+    type: simple
+    acls:
+      - resource: {type: topic, name: knowledge.concept.v1, patternType: literal}
+        operations: [Read, Describe]
+      - resource: {type: topic, name: knowledge.alias.v1, patternType: literal}
+        operations: [Read, Describe]
+      - resource: {type: topic, name: knowledge.claim.v1, patternType: literal}
+        operations: [Read, Describe]
+      - resource: {type: topic, name: knowledge.claim.v2, patternType: literal}
+        operations: [Read, Describe]
+      - resource: {type: topic, name: knowledge.source.v1, patternType: literal}
+        operations: [Read, Describe]
+      - resource: {type: topic, name: knowledge.citation.v1, patternType: literal}
+        operations: [Read, Describe]
+      - resource: {type: topic, name: knowledge.citation.v2, patternType: literal}
+        operations: [Read, Describe]
+      - resource: {type: topic, name: knowledge.qualifier.v1, patternType: literal}
+        operations: [Read, Describe]
+      - resource: {type: topic, name: knowledge.qualifier.v2, patternType: literal}
+        operations: [Read, Describe]
+      - resource: {type: topic, name: knowledge.external-mapping.v1, patternType: literal}
+        operations: [Read, Describe]
+      - resource: {type: topic, name: knowledge.public-knowledge.v1, patternType: literal}
+        operations: [Read, Describe]
+      - resource: {type: topic, name: knowledge.public-record.v1, patternType: literal}
+        operations: [Read, Describe]
+      - resource: {type: topic, name: knowledge.contribution.v1, patternType: literal}
+        operations: [Read, Describe]
+      - resource: {type: group, name: knowledge-validation-, patternType: prefix}
+        operations: [Read, Describe]
+
+---
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaUser
+metadata:
+  name: brain-learning-validator
+  labels: {strimzi.io/cluster: {{ .Values.kafka.clusterName }}}
+spec:
+  authentication: {type: tls}
+  authorization:
+    type: simple
+    acls:
+      - resource: {type: topic, name: learning.roadmap.v1, patternType: literal}
+        operations: [Read, Describe]
+      - resource: {type: topic, name: learning.public-roadmap.v1, patternType: literal}
+        operations: [Read, Describe]
+      - resource: {type: topic, name: learning.roadmap-contribution.v1, patternType: literal}
+        operations: [Read, Describe]
+      - resource: {type: topic, name: learning.roadmap-rating.v1, patternType: literal}
+        operations: [Read, Describe]
+      - resource: {type: topic, name: learning.group-roadmap.v1, patternType: literal}
+        operations: [Read, Describe]
+      - resource: {type: topic, name: learning.roadmap-adoption.v1, patternType: literal}
+        operations: [Read, Describe]
+      - resource: {type: topic, name: learning.course-progress.v1, patternType: literal}
+        operations: [Read, Describe]
+      - resource: {type: topic, name: learning.course-progress-share.v1, patternType: literal}
+        operations: [Read, Describe]
+      - resource: {type: topic, name: learning.progress.v1, patternType: literal}
+        operations: [Read, Describe]
+      - resource: {type: topic, name: learning.study-session.v1, patternType: literal}
+        operations: [Read, Describe]
+      - resource: {type: topic, name: learning.evidence.v1, patternType: literal}
+        operations: [Read, Describe]
+      - resource: {type: topic, name: learning.concept-evidence.v1, patternType: literal}
+        operations: [Read, Describe]
+      - resource: {type: topic, name: learning.media-evidence.v1, patternType: literal}
+        operations: [Read, Describe]
+      - resource: {type: topic, name: learning.evidence-session.v1, patternType: literal}
+        operations: [Read, Describe]
+      - resource: {type: topic, name: learning.github-evidence.v1, patternType: literal}
+        operations: [Read, Describe]
+      - resource: {type: topic, name: learning.github-evidence-session.v1, patternType: literal}
+        operations: [Read, Describe]
+      - resource: {type: group, name: learning-validation-, patternType: prefix}
+        operations: [Read, Describe]
+
+---
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaUser
+metadata:
+  name: brain-planning-validator
+  labels: {strimzi.io/cluster: {{ .Values.kafka.clusterName }}}
+spec:
+  authentication: {type: tls}
+  authorization:
+    type: simple
+    acls:
+      - resource: {type: topic, name: planning.goal.v1, patternType: literal}
+        operations: [Read, Describe]
+      - resource: {type: topic, name: planning.task.v1, patternType: literal}
+        operations: [Read, Describe]
+      - resource: {type: topic, name: planning.schedule.v1, patternType: literal}
+        operations: [Read, Describe]
+      - resource: {type: topic, name: planning.recurrence.v1, patternType: literal}
+        operations: [Read, Describe]
+      - resource: {type: topic, name: planning.reminder.v1, patternType: literal}
+        operations: [Read, Describe]
+      - resource: {type: topic, name: planning.reminder-delivery.v1, patternType: literal}
+        operations: [Read, Describe]
+      - resource: {type: group, name: planning-validation-, patternType: prefix}
+        operations: [Read, Describe]
+
+---
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaTopic
+metadata:
+  name: integration.github-repository.v1
+  labels: {strimzi.io/cluster: {{ .Values.kafka.clusterName }}}
+spec:
+  partitions: {{ .Values.kafka.eventPartitions }}
+  replicas: {{ .Values.kafka.replicationFactor }}
+  config: {min.insync.replicas: {{ .Values.kafka.minInSyncReplicas }}}
+---
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaTopic
+metadata:
+  name: integration.github-commit.v1
+  labels: {strimzi.io/cluster: {{ .Values.kafka.clusterName }}}
+spec:
+  partitions: {{ .Values.kafka.eventPartitions }}
+  replicas: {{ .Values.kafka.replicationFactor }}
+  config: {min.insync.replicas: {{ .Values.kafka.minInSyncReplicas }}}
+---
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaUser
+metadata:
+  name: brain-integration-validator
+  labels: {strimzi.io/cluster: {{ .Values.kafka.clusterName }}}
+spec:
+  authentication: {type: tls}
+  authorization:
+    type: simple
+    acls:
+      - resource: {type: topic, name: integration.github-repository.v1, patternType: literal}
+        operations: [Read, Describe]
+      - resource: {type: topic, name: integration.github-commit.v1, patternType: literal}
+        operations: [Read, Describe]
+      - resource: {type: topic, name: integration.github-issue.v1, patternType: literal}
+        operations: [Read, Describe]
+      - resource: {type: topic, name: integration.github-pull-request.v1, patternType: literal}
+        operations: [Read, Describe]
+      - resource: {type: group, name: integration-validation-, patternType: prefix}
+        operations: [Read, Describe]
+
+---
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaTopic
+metadata:
+  name: learning.github-evidence.v1
+  labels: {strimzi.io/cluster: {{ .Values.kafka.clusterName }}}
+spec:
+  partitions: {{ .Values.kafka.eventPartitions }}
+  replicas: {{ .Values.kafka.replicationFactor }}
+  config: {min.insync.replicas: {{ .Values.kafka.minInSyncReplicas }}}
+
+---
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaTopic
+metadata:
+  name: learning.github-evidence-session.v1
+  labels: {strimzi.io/cluster: {{ .Values.kafka.clusterName }}}
+spec:
+  partitions: {{ .Values.kafka.eventPartitions }}
+  replicas: {{ .Values.kafka.replicationFactor }}
+  config: {min.insync.replicas: {{ .Values.kafka.minInSyncReplicas }}}
+
+---
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaTopic
+metadata:
+  name: integration.github-issue.v1
+  labels: {strimzi.io/cluster: {{ .Values.kafka.clusterName }}}
+spec:
+  partitions: {{ .Values.kafka.eventPartitions }}
+  replicas: {{ .Values.kafka.replicationFactor }}
+  config: {min.insync.replicas: {{ .Values.kafka.minInSyncReplicas }}}
+
+---
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaTopic
+metadata:
+  name: integration.github-pull-request.v1
+  labels: {strimzi.io/cluster: {{ .Values.kafka.clusterName }}}
+spec:
+  partitions: {{ .Values.kafka.eventPartitions }}
+  replicas: {{ .Values.kafka.replicationFactor }}
+  config: {min.insync.replicas: {{ .Values.kafka.minInSyncReplicas }}}

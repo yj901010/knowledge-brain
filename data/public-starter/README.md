@@ -1,0 +1,7 @@
+# Public starter metadata v1
+
+Twelve Wikidata main-namespace items: five medicine topic names and seven development/CS topic names. Retrieved from the official Special:EntityData JSON endpoint on 2026-11-01; entity revision IDs and source links are pinned in the manifest. Only IDs, English/Korean labels and revision timestamps are retained. No descriptions, statements, third-party terminology, clinical guidance or website prose were copied. Wikidata main-namespace structured data is CC0-1.0, permitting commercial reuse and redistribution; other-namespace site text has different terms and is excluded. License evidence: https://www.wikidata.org/wiki/Wikidata:Copyright and https://www.wikidata.org/wiki/Wikidata:Licensing . Legal text is retained in LICENSE-CC0.txt.
+
+Preview does not write canonical data. A registered user explicitly submits a chosen Concept proposal, and a separate designated reviewer approves/merges. This catalog does not establish clinical truth, expert verification, ownership of a terminology or OFFICIAL mapping. Existing duplicates require inspection. Source, Alias and candidate Mapping proposals use the existing workbench after a Concept is merged; the catalog never bypasses their reference/version checks.
+
+To refresh: fetch each official entity JSON with a descriptive User-Agent and normal TLS validation, inspect IDs/labels/revisions, update this manifest and the exact UI copy together, review licensing again, and retain the prior catalog in version history. No runtime third-party fetch, tracking, automatic import or schedule.

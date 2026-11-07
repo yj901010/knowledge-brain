@@ -1,0 +1,863 @@
+openapi: 3.1.0
+info:
+  title: Private Personal Concept Learning Evidence
+  version: 1.0.0
+  description: Learning owns the private Roadmap node-to-Concept-version evidence
+    variant. Same-private-Space or authorized PUBLIC Concept, checked by Knowledge
+    over HTTPS with the common principal. No cross-service SQL/FK or copy of canonical
+    description/Claims. Separate typed API/topic preserves the Note Evidence v1 JSON
+    and wire contracts. Both variants share Learning evidence/revision tables and
+    root lock; IDs never move or recreate.
+servers:
+- url: https://localhost:8443
+security:
+- sessionCookie: []
+paths:
+  /api/spaces/{spaceId}/roadmaps/{roadmapId}/concept-evidence:
+    parameters:
+    - name: spaceId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+    - name: roadmapId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+    get:
+      operationId: conceptListPersonalLearningEvidence
+      description: Fresh ROADMAP_READ. ACTIVE CONCEPT variant only, ascending evidence
+        UUID keyset, default20/max100. NOTE rows remain on the unchanged Note evidence
+        API. Root/node/source retirement retains the known audit view. No writes on
+        read.
+      parameters:
+      - name: after
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      responses:
+        '200':
+          description: Success
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvidencePage'
+        '400':
+          description: Invalid strict JSON, UUIDv7, key, ETag, duplicate/unknown query,
+            memo or numeric version
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '401':
+          description: Common browser credential unavailable
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '403':
+          description: Origin or current Space role denied
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '404':
+          description: Current Space/root/node/concept/concept-evidence unavailable
+            for this operation
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '409':
+          description: Request key payload/kind collision, active duplicate Concept
+            pin or changed current source version
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '412':
+          description: Evidence ETag is stale
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '413':
+          description: Body over 65536 bytes
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '415':
+          description: JSON required
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '428':
+          description: Strong ceN If-Match required
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '503':
+          description: Owner authorization/reference check or persistence unavailable;
+            no partial write
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+    post:
+      operationId: conceptLinkConceptLearningEvidence
+      description: Fresh ROADMAP_WRITE and same origin; exact body nodeId/conceptSpaceId/conceptId/conceptVersion/memo.
+        Active root/node required for a new link. Knowledge independently authorizes
+        the destination private Personal Space, selects only an ACTIVE same-private-Space
+        or PUBLIC Concept, and additionally authorizes the current PUBLIC source Space
+        when applicable. Same principal required across checks. Expected source Space
+        mismatch is 404; changed Concept version is 409. Pin source ID/Space/version/title/visibility
+        and node title at linking. Public sources produce PRIVATE learning evidence
+        and never publish the memo. No source description or Claims are copied, nor
+        medical verification, mastery, completion or ranking inferred. Local row/revision/Protobuf
+        Outbox commit is atomic; owner check and commit are not a distributed transaction.
+        Source edits/retirement after check do not update the pin. 201 new, 200 current
+        original-key replay without owner recheck, including retired records/root/source.
+        Same key with another payload OR other evidence kind is 409; duplicate active
+        node/Concept-Space/Concept/version pin under a different key is 409. Request
+        keys are shared across both variants within a Roadmap. Server UUIDv7 IDs only.
+      parameters:
+      - name: Origin
+        in: header
+        required: true
+        schema:
+          type: string
+          const: https://localhost:8443
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^[0-9a-f]{32}$
+      responses:
+        '201':
+          description: Success
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"ce[1-9][0-9]*"$
+            Location:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Evidence'
+        '400':
+          description: Invalid strict JSON, UUIDv7, key, ETag, duplicate/unknown query,
+            memo or numeric version
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '401':
+          description: Common browser credential unavailable
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '403':
+          description: Origin or current Space role denied
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '404':
+          description: Current Space/root/node/concept/concept-evidence unavailable
+            for this operation
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '409':
+          description: Request key payload/kind collision, active duplicate Concept
+            pin or changed current source version
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '412':
+          description: Evidence ETag is stale
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '413':
+          description: Body over 65536 bytes
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '415':
+          description: JSON required
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '428':
+          description: Strong ceN If-Match required
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '503':
+          description: Owner authorization/reference check or persistence unavailable;
+            no partial write
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '200':
+          description: Success
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"ce[1-9][0-9]*"$
+            Location:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Evidence'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateEvidence'
+  /api/spaces/{spaceId}/roadmaps/{roadmapId}/concept-evidence/{evidenceId}:
+    parameters:
+    - name: spaceId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+    - name: roadmapId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+    - name: evidenceId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+    get:
+      operationId: conceptReadPersonalLearningEvidence
+      description: Fresh destination Space read; ACTIVE CONCEPT evidence only with
+        strong ceN. Current source availability is not implied; source metadata is
+        the historical pin. NOTE IDs and other Space/root IDs return404. Retired evidence
+        remains available via known history.
+      parameters: []
+      responses:
+        '200':
+          description: Success
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"ce[1-9][0-9]*"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Evidence'
+        '400':
+          description: Invalid strict JSON, UUIDv7, key, ETag, duplicate/unknown query,
+            memo or numeric version
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '401':
+          description: Common browser credential unavailable
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '403':
+          description: Origin or current Space role denied
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '404':
+          description: Current Space/root/node/concept/concept-evidence unavailable
+            for this operation
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '409':
+          description: Request key payload/kind collision, active duplicate Concept
+            pin or changed current source version
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '412':
+          description: Evidence ETag is stale
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '413':
+          description: Body over 65536 bytes
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '415':
+          description: JSON required
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '428':
+          description: Strong ceN If-Match required
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '503':
+          description: Owner authorization/reference check or persistence unavailable;
+            no partial write
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+    put:
+      operationId: conceptEditPersonalLearningEvidenceMemo
+      description: Memo-only replacement with independent strong ceN ETag. ACTIVE
+        root required; archived node/Concept does not prevent audit correction. Source/node
+        pins never change. Same memo no-op still checks expected version, no new revision/event.
+      parameters:
+      - name: Origin
+        in: header
+        required: true
+        schema:
+          type: string
+          const: https://localhost:8443
+      - name: If-Match
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^"ce[1-9][0-9]{0,18}"$
+      responses:
+        '200':
+          description: Success
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"ce[1-9][0-9]*"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Evidence'
+        '400':
+          description: Invalid strict JSON, UUIDv7, key, ETag, duplicate/unknown query,
+            memo or numeric version
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '401':
+          description: Common browser credential unavailable
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '403':
+          description: Origin or current Space role denied
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '404':
+          description: Current Space/root/node/concept/concept-evidence unavailable
+            for this operation
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '409':
+          description: Request key payload/kind collision, active duplicate Concept
+            pin or changed current source version
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '412':
+          description: Evidence ETag is stale
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '413':
+          description: Body over 65536 bytes
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '415':
+          description: JSON required
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '428':
+          description: Strong ceN If-Match required
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '503':
+          description: Owner authorization/reference check or persistence unavailable;
+            no partial write
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EditEvidence'
+    delete:
+      operationId: conceptRetirePersonalLearningEvidence
+      description: Soft retirement with active root, empty body and strong ceN. Preserve
+        snapshots and pinned references. No mutation of Concept, Progress, Session
+        or Roadmap.
+      parameters:
+      - name: Origin
+        in: header
+        required: true
+        schema:
+          type: string
+          const: https://localhost:8443
+      - name: If-Match
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^"ce[1-9][0-9]{0,18}"$
+      responses:
+        '204':
+          description: Success
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"ce[1-9][0-9]*"$
+        '400':
+          description: Invalid strict JSON, UUIDv7, key, ETag, duplicate/unknown query,
+            memo or numeric version
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '401':
+          description: Common browser credential unavailable
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '403':
+          description: Origin or current Space role denied
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '404':
+          description: Current Space/root/node/concept/concept-evidence unavailable
+            for this operation
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '409':
+          description: Request key payload/kind collision, active duplicate Concept
+            pin or changed current source version
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '412':
+          description: Evidence ETag is stale
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '413':
+          description: Body over 65536 bytes
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '415':
+          description: JSON required
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '428':
+          description: Strong ceN If-Match required
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '503':
+          description: Owner authorization/reference check or persistence unavailable;
+            no partial write
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+  /api/spaces/{spaceId}/roadmaps/{roadmapId}/concept-evidence/{evidenceId}/revisions:
+    parameters:
+    - name: spaceId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+    - name: roadmapId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+    - name: evidenceId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+    get:
+      operationId: conceptReadPersonalLearningEvidenceHistory
+      description: Fresh destination Space read, known CONCEPT evidence including
+        retired root/node/source/record. Immutable full pin, memo and actor snapshots;
+        descending before version cursor, default5/max10. NOTE IDs do not resolve
+        here.
+      parameters:
+      - name: before
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+          minimum: 1
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 5
+      responses:
+        '200':
+          description: Success
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                type: array
+                maxItems: 10
+                items:
+                  $ref: '#/components/schemas/Revision'
+        '400':
+          description: Invalid strict JSON, UUIDv7, key, ETag, duplicate/unknown query,
+            memo or numeric version
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '401':
+          description: Common browser credential unavailable
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '403':
+          description: Origin or current Space role denied
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '404':
+          description: Current Space/root/node/concept/concept-evidence unavailable
+            for this operation
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '409':
+          description: Request key payload/kind collision, active duplicate Concept
+            pin or changed current source version
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '412':
+          description: Evidence ETag is stale
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '413':
+          description: Body over 65536 bytes
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '415':
+          description: JSON required
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '428':
+          description: Strong ceN If-Match required
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '503':
+          description: Owner authorization/reference check or persistence unavailable;
+            no partial write
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest
+  schemas:
+    Evidence:
+      type: object
+      additionalProperties: false
+      required:
+      - evidenceId
+      - roadmapId
+      - spaceId
+      - nodeId
+      - nodeTitle
+      - visibility
+      - state
+      - version
+      - conceptId
+      - conceptVersion
+      - conceptTitle
+      - memo
+      - createdAt
+      - updatedAt
+      - conceptSpaceId
+      - conceptVisibility
+      properties:
+        evidenceId:
+          type: string
+          format: uuid
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+        roadmapId:
+          type: string
+          format: uuid
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+        spaceId:
+          type: string
+          format: uuid
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+        nodeId:
+          type: string
+          format: uuid
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+        nodeTitle:
+          type: string
+          minLength: 1
+          maxLength: 200
+        visibility:
+          const: PRIVATE
+        state:
+          enum:
+          - ACTIVE
+          - RETIRED
+        version:
+          type: integer
+          format: int64
+          minimum: 1
+        conceptId:
+          type: string
+          format: uuid
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+        conceptVersion:
+          type: integer
+          format: int64
+          minimum: 1
+        conceptTitle:
+          type: string
+          minLength: 1
+          maxLength: 200
+        memo:
+          type: string
+          description: Raw text, at most 8192 UTF-8 bytes; no disallowed controls.
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        conceptSpaceId: &id001
+          type: string
+          format: uuid
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+        conceptVisibility:
+          enum:
+          - PRIVATE
+          - PUBLIC
+    CreateEvidence:
+      type: object
+      additionalProperties: false
+      required:
+      - nodeId
+      - conceptId
+      - conceptVersion
+      - memo
+      - conceptSpaceId
+      properties:
+        nodeId:
+          type: string
+          format: uuid
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+        conceptId:
+          type: string
+          format: uuid
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+        conceptVersion:
+          type: integer
+          format: int64
+          minimum: 1
+        memo:
+          type: string
+          description: Raw text, at most 8192 UTF-8 bytes; no disallowed controls.
+        conceptSpaceId: *id001
+    EditEvidence:
+      type: object
+      additionalProperties: false
+      required:
+      - memo
+      properties:
+        memo:
+          type: string
+          description: Raw text, at most 8192 UTF-8 bytes; no disallowed controls.
+    EvidencePage:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - nextAfter
+      properties:
+        items:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/Evidence'
+        nextAfter:
+          oneOf:
+          - type: string
+            format: uuid
+            pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+          - type: 'null'
+    Revision:
+      type: object
+      additionalProperties: false
+      required:
+      - revisionId
+      - evidenceId
+      - version
+      - actorId
+      - occurredAt
+      - snapshot
+      properties:
+        revisionId:
+          type: string
+          format: uuid
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+        evidenceId:
+          type: string
+          format: uuid
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+        version:
+          type: integer
+          format: int64
+          minimum: 1
+        actorId:
+          type: string
+          format: uuid
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+        occurredAt:
+          type: string
+          format: date-time
+        snapshot:
+          $ref: '#/components/schemas/Evidence'

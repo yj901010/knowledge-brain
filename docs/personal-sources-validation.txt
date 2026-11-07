@@ -1,0 +1,119 @@
+Personal Source delivery, 2026-10-11 Asia/Seoul
+
+AGENTS.md and PROJECT.md read before implementation. Source is an existing planned
+Knowledge Core entity. Source metadata, immutable revisions and Outbox stay
+Knowledge-owned, PRIVATE, Personal Space-scoped and behind the current common
+guest/registered principal and CONCEPT_READ/CONCEPT_WRITE authority. Existing
+service/DB ownership, local ACID, UUIDv7 and Kubernetes topology are preserved.
+No new dependency or external terminology dataset. Source-to-Claim binding and
+verification transitions remain separate later scopes.
+
+Full backend: backend-validation-1791647638 Complete; BUILD SUCCESS.
+297 discovered, 281 executed, 16 optional unrelated integration cases skipped;
+zero failures/errors. SourceApiTest11, SourceStoreIntegrationTest9 real PostgreSQL,
+SourceKafkaIntegrationTest1 real Debezium/Kafka TLS tests passed. GatewayProxyTest17
+passed including exact Source routes, body32768/32769, queries and src ETags.
+Evidence: .local/personal-sources-backend-validation.txt.
+
+URL interoperability boundary: Java URI accepts empty declared ports and IPv6
+zone/scope identifiers which browser URL validation rejects. Canonical Source
+fields now reject an authority ending ':' or containing '%'. Updated API/DB loops
+test all four examples, retaining URI spelling and exact citation/license text.
+backend-validation-1791647856 Complete; all90 Knowledge tests including real
+PostgreSQL/Kafka passed. Evidence: .local/personal-sources-knowledge-validation.txt.
+
+Initial full browser Job1791648062 passed18 existing scenarios but found403 on the
+Source POST. The production Knowledge security filter omitted Source collection
+and subpaths from its enabled CSRF exemption and permit rules. Only private Source
+paths were added under brain.knowledge.api.enabled. SourceController still requires
+HTTPS, exact Origin on writes, same-origin Fetch metadata when present, unique
+credential, fresh Identity/Space authority, strict JSON/query/ETag checks and
+no-store responses. Direct Controller tests alone did not detect this wiring gap;
+SourceSecurityBoundaryTest adds six tests through the actual servlet filter chain.
+
+Final Knowledge: backend-validation-1791648445 Complete; all96 passed, no skips or
+failures, including all27 Source tests (API11 + PostgreSQL9 + Kafka1 + filters6).
+The six filter tests cover all Source CRUD/history methods, feature-disabled403,
+unrelated/public/internal/management denial, retained HTTPS/Origin/Space checks,
+credential duplication and missing/stale preconditions. JUnit6/Spring MediaType
+test import ambiguity was corrected before this final pass. Evidence:
+.local/personal-sources-final-knowledge-validation.txt.
+
+Full browser after the server filter fix: graph-web-validation-1791648352 passed18
+existing scenarios including login/public contribution/review/merge. The Source
+scenario reached creation but detected an unstable implicit label for prefilled
+textarea values. Source fields receive explicit names matching their visible
+labels; subsequent Source validation checks complete lifecycle and draft fidelity.
+Evidence: .local/personal-sources-security-fix-browser-validation.txt.
+Temporary public test reviewer01a12692-8dc7-787b-a8c7-79571124a39a was retired;
+initial test reviewer01a1268d-c97c-7fef-9bdf-b6e154f625e7 was also retired.
+
+Store/API evidence: independent srcN ETags and immutable identities, exact four-key
+JSON including explicit nullable URL, Unicode codepoint bounds and exact raw
+citation/license fidelity, URL or nonblank citation required, duplicate metadata
+allowed as separate Source IDs, active-only reads and retirement-preserved history,
+exclusive UUIDv7/list and descending revision cursors, Space isolation, atomic
+Source/revision/Outbox rollback, one-winner concurrent edits, version overflow and
+stale preconditions. No Source write modifies Concept, Alias, Claim or Note rows.
+
+Kafka evidence: SourceCreated/Updated/Retired metadata snapshots and versions1/2/3,
+Source key, exact stored Protobuf wire bytes, immutable revision/event IDs,
+Space/actor/trace and schema transport verified. brain-connect Helm revision18;
+knowledge.source.v1 Ready1partition/1replica. Connect/Knowledge validator Ready
+observed generations13/5 with literal Source topic Write/Read ACLs.
+
+Registry: source-contract-validation-1791647636752259700 Complete;
+VALIDITY FULL and COMPATIBILITY FULL_TRANSITIVE, knowledge/source-events/1.
+Source SHA256: 9f85bff46c7b0732a8d5dcfd138781e73b428cacc2238cfec66911c7472e5169.
+Concept V1 unchanged: 4d6e8a70859ac8a4c438e665522208211ab72d10edffd8168290766252ecbc72.
+Alias V1 unchanged: c432d80ca20139dd4d167fd3285231f8289928bb1475f8e1bc22e8f952fd3501.
+Claim V1 unchanged: 5d561e290384dcbc6f770fd5084d9c84002969879fcf027742271a2e5038edc4.
+Evidence: .local/personal-sources-contract-validation.txt.
+Helm lint/base/local render, Source topic conditions/literal ACLs, Python helper
+compile and OpenAPI local references/fields/URL descriptions passed.
+
+Static builds: graph-static-build-1791647726981718100 and final
+graph-static-build-1791648614976205400 Complete; pinned Next16.4.0,
+TypeScript compile/export, publisher license notices and inline-script CSP hashes.
+Final Knowledge build: knowledge-image-build-1791648267, init exit0;
+knowledge-image-import-1791648305-0/1 Complete on both local nodes.
+Final Knowledge image: knowledge-brain/knowledge-service:local-6d616c0cbebfd487.
+Initial Gateway build: gateway-image-build-1791647779, init exit0;
+gateway-image-import-1791647858-0/1 Complete on both local nodes.
+Initial Gateway image: knowledge-brain/gateway-service:local-85f0c119941e7473.
+Final Gateway build: gateway-image-build-1791648656, init exit0;
+gateway-image-import-1791648684-0/1 Complete on both local nodes.
+Final Gateway image: knowledge-brain/gateway-service:local-9f4961616aaf5182.
+Installer checks current metadata and completed imports covering both nodes before
+rollout. All eight app deployments Ready1; Knowledge validates all five migrations
+and reports canonical schema version5. Evidence: .local/personal-sources-deployment-validation.txt.
+
+Owned temporary build resources are verified by exact Pod UID/labels,
+Service/NetworkPolicy selectors and source ConfigMap owner UID before deletion.
+Five builders including two superseded Knowledge builds were removed; exact Pods,
+artifact Services, NetworkPolicies and source ConfigMaps are absent. Evidence:
+.local/personal-sources-all-build-cleanup.json and corresponding build-ownership files.
+Persistent databases and volumes retained.
+
+User endpoint: https://localhost:8443/graph. The owned host forward was restarted
+after Gateway rollout. HTTP200 verified with the project CA and no TLS bypass.
+Evidence: .local/personal-sources-user-endpoint.txt.
+
+Final Source browser: graph-web-validation-1791648736 Complete;
+1 Source lifecycle scenario passed9.4s, suite10.2s, verified HTTPS. Together with
+the18 previous full-browser scenarios, all19 distinct browser scenarios passed.
+Evidence: .local/personal-sources-final-browser-validation.txt.
+
+Browser evidence: real22-Source20+2 pages and stable IDs for duplicate metadata;
+actual bad-URL POST400 boundaries, padded200-codepoint emoji creation and exact
+raw citation/license preservation, stable labels with prefilled textarea values,
+all-four-field stale412 draft retention and explicit latest inspection/restart,
+nine-version immutable history, retirement conflict requiring fresh confirmation,
+retained retired history and active-read404. Exact Concept/Alias/Claim/Note and
+Content reference snapshots plus four unrelated unsaved drafts remain unchanged.
+Foreign/public access denied; late catalog/detail reads cannot repopulate closed
+or switched views, 503 clears stale rows and explicit retry recovers, revocation
+clears private surfaces, untrusted metadata is escaped with no automatic external
+fetch or browser storage/CSP/JavaScript errors. Desktop1280x6533 and
+mobile390x8527 screenshots inspected; Source controls/IDs/URLs fit the viewport.
+The agreed later dark graph redesign remains a separate phase.

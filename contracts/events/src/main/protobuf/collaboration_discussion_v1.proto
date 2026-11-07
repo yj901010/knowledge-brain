@@ -1,0 +1,21 @@
+syntax = "proto3";
+package knowledgebrain.collaboration.discussion.v1;
+option java_package = "io.knowledgebrain.contracts.collaboration.discussion.v1";
+option java_multiple_files = true;
+message DiscussionEnvelopeV1 {
+ string event_id = 1; string event_type = 2; uint32 event_version = 3;
+ int64 occurred_at_epoch_millis = 4; string producer = 5; string aggregate_type = 6;
+ string aggregate_id = 7; string space_id = 8; string actor_id = 9; string trace_id = 10; bytes payload = 11;
+}
+// Group-private explicit text only. Consumers must reauthorize current Group membership.
+// Deduplicate event_id and apply increasing aggregate versions; replies are immutable version 1.
+message DiscussionSnapshotV1 {
+ string discussion_id = 1; string study_id = 2; string group_id = 3; string space_id = 4;
+ string creator_id = 5; int64 version = 6; string title = 7; string description = 8;
+ string state = 9; string audience = 10; string created_at = 11; string updated_at = 12;
+}
+message DiscussionReplySnapshotV1 {
+ string reply_id = 1; string discussion_id = 2; string study_id = 3; string group_id = 4; string space_id = 5;
+ string author_id = 6; int64 version = 7; int64 discussion_version = 8;
+ string content = 9; string audience = 10; string created_at = 11;
+}

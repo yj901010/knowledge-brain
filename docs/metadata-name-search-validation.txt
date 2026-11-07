@@ -1,0 +1,17 @@
+Metadata catalog name substring search validation — 2026-10-22
+
+content: 178 passed, 0 failed/error/skipped; backend-validation-1792675482248360500-6baf01a7
+gateway: 79 passed, 0 failed/error/skipped; backend-validation-1792675482920162000-46ffe264
+Browser: 24 passed (4 name search scenarios + 20 combined tag/range/exact/property/tag/metadata/activity/library/retirement regressions); graph-web-validation-1792675776668684000
+Pinned frontend build and TypeScript checks passed: graph-static-build-1792675493652159700
+OpenAPI: 54 documents parsed, 1450 local references resolved.
+Literal name substring and NFC normalization apply before keyset pagination; actual 20+2 matching tag and property pages retain unused definitions and active usage counts.
+Case and whitespace significance, literal percent/underscore/quote/Unicode characters, NFC-equivalent accents, 64-code-point names and foreign-space denial passed.
+Tag, property and combined-tag picker search keep draft input separate from applied query during pagination/refresh. Explicit clear and close reset correctly.
+Primary catalog search closes prior selection and detail while preserving independent Note editor drafts; picker name searches preserve applied tag/value and Note results.
+Invalid empty/control/oversize/duplicate/UTF-8 queries and wrong-route q rejected; fresh authorization and no-store preserved.
+Stale old queries cannot restore new results; mismatching catalog names and read failures fail closed with explicit retry. Revocation clears private UI.
+Mobile width, no browsing writes and no local/session storage; all 20 prior search and Note regressions passed.
+Real PostgreSQL/Kafka and Gateway suites passed. No new dependency, event contract or migration; deployed Content schema remains V13.
+Content/Gateway exact source-hash images imported on both nodes and rolled out; both owned temporary builders cleaned.
+All 12 application Deployments ready; verified host HTTPS /graph 200.

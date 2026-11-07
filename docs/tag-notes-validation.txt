@@ -1,0 +1,16 @@
+Tag-to-Note canonical browsing validation — 2026-10-22
+
+content: 148 passed, 0 failed/error/skipped; backend-validation-1792670482735601900-727a8ece
+gateway: 70 passed, 0 failed/error/skipped; backend-validation-1792670706625054300-39d95b2c
+Browser: 16 passed (3 tag scenarios + 13 metadata/library/retirement/Journal/archive/restoration regressions); graph-web-validation-1792670960616220900
+Pinned frontend build and TypeScript checks passed: graph-static-build-1792670715372912100
+OpenAPI: 54 documents parsed, 1438 local references resolved.
+Real 20+2 tag and Note pages; active ordinary/Daily Notes, repeated titles distinguished by UUID, unassigned/retired Notes excluded.
+Current tag membership, latest titles, unlink/reassignment and retirement observed; unused tag identity retained with zero count.
+Fresh Space checks, foreign/unknown tag denial, no-store pages, strict query keys/limits and read-only Gateway routes passed.
+Real PostgreSQL reads/store restart preserved revision and Outbox behavior; existing note_tag_lookup index verified. No migration or new dependency.
+Tag browsing preserves independent editor draft; explicit Note selection opens existing canonical editor. Mobile width and literal tag escaping passed.
+Malformed/repeated tag and Note pages fail closed; explicit refresh recovers. Late switched/closed responses do not repopulate private UI.
+Revoked detail and catalog reads clear private UI; empty tag catalog is explained. No browser storage or browsing writes.
+Content/Gateway exact source-hash images imported on both nodes and rolled out; current and superseded owned builders cleaned.
+All 12 application Deployments ready; verified host HTTPS /graph 200.

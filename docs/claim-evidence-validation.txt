@@ -1,0 +1,82 @@
+Inverse Concept Claim evidence UI delivery (2026-10-13)
+
+AGENTS.md and PROJECT.md read before implementation; no conflicting decision.
+Knowledge retains canonical Concepts/Claims/Sources/Citations and their immutable
+revisions. Existing common principal, fresh Space authority, private PERSONAL
+scope, local transactions and event architecture remain compatible.
+
+Delivered:
+  Personal Concept library -> Concept -> OBJECT/PREDICATE usage -> select Claim
+  -> 사용 관계 근거 확인. Original subject/Claim identity selects existing routes.
+  Read-only Citation catalog, independent 20-row exclusive after pages; full pins
+  and five-row exclusive before history. Duplicate titles retain stable IDs.
+  Pinned Claim/Source versions and historical triple IDs stay distinct from the
+  current Claim and the parent selected Claim revision. Source text/whitespace,
+  revision IDs, safe explicit URL, citation and license memo are visible.
+  Parent modes/version/retirement preserve known selected Citation history;
+  Claim/role/Concept/Space switch and closes end the old scope. No Source picker,
+  pin editing, external content fetch, storage or verification transition added.
+
+Validation:
+  Fresh isolated npm ci from unchanged package-lock.json + complete tsc --noEmit:
+  passed, including new component/test and the existing web sources/tests.
+  Existing host node_modules missed react-markdown/remark-gfm; used a fresh
+  isolated build directory with the same pinned dependencies, no lockfile change.
+  Kubernetes static build Job graph-static-build-1791898275944660700: Complete. Next/TypeScript
+  export, publisher notices and generated CSP passed.
+  Java 25 Gateway image builder gateway-image-build-1791898323: init exit 0.
+  Focused actual API/browser Job graph-web-validation-1791898603: Complete; 1 passed, 0 failed.
+  Full --public browser Job graph-web-validation-1791898672: Complete; 23 passed, 0 failed in the same run.
+  Existing Note/Concept/Alias/Claim/Source/Citation/usage/private/public flows
+  included. Public test reviewer was granted/revoked by the existing scoped runner.
+  New checks: actual 22 Citations, 20+2 pages, duplicate titles/IDs; Source/Claim
+  updates leave old pins/history intact; eight revisions in 5+3 pages; five
+  sibling drafts and unrelated canonical snapshots remain independent; no new
+  panel writes (the explicit parent retirement is a separate fixture operation).
+  Parent Claim/Concept modes preserve evidence; empty alternative Claim and the
+  PREDICATE role use their own exact subject/Claim route. 503, foreign scoped
+  payloads, mismatched item ETag and invalid historical subject clear affected
+  stale rows/pins with retry. Held catalog/detail/history reads cannot repopulate
+  Citation/Claim/role/Concept switches or closed scopes. Source retirement keeps
+  active pins; Citation unlink/Claim/Concept retirement keep known authorized
+  history. A real delayed history read after guest revocation clears private
+  Concept/Note/Source surfaces. No external requests, browser storage, injected
+  elements, JavaScript or CSP errors. Desktop and 390px mobile wrap inspected.
+  Evidence: .local/claim-evidence-focused-validation.txt,
+  .local/claim-evidence-browser-full-validation.txt and matching proof JSON.
+  Screenshots: .local/graph-ui-results/claim-evidence.png and
+  .local/graph-ui-results/claim-evidence-mobile.png.
+
+Contracts/runtime:
+  Existing contracts/openapi/claim-citations.yaml reused; no new API endpoint,
+  canonical migration, Java API behavior, dependency, topic/schema/ACL or event.
+  All six published Knowledge Protobuf hashes unchanged.
+  Existing backend baseline is recorded in docs/claim-usages-validation.txt;
+  Java backend tests were not rerun for this UI-only change.
+  Gateway-only installer verifies exact local context/metadata and Complete
+  imports on every k3d node before rollout. All eight brain-apps Deployments Ready.
+  Gateway: knowledge-brain/gateway-service:local-62c1f46e1fb66e90
+  Unchanged Knowledge: knowledge-brain/knowledge-service:local-753e9660fab4ec30
+  Host https://localhost:8443/graph: 200, project CA/hostname verified, CSP present.
+  Deployment/HTTPS proof: .local/claim-evidence-deployments.json and
+  .local/claim-evidence-https-proof.json.
+
+Recovery during validation:
+  Docker was initially stopped. After startup, nodes became Ready, then the
+  Docker engine/API stopped responding during static Job
+  graph-static-build-1791897712152066300. Supported Docker Desktop restart restored
+  the same cluster/data; the replacement static build above completed.
+  First focused Job graph-web-validation-1791898423 timed out when its fixture
+  tried entering Concept history while the editor was still open. Corrected the
+  fixture to explicitly cancel before switching parent mode; no runtime edit was
+  needed. Focused and full verification above passed afterward.
+
+Cleanup:
+  Exact Gateway builder UID, labels, Service/NetworkPolicy selectors and source
+  ConfigMap ownerRefs verified before deleting only these temporary artifacts.
+  Deployed image and readiness verified; absence confirmed afterward.
+  Proof: .local/claim-evidence-build-cleanup.json. Validation/static Jobs retain
+  their existing 24h TTL and owned ConfigMap lifecycle. No cluster/PVC deleted,
+  global kubeconfig modified, Git initialized, commit or push performed.
+
+Feature guide: docs/claim-evidence.md.

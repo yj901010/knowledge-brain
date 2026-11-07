@@ -1,0 +1,24 @@
+Note tags/properties UI validation - 2026-10-09
+AGENTS.md and PROJECT.md checked first; existing Content ownership and independent metadata revision retained.
+Ready=1: knowledge-brain/content-service:local-4aa4555f06fa2328
+Ready=1: knowledge-brain/gateway-service:local-d48db2af4b3e8bc4
+Import PASS: content-image-import-1791512941-0 k3d-knowledge-brain-agent-0
+Import PASS: content-image-import-1791512941-1 k3d-knowledge-brain-server-0
+Import PASS: gateway-image-import-1791513415-0 k3d-knowledge-brain-agent-0
+Import PASS: gateway-image-import-1791513415-1 k3d-knowledge-brain-server-0
+Job PASS: backend-validation-1791512901
+Job PASS: graph-web-validation-1791513482
+Job PASS: graph-static-build-1791513346433351300
+Content: 65 total, 59 passed, 6 optional fixture tests skipped; zero failures/errors.
+Exact-decimal PostgreSQL regression first failed against old mapper (backend-validation-1791512817), then passed current/history/raw Protobuf Outbox comparisons after BigDecimal decoding fix.
+Browser: 6 passed (metadata/graph/editor/links/search/public), trusted CA HTTPS without bypass.
+Metadata: five types, exact 38-digit decimal across unrelated tag edits, multiline list, independent Markdown version, real m-ETag conflict and explicit restart, 409 Space type lock, 503 draft-preserving retry, cancel without write, Note-switch draft clear, revocation, escaped script text and no browser storage.
+Temporary public reviewer grant retired after successful workflow.
+Windows EPERM reproduced at reused and fresh build paths. Same pinned Next export now builds in existing Linux tooling Job; TypeScript, export, CSP and publisher notices passed.
+Native build decode stdout encoding fixed to UTF-8; static artifacts/source contain no credentials.
+Six concurrent browser workers hit 1536 MiB OOMKilled; bounded two-worker suite passed with existing service memory unchanged.
+Select fields now carry explicit accessible names; metadata fixture uses those real UI controls.
+API signatures, schema, event contracts and dependencies unchanged. Existing rounded historical snapshots/events are not rewritten or reconstructed.
+Owned Content/Gateway image builder resources cleaned after ready rollouts and test success; successful validation Jobs use existing TTL.
+Focused screenshot/privacy recheck: graph-web-validation-1791513613, 1 passed.
+Desktop/mobile metadata panels inspected after scrolling the actual component into view; precise decimal is escaped text, labels and controls fit existing scrollable inspector; no horizontal overflow.

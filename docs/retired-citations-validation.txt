@@ -1,0 +1,20 @@
+Unlinked private Citation archive validation — 2026-10-21
+
+knowledge: 223 passed, 0 failed/error/skipped; backend-validation-1792590388700973900-a9bbbdae
+gateway: 65 passed, 0 failed/error/skipped; backend-validation-1792590167042811400-a3f9d6f7
+Browser: 16 passed (3 new archive scenarios + 13 existing Claim/Concept/Source/Citation regressions); graph-web-validation-1792590621257093600
+Pinned frontend build and TypeScript checks passed: graph-static-build-1792590387419829400
+OpenAPI references resolved: 1468
+Retired 20+2 pagination, repeated links with distinct IDs, fresh Space authority, default ACTIVE listing and existing item/write lifecycle rules passed.
+Reopen/reload rediscovery retained seven Citation revisions, historical Source changes, exact typed Claim objects, original metadata and revision/actor/time fields.
+Retired subject -> retired Claim -> unlinked Citation navigation survives reload and later Source changes/retirement; hidden ACTIVE links remain excluded.
+Read-only archive browsing preserved independent Claim and Citation drafts, fetched no external URL and wrote no browser storage.
+Foreign requests and malformed/repeated/misplaced state filters denied; wrong scope/state/pins, unsafe URLs, invalid typed objects/cursors and mismatched/duplicate histories rejected with stale-data clearing and retry.
+Late closed-list and switched-history responses cannot restore old snapshots; actual session revocation from archive history clears private UI.
+Hostile text remained inert, explicit external links retained noopener/noreferrer, and 390px viewport had no horizontal overflow.
+Isolated PostgreSQL tests preserved Citation rows/history, original typed pins and byte-identical Outbox data through archive reads and fresh store construction.
+V15 partial retired-Citation index observed in deployed Knowledge startup; no canonical data rewrite, event changes, projection rebuild or checkpoint reset.
+Knowledge and Gateway exact images imported on both local nodes and rolled out; owned current and superseded build resources removed.
+All 12 application Deployments ready; host HTTPS /graph 200.
+Initial backend test expected unnormalized decimal trailing zeros; corrected to compare the canonical stored Claim object, then all 223 tests passed.
+Scope: read-only rediscovery of explicitly unlinked private Citations under their Claim; no restore, public publication or retired Source-inverse Citation collection.

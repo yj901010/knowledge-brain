@@ -1,0 +1,16 @@
+Daily Note / Journal UI validation - 2026-10-09
+AGENTS.md and PROJECT.md checked first; Content canonical date binding and explicit timezone rules preserved.
+Ready=1: knowledge-brain/gateway-service:local-75a6821d715bbb27
+Ready=1: knowledge-brain/content-service:local-4aa4555f06fa2328
+Job PASS: gateway-image-import-1791537298-0
+Job PASS: gateway-image-import-1791537298-1
+Job PASS: graph-static-build-1791537225873191800
+Job PASS: backend-validation-1791537271
+Content: 65 total, 59 passed, 6 optional fixture tests skipped; zero failures/errors. Daily API, dates, canonical Store and Outbox coverage passed.
+Initial browser run graph-web-validation-1791537446: Journal plus five other workflows passed; editor failed because its reload assumed asynchronous graph title propagation was already complete. The editor fixture now polls the actual renamed immutable ID/title before reload; no fake response or runtime change.
+Journal: read-only server today, explicit timezone, canonical create/reopen and body preservation, original timezone conflicts, existing today opened without write, descending 20+1 paging, inclusive bounds, ordinary exclusion, foreign Space denial, failures/retry, stale-response discard, retired date conflict, session clearing and no browser storage.
+Desktop/mobile Journal screenshots inspected; controls fit and no horizontal overflow.
+API, database, schema, event contracts, dependencies and service ownership unchanged. Combined Activity timeline remains future work.
+Job PASS: graph-web-validation-1791537546
+Browser: 7 passed (graph/editor/Journal/links/metadata/search/public), trusted HTTPS without certificate bypass. Scoped fixture reviewer permission retired after successful workflow.
+Owned Gateway image builder resources cleaned after Ready rollout and browser success; validation Jobs retain existing TTL.

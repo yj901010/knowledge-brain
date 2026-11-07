@@ -1,0 +1,146 @@
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaUser
+metadata:
+  name: brain-notification-projector
+  namespace: brain-events
+  labels:
+    strimzi.io/cluster: brain-kafka
+spec:
+  authentication:
+    type: tls
+  authorization:
+    type: simple
+    acls:
+    - resource:
+        type: topic
+        name: collaboration.grade-retraction.v1
+        patternType: literal
+      operations:
+      - Read
+      - Describe
+    - resource:
+        type: topic
+        name: collaboration.feedback-retraction.v1
+        patternType: literal
+      operations:
+      - Read
+      - Describe
+    - resource:
+        type: topic
+        name: collaboration.submission-grade.v1
+        patternType: literal
+      operations:
+      - Read
+      - Describe
+    - resource:
+        type: topic
+        name: collaboration.resubmission-request.v1
+        patternType: literal
+      operations:
+      - Read
+      - Describe
+    - resource:
+        type: topic
+        name: collaboration.submission-feedback.v1
+        patternType: literal
+      operations:
+      - Read
+      - Describe
+    - resource:
+        type: topic
+        name: planning.reminder-delivery.v1
+        patternType: literal
+      operations:
+      - Read
+      - Describe
+    - resource:
+        type: group
+        name: notification-
+        patternType: prefix
+      operations:
+      - Read
+      - Describe
+---
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaUser
+metadata:
+  name: brain-notification-validator
+  namespace: brain-events
+  labels:
+    strimzi.io/cluster: brain-kafka
+spec:
+  authentication:
+    type: tls
+  authorization:
+    type: simple
+    acls:
+    - resource:
+        type: topic
+        name: collaboration.grade-retraction.v1
+        patternType: literal
+      operations:
+      - Read
+      - Describe
+    - resource:
+        type: topic
+        name: collaboration.feedback-retraction.v1
+        patternType: literal
+      operations:
+      - Read
+      - Describe
+    - resource:
+        type: topic
+        name: notification.group-review.v1
+        patternType: literal
+      operations:
+      - Read
+      - Describe
+    - resource:
+        type: topic
+        name: collaboration.submission-grade.v1
+        patternType: literal
+      operations:
+      - Read
+      - Describe
+    - resource:
+        type: topic
+        name: collaboration.resubmission-request.v1
+        patternType: literal
+      operations:
+      - Read
+      - Describe
+    - resource:
+        type: topic
+        name: collaboration.submission-feedback.v1
+        patternType: literal
+      operations:
+      - Read
+      - Describe
+    - resource:
+        type: topic
+        name: planning.reminder-delivery.v1
+        patternType: literal
+      operations:
+      - Read
+      - Describe
+    - resource:
+        type: topic
+        name: notification.in-app.v1
+        patternType: literal
+      operations:
+      - Read
+      - Describe
+    - resource:
+        type: topic
+        name: notification.delivery-policy.v1
+        patternType: literal
+      operations:
+      - Read
+      - Describe
+    - resource:
+        type: group
+        name: notification-validation-
+        patternType: prefix
+      operations:
+      - Read
+      - Describe

@@ -1,0 +1,112 @@
+{
+  "actions": {
+    "actions/checkout": {
+      "version": "v7.0.1",
+      "sha": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+      "license": "MIT",
+      "licenseFile": "infra/dependencies/delivery/actions-checkout.LICENSE.txt",
+      "licenseSha256": "3e855ffa704114a51628ef8f0bf3aeb41728adf9d9070e263bf58aa5640b0eb5"
+    },
+    "actions/setup-java": {
+      "version": "v6.2.0",
+      "sha": "77dd5b2ce225ea11469928ac317850245a74ae78",
+      "license": "MIT",
+      "licenseFile": "infra/dependencies/delivery/actions-setup-java.LICENSE.txt",
+      "licenseSha256": "7d070f6b64d9bcc530fe99cc21eaaa4b3c364e0b2d367d7735671fa202a03b32"
+    },
+    "actions/setup-node": {
+      "version": "v7.1.0",
+      "sha": "949feb2413d6458794dcd2491c4babbbce0c15c1",
+      "license": "MIT",
+      "licenseFile": "infra/dependencies/delivery/actions-setup-node.LICENSE.txt",
+      "licenseSha256": "7d070f6b64d9bcc530fe99cc21eaaa4b3c364e0b2d367d7735671fa202a03b32"
+    },
+    "actions/upload-artifact": {
+      "version": "v7.0.2",
+      "sha": "cf430e030ddbb5b0abf93d22962f4752f3646cd9",
+      "license": "MIT",
+      "licenseFile": "infra/dependencies/delivery/actions-upload-artifact.LICENSE.txt",
+      "licenseSha256": "3e855ffa704114a51628ef8f0bf3aeb41728adf9d9070e263bf58aa5640b0eb5"
+    },
+    "actions/download-artifact": {
+      "version": "v8.0.2",
+      "sha": "9000827ccba6bdab643e8b6fd33ac0654aef8333",
+      "license": "MIT",
+      "licenseFile": "infra/dependencies/delivery/actions-download-artifact.LICENSE.txt",
+      "licenseSha256": "3e855ffa704114a51628ef8f0bf3aeb41728adf9d9070e263bf58aa5640b0eb5"
+    }
+  },
+  "argocd": {
+    "version": "v3.6.1",
+    "license": "Apache-2.0",
+    "manifestUrl": "https://raw.githubusercontent.com/argoproj/argo-cd/v3.6.1/manifests/namespace-install.yaml",
+    "manifestSha256": "310ff8e2cbef2c4b84dd8d353bddc4c9afcec551e62af30560b0aa80ff140382",
+    "licenseFile": "infra/dependencies/delivery/argocd.LICENSE.txt",
+    "licenseSha256": "c996fc213c94f4a4a838407d355b081226caa7b103a4f239bb87fb8f1d8e3a60",
+    "crds": [
+      {
+        "file": "infra/dependencies/delivery/application-crd.yaml",
+        "url": "https://raw.githubusercontent.com/argoproj/argo-cd/v3.6.1/manifests/crds/application-crd.yaml",
+        "sha256": "9fd0da3e7097ad6d1af614fabd5c960bc7ddb00d768c3ef485a2fda6e9460df8"
+      },
+      {
+        "file": "infra/dependencies/delivery/appproject-crd.yaml",
+        "url": "https://raw.githubusercontent.com/argoproj/argo-cd/v3.6.1/manifests/crds/appproject-crd.yaml",
+        "sha256": "084150a2feccd188a1dee09cd8a3a259dfacecdfb7e10037df78900f60816482"
+      },
+      {
+        "file": "infra/dependencies/delivery/applicationset-crd.yaml",
+        "url": "https://raw.githubusercontent.com/argoproj/argo-cd/v3.6.1/manifests/crds/applicationset-crd.yaml",
+        "sha256": "980128848a8d2152b946aec6a11cdd1174b38b04587f4fba94537c040fd84202"
+      }
+    ]
+  },
+  "tools": {
+    "actionlint": {
+      "version": "v1.7.12",
+      "url": "https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz",
+      "sha256": "8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8",
+      "license": "MIT",
+      "licenseFile": "infra/dependencies/delivery/rhysd-actionlint.LICENSE.txt",
+      "licenseSha256": "03a26b06d224380a02bf100e05fff3b2dfc71b14d4e2fa685ec9963a87563c22"
+    },
+    "trivy": {
+      "version": "v0.76.2",
+      "url": "https://github.com/aquasecurity/trivy/releases/download/v0.76.2/trivy_0.76.2_Linux-64bit.tar.gz",
+      "sha256": "bc0fc726e017b8927a62b2d3531d7a84ee01769daf5c99ed866dced54089fdbf",
+      "license": "Apache-2.0",
+      "licenseFile": "infra/dependencies/delivery/aquasecurity-trivy.LICENSE.txt",
+      "licenseSha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+    },
+    "helm": {
+      "version": "v3.19.0",
+      "url": "https://get.helm.sh/helm-v3.19.0-linux-amd64.tar.gz",
+      "sha256": "a7f81ce08007091b86d8bd696eb4d86b8d0f2e1b9f6c714be62f82f96a594496",
+      "license": "Apache-2.0",
+      "licenseFile": "infra/dependencies/delivery/helm.LICENSE.txt",
+      "licenseSha256": "881467e52efeb1807406134b0ec04b1c6f52dc9dc49382713ef9ac4e0cae42f8"
+    }
+  },
+  "images": {
+    "argocd": "quay.io/argoproj/argocd:v3.6.1@sha256:296e3d74f449b2ce45265613fcb68c18ed7366488360c8ea32f5f2a93d2e5c54",
+    "postgres": "postgres:17.11-bookworm@sha256:665dc7b37ac52a17e298511414c21d23ffa4e6a6ef6225b3e5d59c7afb35e994",
+    "node": "node:24.10.0-bookworm@sha256:06e54ecf113a30f0ff9a1d309866a5924d3bda4389eab11a0e1e92f3251d915d",
+    "maven": "maven:3.10.0-eclipse-temurin-25@sha256:0396dcd8cd0d46a0d2026449b714b2a5bbe53cce030975b5a41f8ffa3f5f0525",
+    "redis": "redis:8.10.1-alpine@sha256:ef216d85ec44f4fdf7c0e6df2d1757a4734ed32fbb278cabd3181b5a27353b79"
+  },
+  "python": {
+    "PyYAML": {
+      "version": "6.0.2",
+      "license": "MIT",
+      "source": "https://pypi.org/project/PyYAML/6.0.2/"
+    }
+  },
+  "redisLicense": {
+    "version": "8.10.1",
+    "selectedLicense": "AGPL-3.0-only",
+    "source": "https://github.com/redis/redis/tree/8.10.1",
+    "licenseFile": "infra/dependencies/delivery/redis-LICENSE.txt",
+    "licenseSha256": "4a0e416b9537688f30dfe69ddaceb2ca64d96b7df02a0a6760d376890ddc4e40",
+    "unmodifiedUpstreamImage": true
+  }
+}

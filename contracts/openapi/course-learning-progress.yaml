@@ -1,0 +1,416 @@
+openapi: 3.1.0
+info:
+  title: Participant-only Course Learning Progress
+  version: 1.0.0
+  description: 'Collaboration learning-context returns a consistent Course/own Enrollment
+    snapshot after fresh Space Group authorization. Learning delegates only the singleton
+    current browser cookie over fixed trusted HTTPS, checks bounded exact response
+    and does no cross-service SQL. Progress is Group-Space scoped but PRIVATE/PARTICIPANT_ONLY:
+    owner and peers see only their own progress. There is no participant selector,
+    owner overview or implicit progress sharing. Current Group members can read their
+    own retained history after withdrawal or Course retirement; removal denies access.
+    Writes require current OWNER/MEMBER, ENROLLED, Course ACTIVE or COMPLETED, exact
+    observed courseVersion/enrollmentVersion and independent strong cpN. Statuses
+    NOT_STARTED/IN_PROGRESS/COMPLETED are self-reported and correctable, not grading
+    or prerequisite enforcement. Course/Study/Enrollment operational state does not
+    advance automatically. Version0 read/no-op allocates nothing. Actual change creates
+    Learning UUIDv7 and commits current/full revision/Outbox atomically, using local
+    per-scope advisory serialization for initial and existing writes. Context authorization
+    is obtained before the local transaction and is not a cross-service atomic commit;
+    later revocations block subsequent checks. Unknown responses require explicit
+    fresh read, never automatic reapplication. Source IDs/version provenance only;
+    no Group content copy to a Personal Space or personal Note/session/evidence linking.
+    Existing CDC topic learning.course-progress.v1, Registry learning/course-progress-events/1;
+    preserve participant-only audience, deduplicate eventId and apply increasing versions.'
+security:
+- browserSession: []
+paths:
+  /api/groups/{groupId}/courses/{courseId}/learning-context:
+    parameters: &id001
+    - &id012
+      name: groupId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    - &id013
+      name: courseId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    get:
+      operationId: getMyCourseLearningContext
+      responses:
+        '200':
+          description: Current Group-authorized own learning progress result
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Context'
+        '400': &id002
+          description: Strict exact JSON/status/UUIDv7/query/strong cpN ETag required
+        '401': &id003
+          description: Singleton secure browser session required
+        '403': &id004
+          description: Registered current Group participation required
+        '404': &id005
+          description: Current Group/Space/Course unavailable or Study outside curriculum
+        '409': &id006
+          description: Readonly role/withdrawn enrollment/retired Course, changed
+            observed context, incompatible curriculum
+        '412': &id007
+          description: Stale independent progress version, refresh before applying
+            a new choice
+        '413': &id008
+          description: Body exceeds4096 bytes
+        '415': &id009
+          description: JSON required
+        '428': &id010
+          description: If-Match cpN required, cp0 before first change
+        '503': &id011
+          description: Collaboration/Space authority or Learning storage unavailable;
+            fail closed
+  /api/groups/{groupId}/courses/{courseId}/my-progress:
+    parameters: *id001
+    get:
+      operationId: getMyCourseProgress
+      responses:
+        '200':
+          description: Current Group-authorized own learning progress result
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"cp(0|[1-9][0-9]*)"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/View'
+        '400': *id002
+        '401': *id003
+        '403': *id004
+        '404': *id005
+        '409': *id006
+        '412': *id007
+        '413': *id008
+        '415': *id009
+        '428': *id010
+        '503': *id011
+  /api/groups/{groupId}/courses/{courseId}/my-progress/studies/{studyId}:
+    parameters:
+    - *id012
+    - *id013
+    - name: studyId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    put:
+      operationId: changeMyCourseStudyProgress
+      responses:
+        '200':
+          description: Current Group-authorized own learning progress result
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"cp(0|[1-9][0-9]*)"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Progress'
+        '400': *id002
+        '401': *id003
+        '403': *id004
+        '404': *id005
+        '409': *id006
+        '412': *id007
+        '413': *id008
+        '415': *id009
+        '428': *id010
+        '503': *id011
+      parameters:
+      - name: Origin
+        in: header
+        required: true
+        schema:
+          type: string
+      - name: If-Match
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^"cp(0|[1-9][0-9]*)"$
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Input'
+  /api/groups/{groupId}/courses/{courseId}/my-progress/revisions:
+    parameters: *id001
+    get:
+      operationId: getMyCourseProgressRevisions
+      responses:
+        '200':
+          description: Current Group-authorized own learning progress result
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/History'
+        '400': *id002
+        '401': *id003
+        '403': *id004
+        '404': *id005
+        '409': *id006
+        '412': *id007
+        '413': *id008
+        '415': *id009
+        '428': *id010
+        '503': *id011
+      parameters:
+      - name: before
+        in: query
+        required: false
+        schema: &id014
+          type: integer
+          format: int64
+          minimum: 1
+          maximum: 9223372036854775807
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 5
+components:
+  securitySchemes:
+    browserSession:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest
+  schemas:
+    Id:
+      type: string
+      format: uuid
+      pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+    Study:
+      type: object
+      additionalProperties: false
+      required:
+      - studyId
+      - studyVersion
+      - title
+      properties:
+        studyId:
+          $ref: '#/components/schemas/Id'
+        studyVersion: *id014
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+    Context:
+      type: object
+      additionalProperties: false
+      required:
+      - principalId
+      - groupId
+      - spaceId
+      - courseId
+      - courseVersion
+      - courseState
+      - role
+      - enrollmentId
+      - enrollmentVersion
+      - enrollmentState
+      - studies
+      properties:
+        principalId:
+          $ref: '#/components/schemas/Id'
+        groupId:
+          $ref: '#/components/schemas/Id'
+        spaceId:
+          $ref: '#/components/schemas/Id'
+        courseId:
+          $ref: '#/components/schemas/Id'
+        courseVersion: *id014
+        courseState:
+          enum:
+          - DRAFT
+          - ACTIVE
+          - COMPLETED
+          - RETIRED
+        role:
+          enum:
+          - OWNER
+          - MEMBER
+          - VIEWER
+        enrollmentId:
+          oneOf:
+          - $ref: '#/components/schemas/Id'
+          - type: 'null'
+        enrollmentVersion: &id015
+          type: integer
+          format: int64
+          minimum: 0
+          maximum: 9223372036854775807
+        enrollmentState:
+          enum:
+          - NOT_ENROLLED
+          - ENROLLED
+          - WITHDRAWN
+        studies:
+          type: array
+          maxItems: 50
+          items:
+            $ref: '#/components/schemas/Study'
+    Step:
+      type: object
+      additionalProperties: false
+      required:
+      - studyId
+      - status
+      properties:
+        studyId:
+          $ref: '#/components/schemas/Id'
+        status: &id016
+          enum:
+          - NOT_STARTED
+          - IN_PROGRESS
+          - COMPLETED
+    Progress:
+      type: object
+      additionalProperties: false
+      required:
+      - progressId
+      - groupId
+      - spaceId
+      - courseId
+      - participantId
+      - version
+      - courseVersion
+      - enrollmentId
+      - enrollmentVersion
+      - visibility
+      - audience
+      - steps
+      - updatedAt
+      properties:
+        progressId:
+          oneOf:
+          - $ref: '#/components/schemas/Id'
+          - type: 'null'
+        groupId:
+          $ref: '#/components/schemas/Id'
+        spaceId:
+          $ref: '#/components/schemas/Id'
+        courseId:
+          $ref: '#/components/schemas/Id'
+        participantId:
+          $ref: '#/components/schemas/Id'
+        version: *id015
+        courseVersion: *id014
+        enrollmentId:
+          oneOf:
+          - $ref: '#/components/schemas/Id'
+          - type: 'null'
+        enrollmentVersion: *id015
+        visibility:
+          const: PRIVATE
+        audience:
+          const: PARTICIPANT_ONLY
+        steps:
+          type: array
+          maxItems: 50
+          items:
+            $ref: '#/components/schemas/Step'
+          description: Exact authoritative Course curriculum order, unique Study IDs;
+            no title/content copy
+        updatedAt:
+          oneOf:
+          - &id017
+            type: string
+            format: date-time
+          - type: 'null'
+      description: Version0 is a nonpersistent sentinel with null ID/timestamp and
+        every step NOT_STARTED. Persisted versions require nonnull IDs/timestamps
+        and positive enrollmentVersion. Course/enrollment versions describe the context
+        observed at the last actual change.
+    View:
+      type: object
+      additionalProperties: false
+      required:
+      - context
+      - progress
+      - canWrite
+      properties:
+        context:
+          $ref: '#/components/schemas/Context'
+        progress:
+          $ref: '#/components/schemas/Progress'
+        canWrite:
+          type: boolean
+          description: Current OWNER/MEMBER, ENROLLED, Course ACTIVE or COMPLETED;
+            all rechecked on each write
+    Input:
+      type: object
+      additionalProperties: false
+      required:
+      - status
+      - courseVersion
+      - enrollmentVersion
+      properties:
+        status: *id016
+        courseVersion: *id014
+        enrollmentVersion: *id014
+    Revision:
+      type: object
+      additionalProperties: false
+      required:
+      - revisionId
+      - version
+      - actorId
+      - occurredAt
+      - snapshot
+      properties:
+        revisionId:
+          $ref: '#/components/schemas/Id'
+        version: *id014
+        actorId:
+          $ref: '#/components/schemas/Id'
+        occurredAt: *id017
+        snapshot:
+          $ref: '#/components/schemas/Progress'
+    History:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - nextBefore
+      properties:
+        items:
+          type: array
+          maxItems: 10
+          items:
+            $ref: '#/components/schemas/Revision'
+        nextBefore:
+          oneOf:
+          - *id014
+          - type: 'null'

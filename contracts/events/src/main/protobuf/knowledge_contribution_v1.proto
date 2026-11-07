@@ -1,0 +1,33 @@
+syntax = "proto3";
+package knowledgebrain.knowledge.contribution.v1;
+option java_package = "io.knowledgebrain.contracts.knowledge.contribution.v1";
+option java_multiple_files = true;
+message EventEnvelopeV1 {
+  string event_id = 1;
+  string event_type = 2;
+  uint32 event_version = 3;
+  int64 occurred_at_epoch_millis = 4;
+  string producer = 5;
+  string aggregate_type = 6;
+  string aggregate_id = 7;
+  string space_id = 8;
+  string actor_id = 9;
+  string trace_id = 10;
+  bytes payload = 11;
+}
+// Explicit public proposal snapshot. No private domain object is copied.
+message ContributionChangedPayloadV1 {
+  string contribution_id = 1;
+  string concept_id = 2;
+  string operation = 3;
+  uint64 base_version = 4;
+  uint64 version = 5;
+  string state = 6;
+  string author_id = 7;
+  string title = 8;
+  string description = 9;
+  string rationale = 10;
+  string review_id = 11;
+  string review_reason = 12;
+  uint64 merged_concept_version = 13;
+}

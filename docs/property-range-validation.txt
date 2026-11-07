@@ -1,0 +1,17 @@
+Inclusive numeric/date property ranges validation — 2026-10-22
+
+content: 168 passed, 0 failed/error/skipped; backend-validation-1792674021930050000-eef02964
+gateway: 75 passed, 0 failed/error/skipped; backend-validation-1792674022180066300-61b90719
+Browser: 17 passed (3 range scenarios + 14 exact-value/property/tag/metadata/activity/library/retirement regressions); graph-web-validation-1792674361662923100
+Pinned frontend build and TypeScript checks passed: graph-static-build-1792674032787551400
+OpenAPI: 54 documents parsed, 1450 local references resolved.
+Inclusive minValue/maxValue apply before keyset pagination; actual 20+2 results preserve exact 38-digit lower and upper endpoints and exclude outside, retired and removed assignments.
+One-sided ranges, equal decimal spellings, negative numbers, zero, tiny decimals, leap dates and chronological date boundaries passed.
+Invalid empty/inverted/mixed/unsupported typed bounds, duplicate/unknown query keys and malformed UTF-8 rejected; fresh authorization and no-store preserved.
+Changed bound/mode drafts preserve applied pagination/refresh conditions and independent Note editor drafts. Explicit apply/clear, selection and close reset behaved correctly.
+Out-of-range payloads and read failures clear results with explicit recovery; late old reads cannot replace newer results; revocation clears private UI.
+Mobile width, no browsing writes and no local/session storage passed; exact-value and existing property/tag/library/metadata/retirement regressions passed.
+Real PostgreSQL/Kafka and Gateway suites passed. No new dependency, event contract or migration; deployed Content schema remains V13.
+First browser job stopped before tests on an Ubuntu mirror hash mismatch; integrity checks retained and a fresh job reran the complete suite.
+Content/Gateway exact source-hash images imported on both nodes and rolled out; both owned temporary builders cleaned.
+All 12 application Deployments ready; verified host HTTPS /graph 200.

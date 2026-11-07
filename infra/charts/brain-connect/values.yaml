@@ -1,0 +1,11 @@
+image: quay.io/debezium/connect:3.7.0.Final@sha256:2140b5e97a887e52d730d7ee4c12968e24f500e541d57fb37494e715acd39c36
+replicas: 2
+kafka:
+  clusterName: brain-kafka
+  replicationFactor: 3
+  minInSyncReplicas: 2
+  eventPartitions: 3
+  offsetPartitions: 25
+resources:
+  requests: {cpu: 250m, memory: 512Mi}
+  limits: {cpu: "1", memory: 1Gi}

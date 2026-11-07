@@ -1,0 +1,12 @@
+replicaCount: 1
+image:
+  repository: valkey/valkey
+  digest: sha256:2d04268dfa26ab31cfa3fdc538866e76438b2d00e41db41b8cb86d780ac5a416
+  pullPolicy: IfNotPresent
+tlsSecret: brain-valkey-tls
+aclSecret: brain-valkey-acl
+maxMemory: 64mb
+maxClients: 32
+resources:
+  requests: {cpu: 25m, memory: 96Mi}
+  limits: {cpu: 500m, memory: 256Mi}

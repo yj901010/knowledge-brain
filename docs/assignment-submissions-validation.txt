@@ -1,0 +1,20 @@
+Assignment Submission validation — 2026-10-23
+
+collaboration: 80 passed, no failures/errors/skips; backend-validation-1792760777337723700-cf1b9f7d
+gateway: 95 passed, no failures/errors/skips; backend-validation-1792760506596287500-c8e5a443
+Browser: seven actual-account Group scenarios passed; graph-web-validation-1792761242131425300
+Initial browser expectation for unsupported Submission PUT was corrected from 404 to the existing Gateway default-deny 403. No production code changed for that correction; the complete seven-scenario rerun passed.
+Submission UI verified explicit answer/owner-sharing confirmation, lost committed reply recovery, preserved input after 412 instruction conflict, refreshed instructions and own state, immutable resubmission and original-key replay without restoring old answer.
+Three actual Keycloak accounts exercised author MEMBER, Group OWNER review and peer isolation; guest access denied. VIEWER could read own prior answers but could not submit/replay. Removed author lost Group access and UI data cleared; current OWNER retained read-only history.
+Owner catalog contained metadata without answer text. Other members could neither enumerate nor fetch another answer/history. Author spoofing and Owner overwrite routes failed. Wrong Assignment scope, CLOSED/archived resources, missing/wrong preconditions and stale own version were rejected.
+Old and new answers stayed readable in two immutable attempts with their respective Assignment revision numbers. Personal notes were unchanged and inaccessible to other accounts. Literal text, mobile overflow, page errors and empty persistent browser storage checks passed.
+Existing six Group creation/membership/shared-roadmap/Study/reference-roadmap/Assignment scenarios passed together with the new Submission flow.
+Integration tests cover exact retries after later attempts, instruction edits, close/archive and process restart; original key compares content/assignmentVersion/base version. Concurrent retries/resubmissions have one winner, close-versus-submit and Study archive serialize, and Outbox failure rolls back snapshot and attempt.
+Actual Debezium/Connect Kafka delivery matched two private Submission snapshots byte for byte with stable event IDs, aggregate key and trace/schema headers. Unacknowledged replay matched again; no application producer or downstream feed projector was added.
+Collaboration V5 owns Submission current/attempt rows and only local Assignment/revision FKs. Fresh Space membership/role remains authoritative. Current author/current OWNER read checks preserve AUTHOR_AND_OWNER audience; no automatic private note/evidence/media sharing, grading or learning completion.
+Registry collaboration/submission-events/1 immutable SHA256 0a03dd8200278c82be2c2e8b98ba1250fbaca7520ce6d5dc10d40b61bf2a5935, FULL validity/FULL_TRANSITIVE compatibility. Topic/ACL Ready preceded canonical writes; live literal ACLs permit only Connect writes and Group validator reads.
+CDC account could not SELECT Submission/current attempt or Assignment/current revision tables; Outbox remained readable. Nine existing connector/tasks RUNNING with no offsets/slot/publication reset.
+OpenAPI: 63 documents/1680 references resolve; new path parameters match templates. Pinned Next/TypeScript export passed.
+Both exact Collaboration/Gateway images were imported on both k3d nodes and rolled out. Own-module/shared-event source bytes matched build archives; two owned builder resource sets were removed. Unrelated service images unchanged.
+All 13 app Deployments Ready; trusted HTTPS /graph and /graph/groups returned 200/no-store/CSP. Collaboration schema V5.
+No prior migration/published Protobuf rewrite, new dependency/dataset, AI, destructive history overwrite or automatic sharing.

@@ -1,0 +1,168 @@
+Private one-time Planning Schedule validation, 2026-10-16
+
+Schedules use existing Planning ownership, own DB/capability and transactional
+Outbox. V4 adds own schedule/revision tables and same-Space own Task FK. Existing
+Goal/Task plus seven Learning v1 schemas remain unchanged. Source facts and
+business statuses of other aggregates are not rewritten by Schedule operations.
+
+{
+  "jobs": {
+    "backend": "backend-validation-1792152078947224100",
+    "planningPostgres": "backend-validation-1792151447294895000",
+    "browser": "graph-web-validation-1792152285",
+    "focusedBrowser": "graph-web-validation-1792152154",
+    "registry": "planning-contract-validation-1792151575",
+    "cdcIsolation": "planning-cdc-bootstrap-1792152165",
+    "canonicalConsistency": "planning-schedule-state-1792152243"
+  },
+  "backend": {
+    "tests": 548,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 31
+  },
+  "planningTestsWithActualPostgresAndKafka": {
+    "tests": 48,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "browserTests": 59,
+  "focusedBrowserTests": 5,
+  "registeredClaimChecks": 2,
+  "registryScheduleSha256": "3e5b1e083bc344d027a080382b418f7a7981a0fdec45b44fe4e29fc40d035ee2",
+  "unchangedGoalSchemaSha256": "643ed1f2566750ffc0bb21b63d2837ad8aaa625d0fe1ed3d2ca21a85cc6391b3",
+  "unchangedTaskSchemaSha256": "844707c3cbe6339cc44de5499f37198bf315953db5a71c9f7720403cddff78c3",
+  "unchangedLearningSchemaHashes": {
+    "association": "1e210a4b741051d23b1e560384c6b9adfde008ccc91b28594495c846fec034a7",
+    "media": "570c5ed12f35a119b9bda059c98a2fea913e19cf329adaa964b96de97f1bbc52",
+    "note": "432a3664007de5f39da77d077b745c534147c8dc50be424dab4cd04e56ccce2b",
+    "concept": "defd2827328024b6fee71e56a3a40c650f335f0359d03dcf62ef0d6a2b31ef04",
+    "progress": "ef3bf592594564efa67c9ddd1f3b9f3dddb7f6cc5e6fc7d20943464f013c1113",
+    "study": "98b45509343000736c25510aa59fb5cd814a9f2672de5e9dcdd242a2cf55a90e",
+    "roadmap": "a2c1db67ceded3c5c965b92797b2caa0e7224aeb71386e71899d2edd4db5e1a9"
+  },
+  "openapiReferences": 1229,
+  "newOperations": [
+    "listPrivateSchedules",
+    "createPrivateSchedule",
+    "readPrivateSchedule",
+    "updatePrivateSchedule",
+    "retirePrivateSchedule",
+    "readPrivateScheduleRevisions",
+    "resolvePrivateScheduleTime"
+  ],
+  "images": {
+    "space": "knowledge-brain/space-service:local-47043b876810dedb",
+    "planning": "knowledge-brain/planning-service:local-47043b876810dedb",
+    "gateway": "knowledge-brain/gateway-service:local-b081094f9036d296"
+  },
+  "readyDeployments": 11,
+  "connectors": {
+    "space-outbox": "RUNNING",
+    "planning-outbox": "RUNNING",
+    "knowledge-outbox": "RUNNING",
+    "media-outbox": "RUNNING",
+    "content-outbox": "RUNNING",
+    "learning-outbox": "RUNNING",
+    "identity-outbox": "RUNNING"
+  },
+  "exactPlanningThreeTopicValidatorAndScheduleProducerAcls": true,
+  "cdcCanonicalSelectDenials": 6,
+  "cdcOtherDatabaseConnectDenials": 12,
+  "liveFlywayVersions": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "liveScheduleSnapshotAndTaskSpaceMismatches": 0,
+  "existingPlanningSlotActiveAndOneOutboxPublication": true,
+  "runtime": {
+    "spaceId": "01a1449a-5138-7b79-9842-9dce1407027f",
+    "scheduleId": "01a1449a-6706-7852-b464-8049c9a08078",
+    "archivedScheduleId": "01a1449a-7f74-7a64-a1d3-22904de7bac4",
+    "taskId": "01a1449a-5ee9-736b-8077-a72436ff0750",
+    "oldPodUids": [
+      "439e07b5-3280-4ab4-aa93-35c29f0354fa"
+    ],
+    "newPodUids": [
+      "7ba454ec-0bed-4835-99c9-cb07b1571dc3"
+    ],
+    "image": "knowledge-brain/planning-service:local-47043b876810dedb",
+    "browserJob": "graph-web-validation-1792152285",
+    "canonicalSnapshotsAndRevisionIdsPreserved": true,
+    "pinnedUtcLocalTimezoneOffsetsPreserved": true,
+    "intervalEditsPreserved": true,
+    "retiredDiscoveryAndAuditPreserved": true,
+    "originalCreateKeySurvivesRestartAndRetiredTaskWithoutDuplicate": true,
+    "scheduleEditsDoNotChangeTask": true,
+    "retiredTaskLinkAndHistoryPreserved": true
+  },
+  "ownedBuilderSetsRemoved": 3,
+  "hostGatewayAndMinioHttpsVerified": true
+}
+
+The full backend reactor completed 548 tests with no failures/errors. Its 31
+environment-gated skips belong to unchanged storage/Kafka integrations; this
+does not claim all skipped owner integrations were rerun. Planning's 48 tests
+ran with actual own PostgreSQL and scoped three-topic Kafka TLS with zero skips.
+Gateway's 37 tests had no skips. Space's 30 tests retain two existing Kafka skips
+and now cover Schedule read/write roles for both guest/registered principals.
+
+Schedule checks cover strict UTC seconds/zone/local date/interval/text bounds;
+zero-candidate DST gaps, explicit overlapping candidates and half-hour offsets;
+23/25-hour and skipped-date windows; overlap spanning/touching boundaries;
+equal-start stable UUID ordering and 20+3 cursor pages bound to every filter;
+foreign/missing/retired new Task link denial; own composite FK enforcement;
+retained retired-Task edits/unlink and preserved history; independent unchanged
+Task snapshots/status/due date; original creation-key replay across edits,
+retirement, Task retirement and actor change; 412/current no-op rules;
+nine-version history pages; whole-transaction rollback after controlled Outbox
+failures for create/update/retire; concurrent create/write winners; and JDBC
+instant preservation at years 0001/9999 and 1582 under a non-UTC database timezone.
+The actual Kafka check matches four exact committed envelope bytes and headers,
+stable event/revision IDs, actor/Space/trace, moving times, zone changes, pinned
+local/offset labels, retained/unlinked Task IDs and retirement. Retrying creation
+does not duplicate canonical revision/event rows.
+
+All 59 deployed browser tests passed, including five new Schedule scenarios.
+These cover real APIs, strict queries/versions, DST resolution, 23-row agenda
+paging and scoped cursors, nine revisions and archived rediscovery; a gap cannot
+save and an overlap requires explicit offset selection; a delayed resolver does
+not overwrite a title typed in the meantime; lost create replies reuse one key;
+412 drafts/latest restart and retirement re-acknowledgement; escaped text and
+unchanged sibling Note/Task drafts; real 23-Task picker pages, retained retired
+Task filtering/edits/unlink and denied re-add; confirmed rejected creation keeps
+editable interval/inputs and can choose another Task without a duplicate;
+390px fit, stale closed-panel replies, 503 recovery and real session revocation.
+Focused desktop/mobile screenshots were visually inspected. Existing knowledge,
+Goal/Task/Note/Learning/Media/public contribution flows also passed. Two real
+Keycloak account flows preserve Schedule IDs, Task links, pinned DST metadata
+and guest actor history across Space claim; registered edits use the new actor.
+
+Verified host HTTPS fixtures preserved exact Schedule/revision IDs/snapshots,
+UTC/local/zone/offset labels, moved interval, same-ID retired Task link and audit,
+archived discovery and original create replay after restarting only Planning.
+Schedule edits left the Task snapshot unchanged. No validation session token was
+persisted by the helper. Own-DB inspection confirms V1..V4 successful, zero
+snapshot/Task-Space mismatches, original active planning_outbox_v1 slot and
+publication still restricted to public.outbox_event.
+
+Registry planning/schedule-events/v1 matches source bytes with FULL validity and
+FULL_TRANSITIVE compatibility. Schedule producer ACL is exact; the read-only
+validator is restricted to three Planning topics and its prefixed test group.
+CDC can SELECT Outbox but is denied six canonical tables and 12 other owner DBs.
+All seven connectors/tasks are RUNNING and all 11 app deployments are Ready.
+Seven new operations and all local OpenAPI references resolve. Three exact
+successful owned builder sets were removed only after source owner UID,
+selectors and deployed-image checks. Graph/MinIO host HTTPS remains available.
+No source fact/table/PVC, slot, offset, topic or immutable event was reset/deleted.
+
+No dependency version, dataset, AI feature or frontend redesign was introduced.
+This is timed one-time planning. All-day events, recurrence, reminders and
+notification delivery, collision prevention, shared/external calendars, and
+Schedule/Task/Goal activity/graph projections remain separate work. Overlapping
+different schedules are allowed. Central observability deployment/export
+dashboards also remain platform work; operation metrics and trace propagation
+are supported without claiming a completed monitoring stack.

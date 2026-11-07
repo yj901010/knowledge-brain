@@ -1,0 +1,29 @@
+Cassandra retry-safe truststore recovery — 2026-10-10 (Asia/Seoul)
+
+Observed existing Pod sandbox restart and truststore init exit1/backoff. The original
+keytool command is not retry-safe with an existing brain-ca alias in its emptyDir.
+Actual rendered-chart regression Job reused its own trust volume: first import succeeded,
+second original import rejected, corrected regeneration/import succeeded twice, and
+alias checks passed after both. Passwords/certificates were never logged.
+
+Only /trust/truststore.p12 (generated 1Mi emptyDir artifact) is regenerated. Cassandra
+cannot start until init succeeds. No data PVC, role, schema or keyspace is deleted.
+Helm brain-cassandra revision7 deployed. Failed old Pod replacement was necessary to
+consume the corrected template. New init exit0; Cassandra and Brain Query Ready.
+Original data PVC UID and bound volume identity checked unchanged.
+The owned regression Job was removed. Full15 HTTPS browser scenarios also passed.
+
+Identity proof:
+{
+  "beforePodUID": "84b8e202-b0bd-4c77-82e8-7865593eb888",
+  "dataPVCUID": "7da5bfd4-41ec-4e05-ac90-1a2a67f57b5b",
+  "dataVolume": "pvc-7da5bfd4-41ec-4e05-ac90-1a2a67f57b5b",
+  "afterPodUID": "bcda0a5a-d0bd-4e84-99b6-ad688d722792",
+  "initExitCode": 0,
+  "ready": true
+}
+
+JOB=cassandra-truststore-validation-1791642870
+ORIGINAL_REPEAT_IMPORT_REJECTED
+CASSANDRA_TRUSTSTORE_RETRY_VERIFIED
+PASS original repeated alias rejected; production initialization twice succeeds on the same emptyDir

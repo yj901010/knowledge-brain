@@ -1,0 +1,59 @@
+2026-10-06 local k3d-knowledge-brain, Java 25, HTTPS and actual PG/CDC/Kafka.
+AGENTS.md + PROJECT.md read first; no architectural/service-ownership conflict.
+Ten accepted Personal Brain capabilities recorded as planned scope, not completed
+features. This milestone provides the common HTTPS Gateway before Content notes.
+
+backend-validation-1791292379: Gateway 9 tests, BUILD SUCCESS, zero failures/skips.
+Six proxy tests cover cookie/status/trace forwarding, untrusted/internal header
+removal, origin/HTTPS/query/body guards, fixed origins/routes, redirect rejection,
+bounded 64 KiB response, generic upstream failure and stalled-body 504 deadline.
+Three existing boundary/probe/virtual-thread tests remain passing.
+backend-validation-1791292498: all 13 services, 64 tests, zero failures/errors/skips,
+BUILD SUCCESS. Real Identity CDC and durable Space Inbox/Outbox Kafka replay pass;
+70 retained guest events observed, including common-origin API-created guests.
+
+Gateway image knowledge-brain/gateway-service:local-c1b2d858732f35c4 built with Jib.
+gateway-image-import-1791292409-0/-1 COMPLETE on agent/server, checksum validated.
+Gateway Helm revision 1 deployed Ready 1/1. Space revision 5 additionally enables
+restricted API ingress for Gateway/Space/labeled operator validation Pods.
+Gateway receives only its own server TLS certificate and public backend CA; no
+database, Kafka or internal introspection credential. Non-root, read-only root FS,
+HTTPS probes, dropped capabilities, no Kubernetes API token.
+
+guest-api-validation-1791292711: COMPLETE, common-origin HTTPS and all phases PASS:
+- Two distinct browser cookies: same host-only Secure/HttpOnly/SameSite attributes.
+- Returning browser restores same GUEST; asynchronous Space 202/Retry-After then
+  200 with PRIVATE PERSONAL/OWNER, no cookie/domain rewrite.
+- Another browser and spoofed principal headers cannot access the private Space.
+- Internal introspection and management/undeclared paths/methods denied at Gateway.
+- Invalid/duplicate credentials, bad Origin/fetch metadata, query routing input
+  and oversized request rejected. No credential is logged.
+- Identity replica zero: Space authentication through Gateway fails closed 503;
+  direct Identity route through Gateway returns generic 502.
+- Space replica zero: Gateway returns generic 502.
+- Both backend replicas restored and Gateway Pod replaced: original principal
+  and Space IDs restored with the same cookies.
+- Logout immediately invalidates the old credential in Identity and Space through
+  Gateway while the independent browser remains active.
+All application Deployments restored Ready 1/1 after failure/restart checks.
+
+The initial fault verifier overwrote the Space path variable during forbidden-path
+checks; verifier corrected and all phases re-run. No service authorization rule
+was weakened to make the test pass. Failure codes are recorded by their layer:
+upstream 503 preserved, transport 502, complete-response timeout 504.
+
+No new runtime library, public ingress, permissive CORS, frontend, completed note
+feature or production GHCR/Argo CD pipeline is claimed. Full observability and
+public-exposure quotas remain platform work. Local CA is trusted explicitly;
+certificate and hostname verification remain enabled.
+
+OpenAPI 3.1 YAML parsed; public Gateway contract excludes internal introspection
+and local schema references resolve. Helm lint and Python helper compilation pass.
+Temporary Gateway image Pods/Services/ConfigMaps/NetworkPolicies removed.
+
+Windows agent shell port-forward printed a 127.0.0.1:8443 binding, but curl from
+a separate agent command timed out, including explicit IPv4/no-proxy retry.
+This host loopback check did not pass; Kubernetes HTTPS checks above did pass.
+The temporary agent forward was stopped. Start-LocalGateway.ps1 is provided for
+the user's native PowerShell; no browser/system trust store or machine execution
+policy was changed. Host/browser access must be checked there before claiming it.

@@ -1,0 +1,48 @@
+2026-10-20 — Private Claim qualifier implementation and local deployment verified
+
+AGENTS.md/PROJECT.md reviewed; existing Knowledge ownership, private defaults,
+common guest/registered authority, local ACID and Outbox/CDC preserved.
+No new dependency/dataset or architecture change.
+
+Backend: backend-validation-1792498196558145700: 785 passed, 5 environment-gated skipped,
+zero failures/errors across 13 service modules.
+Scoped Knowledge: backend-validation-1792498013002347800:178 passed,7 Kafka-gated skips.
+Full run enabled Knowledge Kafka and passed all185 owner tests with0 skips.
+New checks cover exact typed values, duplicate normalization, same-Space refs,
+immutable Claim pins, stale ETags/Claim versions, concurrent editors, rollback,
+paging, retirement and retained history. Actual Kafka verifies all14 payload and
+11 envelope fields, schema/trace headers and byte-identical Outbox delivery.
+
+Browser: graph-web-validation-1792498861355272300:107/107 passed, including existing Keycloak/public workflows.
+Focused: graph-web-validation-1792498761701005400:2/2 passed.
+Real API/UI: five value kinds, exact decimals, explicit latest Claim inspection,
+stale Claim/condition conflicts, private isolation, independent parent draft,
+20+4 paging, XSS escaping, mobile fit, failed refresh, delayed close and revocation.
+Initial browser harness failures were fixed by exact input-label selection and
+waiting for initial loading before triggering the session-revocation scenario.
+No production correction was needed after the deployed image build.
+
+Static TypeScript/Next export, dependency license notices and CSP hashes: graph-static-build-1792498196975033300.
+OpenAPI local references validated:1415.
+Registry FULL/FULL_TRANSITIVE: qualifier-contract-validation-1792498015082115000, qualifier-contract-validation-1792498494771924900
+knowledge/qualifier-events v1 SHA256:675f1898f63015de807198238ffbbdc378e846b2e26dfcbb972c875d409bcd91
+Topic knowledge.qualifier.v1: literal Connect-write and owner-validator-read.
+Existing Knowledge CDC connector configuration/slot/checkpoint unchanged.
+No new projection consumer or reset of Activity, Graph or Search state.
+
+Exact two-node imports and deployed images:
+Knowledge knowledge-brain/knowledge-service:local-1a66cb07c9bbb50a
+Gateway knowledge-brain/gateway-service:local-fcaa31fff6e2012e
+12 app Deployments Ready;8 CDC connectors/tasks RUNNING.
+Actual Knowledge restart changed Pod UID; read-only canonical fingerprints match
+before/after for24 conditions, retired Claim, five revisions of the selected
+condition, immutable Claim pins, exact values and Outbox payloads.
+Read-only Jobs:qualifier-durability-1792498813780760100-before, qualifier-durability-1792498831355527200-after
+Owned temporary image builders removed after explicit label/UID verification.
+Trusted HTTPS https://localhost:8443/graph responds200.
+
+Open Personal Concept library → Claim → 관계 조건 (Qualifier).
+Use a predicate Concept and typed value, inspect latest Claim, explicitly accept,
+then save. Qualifier changes do not change Claim verification or publication.
+General typed Claim objects/public Claim review/verification remain later scope.
+Detailed evidence:.local/claim-qualifiers-proof.json and runtime/build-cleanup proofs.

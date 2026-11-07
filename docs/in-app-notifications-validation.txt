@@ -1,0 +1,178 @@
+Private durable in-app Notification delivery validation, 2026-10-18
+
+{
+  "date": "2026-10-18",
+  "jobs": {
+    "backend": "backend-validation-1792297191087463100",
+    "focusedBrowser": "graph-web-validation-1792297469",
+    "browser": "graph-web-validation-1792297650",
+    "deliveryRegistry": "delivery-contract-validation-1792296801",
+    "notificationRegistry": "inapp-contract-validation-1792296802",
+    "planningCdc": "planning-cdc-bootstrap-1792297407",
+    "notificationCdc": "notification-cdc-bootstrap-1792297040",
+    "notificationConnector": "notification-connector-config-1792297167"
+  },
+  "backend": {
+    "tests": 610,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 31
+  },
+  "planningActualOwnPostgresAndSixTopicTests": 87,
+  "notificationActualOwnPostgresAndKafkaTests": 14,
+  "gatewayTests": 42,
+  "spaceTests": 32,
+  "activityActualStorageAndTenTopicTests": 21,
+  "focusedBrowserTests": 3,
+  "browserTests": 70,
+  "registeredNotificationClaimChecks": 2,
+  "registryNewSchemasSha256": {
+    "delivery": "8f542724a79cd30ff9aa44b38dc904021871722b673e01ce4df961733a0549b6",
+    "notification": "90319fa9bae6cf4878377267b6859be889e5718b9c7c0b989caf9091e96ccb0c"
+  },
+  "unchangedPlanningSchemaHashes": {
+    "goal": "643ed1f2566750ffc0bb21b63d2837ad8aaa625d0fe1ed3d2ca21a85cc6391b3",
+    "task": "844707c3cbe6339cc44de5499f37198bf315953db5a71c9f7720403cddff78c3",
+    "schedule": "3e5b1e083bc344d027a080382b418f7a7981a0fdec45b44fe4e29fc40d035ee2",
+    "recurrence": "83a708bd0104d92ce8a17e4b9ba244d950a0c96820f7da32264ed713cd975962",
+    "reminder": "df72e35e10b66581722a2c61ee85d951af7ef647dbe84d7785b7cdf7b7f43142"
+  },
+  "unchangedLearningSchemaHashes": {
+    "association": "1e210a4b741051d23b1e560384c6b9adfde008ccc91b28594495c846fec034a7",
+    "media": "570c5ed12f35a119b9bda059c98a2fea913e19cf329adaa964b96de97f1bbc52",
+    "note": "432a3664007de5f39da77d077b745c534147c8dc50be424dab4cd04e56ccce2b",
+    "concept": "defd2827328024b6fee71e56a3a40c650f335f0359d03dcf62ef0d6a2b31ef04",
+    "progress": "ef3bf592594564efa67c9ddd1f3b9f3dddb7f6cc5e6fc7d20943464f013c1113",
+    "study": "98b45509343000736c25510aa59fb5cd814a9f2672de5e9dcdd242a2cf55a90e",
+    "roadmap": "a2c1db67ceded3c5c965b92797b2caa0e7224aeb71386e71899d2edd4db5e1a9"
+  },
+  "openapiReferences": 1282,
+  "newOperations": [
+    "listPrivateReminderDeliveries",
+    "armPrivateReminderDelivery",
+    "getPrivateReminderDelivery",
+    "cancelPrivateReminderDelivery",
+    "listPrivateReminderDeliveryRevisions",
+    "listPrivateInAppNotifications",
+    "getPrivateInAppNotification",
+    "setPrivateInAppNotificationReadState",
+    "archivePrivateInAppNotification",
+    "listPrivateInAppNotificationRevisions",
+    "exportCanonicalDispatchedReminders"
+  ],
+  "readyDeployments": 12,
+  "runningConnectors": [
+    "space-outbox",
+    "planning-outbox",
+    "notification-outbox",
+    "knowledge-outbox",
+    "media-outbox",
+    "content-outbox",
+    "learning-outbox",
+    "identity-outbox"
+  ],
+  "images": {
+    "planning": "knowledge-brain/planning-service:local-092673069c555026",
+    "space": "knowledge-brain/space-service:local-092673069c555026",
+    "notification": "knowledge-brain/notification-service:local-092673069c555026",
+    "gateway": "knowledge-brain/gateway-service:local-6e0da3c9ef03d7d3"
+  },
+  "runtime": {
+    "browserJob": "graph-web-validation-1792297650",
+    "spaceId": "01a14d49-3174-7412-b51d-99ba73ae6098",
+    "scheduleId": "01a14d49-40c8-72d9-815a-eb87ad7f7336",
+    "reminderId": "01a14d49-50c4-7a1c-86b7-5bc0d33b7f8c",
+    "deliveryId": "01a14d49-58ce-738b-bbc5-e6cef85128f5",
+    "notificationId": "01a14d4a-4d77-7a9a-b29a-c51fdc0d25b5",
+    "notificationOriginalReplicas": 1,
+    "planningRestart": {
+      "old": "b9067bfe-6820-48b4-9682-ad52f0864ad5",
+      "new": "ade3cc22-3390-47a5-ba7c-67520551b132"
+    },
+    "notificationRestart": {
+      "old": "9a5e32f5-2924-4d12-b9fe-6111a4df4077",
+      "new": "e6d8d6fe-4efe-4feb-b86d-5c53f6ddc816"
+    },
+    "dispatchPersistsDuringNotificationOutage": true,
+    "planningRestartKeepsExactIntentPinsAndAudit": true,
+    "originalArmRetryReturnsSameTerminalAttempt": true,
+    "resumeDeliversOneNotification": true,
+    "notificationRestartPreservesReadStateAndRevisionIds": true,
+    "sourceRetirementPreservesNotificationSourcePins": true,
+    "terminalCancellationCannotRecallDispatchedFact": true,
+    "keysTokensRemainInMemory": true
+  },
+  "ownedBuilderSetsRemoved": 4,
+  "hostHttpsVerified": true
+}
+
+Full reactor: 610 tests, zero failures/errors, 31 unchanged environment-gated skips
+(579 passed). Planning's 87 actual own PostgreSQL/six scoped Kafka tests,
+Notification's 14 actual own PostgreSQL/Kafka tests, Gateway42 and Activity21 run
+with no skips. Space32 has its two existing environment-gated skips. New checks
+cover explicit-only future arming, same-key terminal replay, one outstanding
+intent, manual rearm after cancellation, stale/retired source suppression before
+due, same Schedule->Reminder->attempt lock order, concurrent worker/cancellation
+one terminal result, controlled dispatch Outbox rollback/retry, immutable intent
+pins and source facts, own same-Space FKs and role isolation; durable Notification
+inbox hash/dedup, read/archive no-op and concurrency guards, preserved provenance,
+5+2 history and 20+3 bound cursor pages, controlled Inbox+Notification+revision+
+Outbox rollback, actual three own event revisions on Kafka and exact source bytes;
+strict event transport/producer/envelope/pins/type validation and retained-log gap
+detection; fresh scoped authority, singleton queries, independent dpN/ntN, strict
+boolean/integer JSON, Origin/TLS, no-store and closed internal/browser routes.
+
+All 70 deployed browser scenarios pass (three new actual delivery scenarios).
+Verified actual future dispatch through Planning Outbox/Debezium/Kafka to separate
+Notification DB/inbox, one item despite repeated intent key, unarmed/cancelled/
+changed intents never delivered, explicit current source vs immutable historical
+pins, read/unread/archive and retained original actor/audit. Lost arm reply freezes
+one request/key; independent unsaved Schedule draft survives; escaped HTML does
+not fetch external images or execute; no private local/session browser storage;
+23 actual deliveries page20+3, read-filter cursor mismatch and foreign principal
+denial, mobile390px fit, 503 clears stale rows, held closed replies are ignored and
+actual session revocation clears the private surface. Desktop/mobile screenshots
+inspected. Two real Keycloak account claims preserve pending/dispatched identity,
+guest actor and exact notification source pins; registered read changes record
+the registered actor. Previous Learning, Knowledge, public review, Note/Media,
+Planning and Activity scenarios still pass under verified CA TLS.
+
+After the full browser pass, a synthetic guest explicitly arms a future intent.
+Only the new Notification Deployment is temporarily scaled to zero with its
+original replica count guarded. Planning commits DISPATCHED while the Notification
+API is unavailable. Planning restart retains exact attempt/source snapshots and
+revision IDs; original key replays the same terminal attempt. Restoring Notification
+produces exactly one inbox item. Read version2 and exact history/source pins survive
+a subsequent Notification restart, without duplicate arrival. Later Schedule and
+Reminder retirement leave notification facts/read/audit unchanged; original arm
+key still replays the terminal attempt and dispatched cancellation is409. Original
+Notification replicas are restored in finally. No validation credentials/tokens
+are persisted in proof files.
+
+Both new Protobuf schemas match Registry immutable source SHA256 with FULL validity
+and FULL_TRANSITIVE compatibility. Previous five Planning/seven Learning source
+hashes unchanged. Two new literal producer streams; dedicated Notification
+projector reads only the dispatch stream, verifier only dispatch/own inbox streams;
+Planning verifier gets its sixth exact read-only stream. Activity keeps ten original
+streams. Planning CDC denies thirteen own canonical SELECTs and twelve other-owner
+DB CONNECTs; Notification CDC denies four own canonical SELECTs and twelve other-
+owner DB CONNECTs. Both capture only own Outbox. Existing Planning config still
+matches its original publication/slot; new eighth Notification connector has its
+own slot/publication. Eight connectors/tasks RUNNING, twelve app Deployments Ready.
+Host HTTPS Graph/MinIO200, anonymous inbox401, internal browser export403.
+
+Four independently built images were imported on both local nodes before install.
+Exact current builder image/deployed state, successful init exit, Pod/source-CM
+owner UID and matching Service/NetworkPolicy selectors were checked before removing
+only their temporary artifact sets. Source facts, schemas, slots, connector offsets,
+topics and PVCs were not reset/deleted. Own DBs, separate services, local ACID,
+Outbox/CDC, UUIDv7, privacy defaults and current architecture decisions preserved.
+No new dependency version, external dataset or AI feature added. Bounded operation
+metrics, worker/consumer/storage readiness, sanitized retry logs and persisted
+causal trace IDs supported; central observability deployment remains platform work.
+
+Implemented delivery channel is the persistent private application inbox. Existing
+settings require explicit arm, sources changed before dispatch suppress the old
+intent, and commit is the cancellation boundary. Browser can be closed. Late
+catch-up preserves scheduled/dispatch/arrival times. Email, OS/mobile push, sound,
+preferences and the requested visual redesign remain subsequent work.

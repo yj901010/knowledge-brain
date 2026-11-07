@@ -1,0 +1,18 @@
+syntax = "proto3";
+package knowledgebrain.learning.roadmapadoption.v1;
+option java_package = "io.knowledgebrain.contracts.learning.roadmapadoption.v1";
+option java_multiple_files = true;
+message RoadmapAdoptionEnvelopeV1 {
+ string event_id = 1; string event_type = 2; uint32 event_version = 3;
+ int64 occurred_at_epoch_millis = 4; string producer = 5; string aggregate_type = 6;
+ string aggregate_id = 7; string space_id = 8; string actor_id = 9; string trace_id = 10; bytes payload = 11;
+}
+message AdoptionIdMappingV1 { string source_id = 1; string personal_id = 2; }
+// Immutable private provenance. The existing RoadmapCreated stream contains the full private graph.
+// Do not assume order across topics; deduplicate by event_id and adoption_id.
+message RoadmapAdoptedV1 {
+ string adoption_id = 1; string roadmap_id = 2; string source_space_id = 3;
+ string source_roadmap_id = 4; int64 source_version = 5; string source_title = 6;
+ string created_at = 7; string visibility = 8;
+ repeated AdoptionIdMappingV1 nodes = 9; repeated AdoptionIdMappingV1 edges = 10;
+}

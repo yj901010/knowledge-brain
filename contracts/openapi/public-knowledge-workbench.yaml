@@ -1,0 +1,635 @@
+openapi: 3.1.0
+info:
+  title: Public knowledge workbench
+  version: 1.0.0
+servers:
+- url: https://localhost:8443
+security:
+- browser: []
+paths:
+  /api/public/spaces/{spaceId}/records:
+    parameters:
+    - $ref: '#/components/parameters/spaceId'
+    get:
+      description: Bounded public canonical summaries. Active/retired facts never
+        include private working material. Unknown or duplicate query keys fail.
+      parameters:
+      - name: kind
+        in: query
+        schema:
+          $ref: '#/components/schemas/Kind'
+      - name: state
+        in: query
+        schema:
+          enum:
+          - ACTIVE
+          - RETIRED
+          default: ACTIVE
+      - name: after
+        in: query
+        schema:
+          type: string
+          format: uuid
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 50
+          default: 10
+      - name: q
+        in: query
+        schema:
+          type: string
+          maxLength: 64
+      responses:
+        '200':
+          description: items of recordId/kind/title/state/version; nextAfter UUID
+            or null
+        '404':
+          description: Public Space unavailable
+  /api/public/spaces/{spaceId}/records/{recordId}:
+    parameters: &id001
+    - $ref: '#/components/parameters/spaceId'
+    - $ref: '#/components/parameters/recordId'
+    get:
+      responses:
+        '200':
+          description: Canonical typed public snapshot, state, immutable ID and krN
+            ETag; no-store
+        '404':
+          description: Public record unavailable
+  /api/public/spaces/{spaceId}/records/{recordId}/revisions:
+    parameters:
+    - $ref: '#/components/parameters/spaceId'
+    - $ref: '#/components/parameters/recordId'
+    get:
+      parameters:
+      - name: before
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 5
+      responses:
+        '200':
+          description: Descending immutable snapshots including retired versions and
+            actor/time
+  /api/public/spaces/{spaceId}/records/{recordId}/verification:
+    parameters:
+    - $ref: '#/components/parameters/spaceId'
+    - $ref: '#/components/parameters/recordId'
+    get:
+      responses:
+        '200':
+          description: Claim effectiveLevel, needsReview and exact-version assessment;
+            stale/retired grounds cannot sustain an effective verification level
+        '400':
+          description: Claim record required
+  /api/public/spaces/{spaceId}/record-proposals:
+    parameters:
+    - $ref: '#/components/parameters/spaceId'
+    get:
+      parameters:
+      - name: kind
+        in: query
+        schema:
+          $ref: '#/components/schemas/Kind'
+      - name: state
+        in: query
+        schema:
+          enum:
+          - SUBMITTED
+          - APPROVED
+          - REJECTED
+          - MERGED
+      - name: mine
+        in: query
+        schema:
+          type: boolean
+          default: false
+      - name: after
+        in: query
+        schema:
+          type: string
+          format: uuid
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 50
+          default: 20
+      responses:
+        '200':
+          description: Bounded public proposal summaries and nextAfter; mine always
+            uses the freshly authorized principal
+    post:
+      description: Registered account explicitly submits public text only. CREATE
+        reserves an ID; no canonical mutation until merge. No implicit private copy.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - kind
+              - operation
+              - recordId
+              - baseVersion
+              - title
+              - content
+              - rationale
+              properties:
+                kind:
+                  $ref: '#/components/schemas/Kind'
+                operation:
+                  enum:
+                  - CREATE
+                  - UPDATE
+                  - RETIRE
+                recordId:
+                  type:
+                  - string
+                  - 'null'
+                  format: uuid
+                baseVersion:
+                  type: integer
+                  minimum: 0
+                title:
+                  type: string
+                  minLength: 1
+                  maxLength: 200
+                content:
+                  $ref: '#/components/schemas/Content'
+                rationale:
+                  type: string
+                  minLength: 1
+                  maxLength: 2000
+                qualifierPins:
+                  $ref: '#/components/schemas/QualifierPins'
+      responses:
+        '201':
+          description: Immutable public proposal snapshot with kp1 ETag
+        '400':
+          description: Invalid typed content/stage
+        '403':
+          description: Registration/origin required
+        '404':
+          description: Private/foreign/unknown reference
+        '412':
+          description: Inspected canonical or reference version changed
+  /api/public/spaces/{spaceId}/record-proposals/{proposalId}:
+    parameters:
+    - $ref: '#/components/parameters/spaceId'
+    - $ref: '#/components/parameters/proposalId'
+    get:
+      responses:
+        '200':
+          description: Immutable proposal text, rationale, author, state, baseVersion,
+            mergedVersion and kpN ETag
+  /api/public/spaces/{spaceId}/record-proposals/{proposalId}/reviews:
+    parameters:
+    - $ref: '#/components/parameters/spaceId'
+    - $ref: '#/components/parameters/proposalId'
+    get:
+      responses:
+        '200':
+          description: Public immutable review/merge audit in proposal-version order
+  /api/public/spaces/{spaceId}/record-proposals/{proposalId}/review:
+    parameters:
+    - $ref: '#/components/parameters/spaceId'
+    - $ref: '#/components/parameters/proposalId'
+    - $ref: '#/components/parameters/ifMatch'
+    post:
+      description: Current designated reviewer, never proposal author. Expert verification/official
+        mapping approval additionally requires its independent current operator capability.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - decision
+              - reason
+              properties:
+                decision:
+                  enum:
+                  - APPROVED
+                  - REJECTED
+                reason:
+                  type: string
+                  minLength: 1
+                  maxLength: 2000
+      responses:
+        '200':
+          description: Audit and new kpN ETag; approval changes no canonical record
+        '403':
+          description: Self-review
+          role or additional capability denied: null
+        '409':
+          description: Invalid state
+        '412':
+          description: Stale proposal
+        '428':
+          description: If-Match required
+  /api/public/spaces/{spaceId}/record-proposals/{proposalId}/merge:
+    parameters:
+    - $ref: '#/components/parameters/spaceId'
+    - $ref: '#/components/parameters/proposalId'
+    - $ref: '#/components/parameters/ifMatch'
+    post:
+      description: Rechecks current role/capability and exact canonical/dependency
+        versions. Record revision, proposal state, review and both Outbox rows are
+        one Knowledge transaction.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - reason
+              properties:
+                reason:
+                  type: string
+                  minLength: 1
+                  maxLength: 2000
+      responses:
+        '200':
+          description: Merged proposal with new kpN ETag
+        '403':
+          description: Self-merge or revoked authority
+        '409':
+          description: Invalid state or equivalent active fact
+        '412':
+          description: Canonical/dependency version changed
+        '428':
+          description: If-Match required
+  /api/public/spaces/{spaceId}/explore:
+    parameters:
+    - $ref: '#/components/parameters/spaceId'
+    get:
+      parameters:
+      - name: q
+        in: query
+        schema:
+          type: string
+          maxLength: 64
+      - name: after
+        in: query
+        schema:
+          type: string
+          format: uuid
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 50
+          default: 20
+      responses:
+        '200':
+          description: Active public Concept summaries matching title or reviewed
+            Alias literally; bounded canonical-owner search with keyset cursor
+  /api/public/spaces/{spaceId}/concepts/{conceptId}/relations:
+    parameters:
+    - $ref: '#/components/parameters/spaceId'
+    - name: conceptId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    get:
+      parameters:
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 20
+          default: 20
+      responses:
+        '200':
+          description: Public canonical Concept summaries, merged incident Claims
+            and explicit truncated flag; no full-graph or projection completeness
+            claim
+  /api/public/spaces/{spaceId}/records/{recordId}/qualifiers:
+    parameters: *id001
+    get:
+      description: Current versions of all qualifier identities attached to the current
+        Claim revision, including retired history. Maximum100. Used to inspect the
+        complete verification scope.
+      responses:
+        '200':
+          description: Fact array with qualifierPins, state and canonical version
+        '404':
+          description: Claim or Space unavailable
+components:
+  securitySchemes:
+    browser:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest
+  parameters:
+    spaceId:
+      name: spaceId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: Active public catalog UUIDv7
+    recordId:
+      name: recordId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    proposalId:
+      name: proposalId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    ifMatch:
+      name: If-Match
+      in: header
+      required: true
+      schema:
+        type: string
+        pattern: ^"kp[1-9][0-9]*"$
+  schemas:
+    Kind:
+      enum:
+      - ALIAS
+      - CLAIM
+      - SOURCE
+      - EVIDENCE
+      - MAPPING
+      - VERIFICATION
+      - QUALIFIER
+    Content:
+      description: Exact fields depend on kind; all ID references are current same-public-Space
+        UUIDv7 + inspected positive version. Private IDs fail404. Max12KB encoded.
+        RETIRE ignores submitted content and retains the existing public snapshot.
+        Claims support CONCEPT/STRING/NUMBER/DATE/BOOLEAN; literal objectVersion=0.
+        See the typed field sets below.
+      oneOf:
+      - type: object
+        maxProperties: 0
+        description: RETIRE only; the server retains the existing public snapshot
+      - type: object
+        additionalProperties: false
+        required:
+        - conceptId
+        - conceptVersion
+        - label
+        - scope
+        - scopeValue
+        properties:
+          conceptId:
+            type: string
+            format: uuid
+          conceptVersion:
+            type: integer
+            minimum: 1
+          label:
+            type: string
+            maxLength: 200
+          scope:
+            enum:
+            - GLOBAL
+            - COUNTRY
+            - ORGANIZATION
+          scopeValue:
+            type: string
+            maxLength: 200
+      - type: object
+        additionalProperties: false
+        required:
+        - subjectId
+        - subjectVersion
+        - predicateId
+        - predicateVersion
+        - objectType
+        - objectValue
+        - objectVersion
+        properties:
+          subjectId:
+            type: string
+            format: uuid
+          subjectVersion:
+            type: integer
+            minimum: 1
+          predicateId:
+            type: string
+            format: uuid
+          predicateVersion:
+            type: integer
+            minimum: 1
+          objectType:
+            enum:
+            - CONCEPT
+            - STRING
+            - NUMBER
+            - DATE
+            - BOOLEAN
+          objectValue:
+            type: string
+            maxLength: 1000
+          objectVersion:
+            type: integer
+            minimum: 0
+      - type: object
+        additionalProperties: false
+        required:
+        - title
+        - url
+        - citation
+        - licenseNote
+        properties:
+          title:
+            type: string
+            maxLength: 200
+          url:
+            type: string
+            maxLength: 2048
+          citation:
+            type: string
+            maxLength: 4000
+          licenseNote:
+            type: string
+            minLength: 1
+            maxLength: 1000
+      - type: object
+        additionalProperties: false
+        required:
+        - claimId
+        - claimVersion
+        - sourceId
+        - sourceVersion
+        - locator
+        - explanation
+        properties:
+          claimId:
+            type: string
+            format: uuid
+          claimVersion:
+            type: integer
+            minimum: 1
+          sourceId:
+            type: string
+            format: uuid
+          sourceVersion:
+            type: integer
+            minimum: 1
+          locator:
+            type: string
+            maxLength: 500
+          explanation:
+            type: string
+            maxLength: 1000
+      - type: object
+        additionalProperties: false
+        required:
+        - conceptId
+        - conceptVersion
+        - sourceId
+        - sourceVersion
+        - system
+        - code
+        - systemVersion
+        - label
+        - mappingState
+        - authority
+        properties:
+          conceptId:
+            type: string
+            format: uuid
+          conceptVersion:
+            type: integer
+            minimum: 1
+          sourceId:
+            type: string
+            format: uuid
+          sourceVersion:
+            type: integer
+            minimum: 1
+          system:
+            type: string
+            maxLength: 200
+          code:
+            type: string
+            maxLength: 200
+          systemVersion:
+            type: string
+            maxLength: 200
+          label:
+            type: string
+            maxLength: 200
+          mappingState:
+            enum:
+            - CANDIDATE
+            - CONFIRMED
+            - OFFICIAL
+          authority:
+            type: string
+            maxLength: 1000
+      - type: object
+        additionalProperties: false
+        required:
+        - claimId
+        - claimVersion
+        - evidenceId
+        - evidenceVersion
+        - level
+        - reason
+        properties:
+          claimId:
+            type: string
+            format: uuid
+          claimVersion:
+            type: integer
+            minimum: 1
+          evidenceId:
+            type: string
+            format: uuid
+          evidenceVersion:
+            type: integer
+            minimum: 1
+          level:
+            enum:
+            - DRAFT
+            - SOURCED
+            - COMMUNITY_REVIEWED
+            - EXPERT_VERIFIED
+          reason:
+            type: string
+            maxLength: 1000
+      - type: object
+        additionalProperties: false
+        required:
+        - claimId
+        - predicateId
+        - claimVersion
+        - predicateVersion
+        - valueType
+        - value
+        - valueVersion
+        properties:
+          claimId:
+            type: string
+            format: uuid
+          predicateId:
+            type: string
+            format: uuid
+          claimVersion:
+            type: integer
+            minimum: 1
+          predicateVersion:
+            type: integer
+            minimum: 1
+          valueType:
+            enum:
+            - CONCEPT
+            - STRING
+            - NUMBER
+            - DATE
+            - BOOLEAN
+          value:
+            type: string
+            maxLength: 1000
+          valueVersion:
+            type: integer
+            minimum: 0
+        description: 'QUALIFIER: exact Claim revision is immutable; typed literals
+          have valueVersion0. Maximum100 qualifier identities per Claim revision including
+          retirements.'
+    QualifierPins:
+      type: object
+      maxProperties: 100
+      propertyNames:
+        type: string
+        format: uuid
+      additionalProperties:
+        type: integer
+        minimum: 1
+      description: VERIFICATION only. Exact current versions of all qualifier identities
+        for the inspected Claim revision, including retired identities. Omitted means
+        empty. Changes require re-sourcing; pinning only current ACTIVE identities
+        is insufficient.

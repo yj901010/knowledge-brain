@@ -1,0 +1,111 @@
+openapi: 3.1.0
+info:
+  title: Brain Query private Note Search API
+  version: 1.0.0
+servers:
+- url: https://brain-query-service.brain-apps.svc:8080
+paths:
+  /api/spaces/{spaceId}/search/notes:
+    get:
+      operationId: searchPrivateNotes
+      description: HTTPS and common guest or registered session cookie required. Brain Query obtains fresh Space
+        NOTE_SEARCH authorization for every request before searching or counting.
+        Exact PRIVATE ACTIVE filters apply to counts and hits. offset + limit must
+        be <= 1000. No-store JSON; returns note ID/title only, without raw Markdown,
+        scores, snippets or backend DSL. Eventual consistency after canonical writes.
+        Concurrent edits may shift offset pages. Standard analysis; no Korean morphological
+        analyzer yet.
+      security:
+      - guestCookie: []
+      parameters:
+      - name: spaceId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Canonical UUIDv7 Space ID.
+      - name: q
+        in: query
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description: Plain title/Markdown text; nonblank and no control characters.
+          Not query DSL.
+      - name: offset
+        in: query
+        schema:
+          type: integer
+          minimum: 0
+          maximum: 999
+          default: 0
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 50
+          default: 20
+      responses:
+        '200':
+          description: 'Private Space search page; Cache-Control: no-store'
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                - total
+                - offset
+                - limit
+                - nextOffset
+                - items
+                properties:
+                  total:
+                    type: integer
+                    format: int64
+                    minimum: 0
+                    description: Exact count of PRIVATE ACTIVE matching notes in the
+                      authorized Space.
+                  offset:
+                    type: integer
+                  limit:
+                    type: integer
+                  nextOffset:
+                    type:
+                    - integer
+                    - 'null'
+                  items:
+                    type: array
+                    maxItems: 50
+                    items:
+                      type: object
+                      additionalProperties: false
+                      required:
+                      - noteId
+                      - title
+                      properties:
+                        noteId:
+                          type: string
+                          format: uuid
+                        title:
+                          type: string
+                          maxLength: 200
+        '400':
+          description: Invalid UUID, query, duplicate/unknown parameter or page window
+        '401':
+          description: Missing, invalid, expired or revoked guest credential
+        '403':
+          description: Read access denied
+        '404':
+          description: Space unavailable; does not reveal another Space
+        '503':
+          description: Authority or search storage unavailable; never partial results
+components:
+  securitySchemes:
+    guestCookie:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest

@@ -1,0 +1,42 @@
+import {test,expect,Page} from '@playwright/test';
+import {randomBytes} from 'node:crypto';
+
+test('Keycloak registration, guest claim, multiple personal spaces and logout',async({page,context})=>{
+ const username='brain-validation-'+Date.now(),password=randomBytes(24).toString('base64url')+'aA1!';
+ const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
+ async function call(path:string,method='GET',body?:unknown){return page.evaluate(async({path,method,body})=>{const r=await fetch(path,{method,credentials:'same-origin',cache:'no-store',headers:body?{'Content-Type':'application/json'}:{},body:body?JSON.stringify(body):undefined});return {status:r.status,body:r.status===204?null:await r.json().catch(()=>null),etag:r.headers.get('ETag')}},{path,method,body});}
+ async function start(){await page.goto('/graph');await page.getByRole('button',{name:'내 개인 공간 시작'}).click();await expect(page.getByRole('button',{name:'+ 새 노트'})).toBeVisible({timeout:90000});const space=await call('/api/spaces/personal');expect(space.status).toBe(200);return space.body.spaceId as string;}
+ async function openLogin(){await page.getByRole('button',{name:'로그인 · 이 공간 연결'}).click();await expect(page.locator('#username')).toBeVisible({timeout:30000});expect(new URL(page.url()).origin).toBe('https://localhost:8445');}
+ async function register(){await page.getByRole('link',{name:'Register',exact:true}).click();await page.locator('#username').fill(username);for(const [id,value] of [['email',username+'@example.invalid'],['firstName','Brain'],['lastName','Validation']]){const field=page.locator('#'+id);if(await field.count())await field.fill(value)}await page.locator('#password').fill(password);await page.locator('#password-confirm').fill(password);await page.getByRole('button',{name:'Register',exact:true}).click();await expect(page.getByRole('button',{name:'로그아웃',exact:true})).toBeVisible({timeout:90000});await expect(page.getByRole('button',{name:'+ 새 노트'})).toBeVisible({timeout:90000});}
+ const first=await start();const oldGuest=(await context.cookies()).find(c=>c.name==='__Host-brain_guest')!;
+ const note=await call(`/api/spaces/${first}/notes`,'POST',{title:'Claim preserved note',markdown:'Private guest content'});expect(note.status).toBe(201);const noteId=note.body.noteId;
+ const concept=await call(`/api/spaces/${first}/concepts`,'POST',{title:'Claim preserved concept',description:''});expect(concept.status).toBe(201);
+ const refs=await call(`/api/spaces/${first}/notes/${noteId}/concepts`);expect(refs.status).toBe(200);const linked=await page.evaluate(async({first,noteId,conceptId,etag})=>{const r=await fetch(`/api/spaces/${first}/notes/${noteId}/concepts`,{method:'PUT',headers:{'Content-Type':'application/json','If-Match':etag},body:JSON.stringify({conceptIds:[conceptId]})});return r.status},{first,noteId,conceptId:concept.body.conceptId,etag:refs.etag!});expect(linked).toBe(200);
+ await openLogin();await register();const account=await call('/api/identity/account-session');expect(account.status).toBe(200);expect(account.body.kind).toBe('REGISTERED');expect((await call('/api/spaces/personal')).body.spaceId).toBe(first);
+ expect((await call(`/api/spaces/${first}/notes/${noteId}`)).body.markdown).toBe('Private guest content');expect((await call(`/api/spaces/${first}/notes/${noteId}/concepts`)).body.items[0].conceptId).toBe(concept.body.conceptId);
+ const rejected=await context.request.get('https://localhost:8443/api/identity/guest-session',{headers:{Cookie:'__Host-brain_guest='+oldGuest.value}});expect(rejected.status()).toBe(401);
+ const credential=(await context.cookies()).find(c=>c.name==='__Host-brain_guest')!;expect(credential.value).toMatch(/^[A-Za-z0-9_-]{43}$/);expect(credential.httpOnly&&credential.secure).toBeTruthy();expect(credential.value).not.toBe(oldGuest.value);
+ expect(await page.evaluate(()=>Object.keys(localStorage).length+Object.keys(sessionStorage).length)).toBe(0);
+ await page.reload();await expect(page.getByRole('button',{name:'로그아웃',exact:true})).toBeVisible();await page.getByRole('button',{name:'로그아웃',exact:true}).click();await expect(page.getByRole('button',{name:'내 개인 공간 시작'})).toBeVisible();
+ const second=await start();expect(second).not.toBe(first);expect((await call(`/api/spaces/${first}/notes/${noteId}`)).status).toBe(404);
+ await openLogin();await page.locator('#username').fill(username);await page.locator('#password').fill(password);await page.getByRole('button',{name:'Sign In',exact:true}).click();await expect(page.getByRole('button',{name:'로그아웃',exact:true})).toBeVisible({timeout:90000});
+ await expect(page.getByRole('combobox',{name:'개인 공간 선택'}).locator('option')).toHaveCount(2,{timeout:90000});expect((await call('/api/identity/account-session')).body.principalId).toBe(account.body.principalId);
+ expect((await call('/api/spaces/personal')).body.spaceId).toBe(second);await page.getByRole('combobox',{name:'개인 공간 선택'}).selectOption(first);expect((await call(`/api/spaces/${first}/notes/${noteId}`)).body.noteId).toBe(noteId);
+ const search=page.getByRole('region',{name:'개인 노트 검색'});
+ await expect.poll(async()=>{const r=await call(`/api/spaces/${first}/search/notes?q=Claim&limit=20`);return r.status===200?r.body.total:-1},{timeout:90000}).toBe(1);
+ await search.getByRole('searchbox').fill('Claim');await search.getByRole('button',{name:'검색',exact:true}).click();await expect(search.getByText('Claim preserved note',{exact:true})).toBeVisible();
+ await page.getByRole('combobox',{name:'개인 공간 선택'}).selectOption(second);await expect(search.getByRole('searchbox')).toHaveValue('');await expect(search.locator('.note-row')).toHaveCount(0);
+ await search.getByRole('searchbox').fill('Claim');await search.getByRole('button',{name:'검색',exact:true}).click();await expect(search.getByText('일치하는 노트가 없습니다.')).toBeVisible();expect((await call(`/api/spaces/${second}/search/notes?q=Claim&limit=20`)).body.total).toBe(0);
+ await page.getByRole('combobox',{name:'개인 공간 선택'}).selectOption(first);await expect(search.getByRole('searchbox')).toHaveValue('');await search.getByRole('searchbox').fill('Claim');await search.getByRole('button',{name:'검색',exact:true}).click();await search.getByRole('button',{name:'Claim preserved note',exact:true}).click();await expect(page.getByRole('region',{name:'노트 본문과 수정 이력'}).locator('pre').first()).toHaveText('Private guest content');
+ console.log('REGISTERED_NOTE_SEARCH_VERIFIED: claimed canonical Note, scoped totals, Space switch clears queries/hits');
+ await page.screenshot({path:'/tmp/graph-ui-results/login.png',fullPage:true});await page.setViewportSize({width:390,height:844});await expect(page.getByRole('combobox',{name:'개인 공간 선택'})).toBeVisible();await expect(page.getByRole('button',{name:'로그아웃',exact:true})).toBeVisible();await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();await page.screenshot({path:'/tmp/graph-ui-results/login-mobile.png',fullPage:true});await page.setViewportSize({width:1280,height:720});
+ if(process.env.BRAIN_TEST_LOGIN_OUTAGE==='true'){
+  console.log('LOGIN_KEYCLOAK_OUTAGE_READY');await expect.poll(async()=> (await call('/api/identity/account-session')).status,{timeout:60000}).toBe(503);
+  expect((await call(`/api/spaces/${first}/notes/${noteId}`)).status).toBe(503);await page.getByRole('button',{name:'새로고침',exact:true}).click();await expect(page.locator('pre')).toHaveCount(0);await expect(page.locator('g.node')).toHaveCount(0);
+  const guestContext=await context.browser()!.newContext();const guestPage=await guestContext.newPage();await guestPage.goto('https://localhost:8443/graph');await guestPage.getByRole('button',{name:'내 개인 공간 시작'}).click();await expect(guestPage.getByRole('button',{name:'+ 새 노트'})).toBeVisible({timeout:60000});await guestContext.close();
+  console.log('LOGIN_KEYCLOAK_OUTAGE_OBSERVED');await expect.poll(async()=> (await call('/api/identity/account-session')).status,{timeout:90000}).toBe(200);expect((await call(`/api/spaces/${first}/notes/${noteId}`)).body.noteId).toBe(noteId);console.log('LOGIN_KEYCLOAK_RECOVERED');
+ }
+ await page.getByRole('button',{name:'로그아웃',exact:true}).click();expect((await context.request.get('https://localhost:8443/api/identity/guest-session',{headers:{Cookie:'__Host-brain_guest='+credential.value}})).status()).toBe(401);expect(errors).toEqual([]);
+});
+
+test.afterEach(async({page},info)=>{if(info.status!==info.expectedStatus){console.log("LOGIN_PAGE_MESSAGE="+(await page.locator("body").innerText()).slice(0,1500));}});

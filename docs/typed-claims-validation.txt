@@ -1,0 +1,24 @@
+Typed Claim objects — local validation 2026-10-20
+
+Full backend: 809 passed, 5 conditional skips, 814 total in13 modules.
+  backend-validation-1792504432814990200
+Final Knowledge (including added canonical snapshot regression):205 passed,0 skipped.
+  backend-validation-1792504594147204500
+Final Brain Query (including recovery decoder selection):65 passed,0 skipped.
+  backend-validation-1792504802438314900
+Full browser:111 passed,0 failed. graph-web-validation-1792504992318756000
+Focused typed browser:2 passed. graph-web-validation-1792504817731294700
+Static Next.js/TypeScript export: PASS. graph-static-build-1792504431696840400
+OpenAPI local/cross-file references:1465 resolved.
+Three V2 schemas: exact SHA256 and FULL/FULL_TRANSITIVE Registry validation passed.
+Real PostgreSQL → Outbox → Debezium → Kafka tested for Claim/Citation/Qualifier literal bytes and revision pins.
+Actual browser exact decimal, five object kinds, historical pins, duplicate normalization,
+1000-codepoint supplementary text, stale edit draft, private scope, XSS, mobile fit and revocation passed.
+Actual graph/search: literal text indexed; two Concept edges; previous target retirement retains Claim.
+Knowledge and Brain Query restarted; canonical state/revisions/evidence/Outbox fingerprint unchanged.
+V1 contracts/topics retained; connector change limited to four RegexRouter settings.
+No canonical/projection/Inbox/offset/slot reset. Existing consumer group unchanged.
+Images imported on both nodes; consumer deployed before producer, then Gateway.
+12 application deployments Ready;8 CDC connectors RUNNING; host HTTPS200.
+6 exact task-owned completed build resource sets removed after label/UID/selector verification.
+Proof: .local/typed-claims-proof.json.

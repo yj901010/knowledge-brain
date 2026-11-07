@@ -1,0 +1,776 @@
+openapi: 3.1.0
+info:
+  title: Private Personal Learning Progress and Study Sessions
+  version: 1.0.0
+  description: Learning owns node progress and manual time records in brain_learning.
+    Current PERSONAL PRIVATE Space access uses existing dedicated ROADMAP_READ/WRITE
+    capability and common guest/registered principal. Data is Space-owned so guest
+    claim does not recreate records. Progress prN, session ssN and roadmap rmN are
+    independent. All domain IDs owner UUIDv7. No cross-service DB access, public publishing,
+    ranking, medical verification or automatic completion. Event propagation uses
+    existing Learning Outbox/CDC and new versioned Protobuf topics.
+servers:
+- url: https://localhost:8443
+security:
+- sessionCookie: []
+paths:
+  /api/spaces/{spaceId}/roadmaps/{roadmapId}/learning:
+    parameters: &id017
+    - &id001
+      name: spaceId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/UuidV7'
+    - &id002
+      name: roadmapId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/UuidV7'
+    get:
+      operationId: readPersonalLearningSummary
+      description: 'One coherent own-DB statement over ACTIVE roadmap nodes: manual
+        status counts, floor(completed*100/total), 0 for empty graph, ACTIVE session
+        durations for current active nodes. Archived-node sessions remain auditable
+        but are excluded from these current-node totals. No query/body/collection
+        ETag.'
+      parameters: &id003 []
+      responses:
+        '200':
+          description: Current personal learning summary
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Summary'
+        '400': &id004
+          description: Invalid/duplicate/unknown query or JSON fields, ID, status,
+            key or time interval
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '401': &id005
+          description: Common browser principal unavailable
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '403': &id006
+          description: Origin or current Space writer role denied
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '404': &id007
+          description: Space/root/node/record not visible or unavailable for this
+            operation
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '409': &id008
+          description: Same request key used with a different canonical creation payload
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '412': &id009
+          description: Record version changed; explicitly inspect latest before retrying
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '413': &id010
+          description: Progress body >4096 bytes or session body >65536 bytes
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '415': &id011
+          description: application/json required
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '428': &id012
+          description: If-Match required for progress/session mutation
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '502': &id013
+          description: Gateway upstream unavailable
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '503': &id014
+          description: Authority or canonical persistence unavailable
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '504': &id015
+          description: Gateway deadline exceeded
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+  /api/spaces/{spaceId}/roadmaps/{roadmapId}/nodes/{nodeId}/progress:
+    parameters: &id016
+    - *id001
+    - *id002
+    - name: nodeId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/UuidV7'
+    get:
+      operationId: readPersonalNodeProgress
+      description: ACTIVE parent/node required. Unwritten progress is NOT_STARTED/version0/progressId=null/updatedAt=null;
+        GET does not create data.
+      parameters: *id003
+      responses:
+        '200':
+          description: Current progress, including strong pr0 for unwritten state
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"pr[0-9]+"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Progress'
+        '400': *id004
+        '401': *id005
+        '403': *id006
+        '404': *id007
+        '409': *id008
+        '412': *id009
+        '413': *id010
+        '415': *id011
+        '428': *id012
+        '502': *id013
+        '503': *id014
+        '504': *id015
+    put:
+      operationId: setPersonalNodeProgress
+      description: Explicit manual status change, no prerequisite gating and no implied
+        knowledge verification. Independent prN ETag; valid no-op leaves revision/event/version
+        unchanged; stale no-op also returns 412. First actual change allocates owner
+        UUIDv7 at version1. Root lock coordinates with graph retirement without changing
+        rmN. Local progress/revision/full Outbox transaction.
+      parameters:
+      - &id018
+        name: Origin
+        in: header
+        required: true
+        schema:
+          type: string
+          format: uri
+          description: Exact configured HTTPS browser origin, Sec-Fetch-Site must
+            be same-origin when supplied.
+      - name: If-Match
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^"pr(0|[1-9][0-9]{0,18})"$
+      responses:
+        '200':
+          description: Saved progress
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"pr[0-9]+"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Progress'
+        '400': *id004
+        '401': *id005
+        '403': *id006
+        '404': *id007
+        '409': *id008
+        '412': *id009
+        '413': *id010
+        '415': *id011
+        '428': *id012
+        '502': *id013
+        '503': *id014
+        '504': *id015
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProgressEdit'
+  /api/spaces/{spaceId}/roadmaps/{roadmapId}/nodes/{nodeId}/progress/revisions:
+    parameters: *id016
+    get:
+      operationId: listPersonalProgressRevisions
+      description: Immutable descending versions; known retired node/root history
+        remains readable with current Space permission. Unwritten progress has empty
+        history. Singleton before/limit only.
+      parameters: &id020
+      - name: before
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 9223372036854775807
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 5
+      responses:
+        '200':
+          description: Progress revisions
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                type: array
+                maxItems: 10
+                items:
+                  $ref: '#/components/schemas/ProgressRevision'
+        '400': *id004
+        '401': *id005
+        '403': *id006
+        '404': *id007
+        '409': *id008
+        '412': *id009
+        '413': *id010
+        '415': *id011
+        '428': *id012
+        '502': *id013
+        '503': *id014
+        '504': *id015
+  /api/spaces/{spaceId}/roadmaps/{roadmapId}/study-sessions:
+    parameters: *id017
+    get:
+      operationId: listPersonalStudySessions
+      description: ACTIVE records in ascending UUID keyset order, including records
+        attached to retired nodes or roadmap. Current Space permission required. Singleton
+        after/limit only; no GET body.
+      parameters:
+      - name: after
+        in: query
+        required: false
+        schema:
+          $ref: '#/components/schemas/UuidV7'
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      responses:
+        '200':
+          description: Session page
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionPage'
+        '400': *id004
+        '401': *id005
+        '403': *id006
+        '404': *id007
+        '409': *id008
+        '412': *id009
+        '413': *id010
+        '415': *id011
+        '428': *id012
+        '502': *id013
+        '503': *id014
+        '504': *id015
+    post:
+      operationId: recordPersonalStudySession
+      description: 'Record completed manual interval on ACTIVE roadmap/node. Input
+        offset timestamps normalize to UTC whole seconds. Start >= Unix epoch, duration1..86400
+        seconds, end <= server now +300 seconds. Overlaps with other records are permitted
+        and durations summed. No automatic progress change. Required key scoped to
+        roadmap: exact canonical replay returns the current record (even RETIRED)
+        with 200 and does not mutate revision/event; different payload same key409.
+        Original fingerprint survives edits/retirement/guest claim. New root/session/revision/Outbox
+        writes are local atomic; replay also allowed on known retired root/node.'
+      parameters:
+      - *id018
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^[0-9a-f]{32}$
+          description: Client-generated opaque request token, not a persistent domain
+            identifier. Stable across retries of the same canonical payload; new key
+            for a new record.
+      responses:
+        '201':
+          description: New session with owner UUIDv7, ss1
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"ss[0-9]+"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+        '200':
+          description: Idempotent replay of current known session, no new write
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"ss[0-9]+"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+        '400': *id004
+        '401': *id005
+        '403': *id006
+        '404': *id007
+        '409': *id008
+        '412': *id009
+        '413': *id010
+        '415': *id011
+        '428': *id012
+        '502': *id013
+        '503': *id014
+        '504': *id015
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SessionEdit'
+  /api/spaces/{spaceId}/roadmaps/{roadmapId}/study-sessions/{sessionId}:
+    parameters: &id019
+    - *id001
+    - *id002
+    - name: sessionId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/UuidV7'
+    get:
+      operationId: readPersonalStudySession
+      description: Current ACTIVE record, including records on retired nodes/roadmap.
+        Captured node title is clearly distinct from current roadmap node title. Retired
+        record current GET404, known revision history remains readable.
+      parameters: *id003
+      responses:
+        '200':
+          description: Current session
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"ss[0-9]+"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+        '400': *id004
+        '401': *id005
+        '403': *id006
+        '404': *id007
+        '409': *id008
+        '412': *id009
+        '413': *id010
+        '415': *id011
+        '428': *id012
+        '502': *id013
+        '503': *id014
+        '504': *id015
+    put:
+      operationId: editPersonalStudySession
+      description: Independent ssN precondition. ACTIVE root and destination node
+        required. Node reassignment allowed within exact roadmap and captures new
+        node title; same-node edits retain the original node title. Versioned interval/note
+        corrections do not alter progress or roadmap revisions. No-op and stale-no-op
+        semantics as progress.
+      parameters:
+      - *id018
+      - name: If-Match
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^"ss[1-9][0-9]{0,18}"$
+      responses:
+        '200':
+          description: Updated session
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"ss[0-9]+"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+        '400': *id004
+        '401': *id005
+        '403': *id006
+        '404': *id007
+        '409': *id008
+        '412': *id009
+        '413': *id010
+        '415': *id011
+        '428': *id012
+        '502': *id013
+        '503': *id014
+        '504': *id015
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SessionEdit'
+    delete:
+      operationId: retirePersonalStudySession
+      description: ACTIVE root required; target node may be retired. Retain interval/note/title
+        and immutable history, increment ssN and exclude current catalogue/time totals.
+        No body/query/restore route. Does not change manual progress.
+      parameters:
+      - *id018
+      - name: If-Match
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^"ss[1-9][0-9]{0,18}"$
+      responses:
+        '204':
+          description: Retired session
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"ss[0-9]+"$
+        '400': *id004
+        '401': *id005
+        '403': *id006
+        '404': *id007
+        '409': *id008
+        '412': *id009
+        '413': *id010
+        '415': *id011
+        '428': *id012
+        '502': *id013
+        '503': *id014
+        '504': *id015
+  /api/spaces/{spaceId}/roadmaps/{roadmapId}/study-sessions/{sessionId}/revisions:
+    parameters: *id019
+    get:
+      operationId: listPersonalStudySessionRevisions
+      description: Immutable descending full snapshots, retained across record/node/root
+        retirement. Current Space permission; singleton before/limit only.
+      parameters: *id020
+      responses:
+        '200':
+          description: Study session revisions
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                type: array
+                maxItems: 10
+                items:
+                  $ref: '#/components/schemas/SessionRevision'
+        '400': *id004
+        '401': *id005
+        '403': *id006
+        '404': *id007
+        '409': *id008
+        '412': *id009
+        '413': *id010
+        '415': *id011
+        '428': *id012
+        '502': *id013
+        '503': *id014
+        '504': *id015
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest
+  schemas:
+    UuidV7:
+      type: string
+      format: uuid
+      pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+    Progress:
+      type: object
+      additionalProperties: false
+      required:
+      - progressId
+      - roadmapId
+      - spaceId
+      - nodeId
+      - visibility
+      - status
+      - version
+      - updatedAt
+      properties:
+        progressId:
+          oneOf:
+          - $ref: '#/components/schemas/UuidV7'
+          - type: 'null'
+        roadmapId:
+          $ref: '#/components/schemas/UuidV7'
+        spaceId:
+          $ref: '#/components/schemas/UuidV7'
+        nodeId:
+          $ref: '#/components/schemas/UuidV7'
+        visibility:
+          const: PRIVATE
+        status: &id021
+          type: string
+          enum:
+          - NOT_STARTED
+          - IN_PROGRESS
+          - COMPLETED
+        version: &id022
+          type: integer
+          minimum: 0
+        updatedAt:
+          oneOf:
+          - &id023
+            type: string
+            format: date-time
+          - type: 'null'
+    ProgressEdit:
+      type: object
+      additionalProperties: false
+      required:
+      - status
+      properties:
+        status: *id021
+    NodeLearning:
+      type: object
+      additionalProperties: false
+      required:
+      - nodeId
+      - title
+      - status
+      - version
+      - sessionCount
+      - recordedSeconds
+      properties:
+        nodeId:
+          $ref: '#/components/schemas/UuidV7'
+        title:
+          type: string
+          maxLength: 200
+        status: *id021
+        version: *id022
+        sessionCount: *id022
+        recordedSeconds: *id022
+    Summary:
+      type: object
+      additionalProperties: false
+      required:
+      - roadmapId
+      - spaceId
+      - roadmapVersion
+      - nodes
+      - total
+      - inProgress
+      - completed
+      - percent
+      - recordedSeconds
+      properties:
+        roadmapId:
+          $ref: '#/components/schemas/UuidV7'
+        spaceId:
+          $ref: '#/components/schemas/UuidV7'
+        roadmapVersion: &id024
+          type: integer
+          minimum: 1
+        nodes:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/NodeLearning'
+        total: *id022
+        inProgress: *id022
+        completed: *id022
+        percent:
+          type: integer
+          minimum: 0
+          maximum: 100
+        recordedSeconds: *id022
+    SessionEdit:
+      type: object
+      additionalProperties: false
+      required:
+      - nodeId
+      - startedAt
+      - endedAt
+      - note
+      properties:
+        nodeId:
+          $ref: '#/components/schemas/UuidV7'
+        startedAt: *id023
+        endedAt: *id023
+        note: &id025
+          type: string
+          description: Raw user text, <=8192 UTF-8 bytes. LF/CR/TAB allowed; other
+            ISO controls and unpaired surrogates rejected.
+    Session:
+      type: object
+      additionalProperties: false
+      required:
+      - sessionId
+      - roadmapId
+      - spaceId
+      - nodeId
+      - nodeTitle
+      - visibility
+      - state
+      - version
+      - startedAt
+      - endedAt
+      - durationSeconds
+      - note
+      - createdAt
+      - updatedAt
+      properties:
+        sessionId:
+          $ref: '#/components/schemas/UuidV7'
+        roadmapId:
+          $ref: '#/components/schemas/UuidV7'
+        spaceId:
+          $ref: '#/components/schemas/UuidV7'
+        nodeId:
+          $ref: '#/components/schemas/UuidV7'
+        nodeTitle:
+          type: string
+          maxLength: 200
+          description: Title captured at initial node association; retained when that
+            node is renamed. Reassignment captures the newly selected active node
+            title.
+        visibility:
+          const: PRIVATE
+        state:
+          enum:
+          - ACTIVE
+          - RETIRED
+        version: *id024
+        startedAt: *id023
+        endedAt: *id023
+        durationSeconds:
+          type: integer
+          minimum: 1
+          maximum: 86400
+        note: *id025
+        createdAt: *id023
+        updatedAt: *id023
+    SessionPage:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - nextAfter
+      properties:
+        items:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/Session'
+        nextAfter:
+          oneOf:
+          - $ref: '#/components/schemas/UuidV7'
+          - type: 'null'
+    ProgressRevision:
+      type: object
+      additionalProperties: false
+      required:
+      - revisionId
+      - progressId
+      - version
+      - actorId
+      - occurredAt
+      - snapshot
+      properties:
+        revisionId:
+          $ref: '#/components/schemas/UuidV7'
+        progressId:
+          $ref: '#/components/schemas/UuidV7'
+        version: *id024
+        actorId:
+          $ref: '#/components/schemas/UuidV7'
+        occurredAt: *id023
+        snapshot:
+          $ref: '#/components/schemas/Progress'
+    SessionRevision:
+      type: object
+      additionalProperties: false
+      required:
+      - revisionId
+      - sessionId
+      - version
+      - actorId
+      - occurredAt
+      - snapshot
+      properties:
+        revisionId:
+          $ref: '#/components/schemas/UuidV7'
+        sessionId:
+          $ref: '#/components/schemas/UuidV7'
+        version: *id024
+        actorId:
+          $ref: '#/components/schemas/UuidV7'
+        occurredAt: *id023
+        snapshot:
+          $ref: '#/components/schemas/Session'

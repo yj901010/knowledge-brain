@@ -1,0 +1,16 @@
+Personal Concept editor delivery - 2026-10-09
+AGENTS.md and PROJECT.md read before implementation. Knowledge remains canonical Concept owner; Content Note source/reference contracts and Space authority preserved. No backend source, dependency, API/event/schema or migration change.
+Independent code review found stale catalog read overlap on Concept save; onSaved now aborts outstanding catalog request and refreshes canonical first page. Meaningful browser regression holds/releases that old response.
+Production compile, TypeScript/static export/CSP hashes and publisher legal notices passed. First image packaging attempt failed the 1 MiB ConfigMap limit before a builder Pod existed.
+Build-only fix: split source base64 into <=700000-character ConfigMaps, projected read-only source volume, numbered concatenation with pipefail, exact builder Pod owner references and recorded chunk names. Application architecture unchanged.
+Final static build Job: graph-static-build-1791552108572621500.
+Actual source chunk data bytes: [700000, 353948]; all chunks owned by gateway-image-build-1791552150. Multi-chunk Maven image build completed.
+Both imports complete: gateway-image-import-1791552196-0 and gateway-image-import-1791552196-1.
+Image: knowledge-brain/gateway-service:local-04816408f2e13888.
+Final full browser Job graph-web-validation-1791552223: all 13 passed (1.6m). New editor scenario passed 7.7s on real isolated guest data.
+Coverage: canonical exact strong If-Match values; personal title/description edits; actual 412 concurrent Concept update with retained draft and explicit latest restart; 503 retry and cancel; seven immutable Knowledge revisions in 5+2 descending cursor pages; original historical descriptions retained; unchanged entire Note snapshot/ETag and Content reference snapshot/c-ETag/Concept IDs/link IDs; real delayed old catalog response released after successful save and rejected; foreign read/write/history 404; escaped script/image text; Concept/Note switch, close and revoked-session private data clearing; no browser storage or CSP error; mobile width.
+Existing 101-Concept catalog/ref conflict/history, attachments, editor, graph, Journal, Wiki/backlinks, library, Markdown, metadata, retirement, search, public guest/registered references and designated-review/merge workflow also passed.
+Trusted local CA used without TLS verification bypass; temporary designated reviewer retired by runner.
+Desktop/mobile concept-editor.png and concept-editor-mobile.png inspected: revision selection controls readable, selected historical content in the existing scrollable inspector, no horizontal page overflow at 390px.
+Owned gateway-image-build-1791552150 Pod/Service/NetworkPolicy removed. First 30s source-chunk deletion wait expired during Pod termination/GC; subsequent exact-name checks confirmed the Pod and both source ConfigMaps absent. Explicit idempotent chunk cleanup found no remaining chunks. Persistent application/user resources preserved.
+Final Gateway Ready=1: knowledge-brain/gateway-service:local-04816408f2e13888.

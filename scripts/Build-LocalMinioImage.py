@@ -1,0 +1,18 @@
+import json,hashlib,time,shutil,subprocess
+from pathlib import Path
+root=Path(__file__).resolve().parents[1];k=[shutil.which('kubectl') or 'C:/Program Files/Docker/Docker/resources/bin/kubectl.exe','--kubeconfig',str(root/'.local/kubeconfig.yaml'),'--server=https://127.0.0.1:6550']
+def run(args,body=None):
+ r=subprocess.run(k+args,input=body,text=True,capture_output=True)
+ if r.returncode:raise RuntimeError(r.stderr)
+ return r.stdout
+assert run(['config','current-context']).strip()=='k3d-knowledge-brain'
+def apply(doc):run(['apply','-f','-'],json.dumps(doc))
+meta=json.loads((root/'.local/minio-build-source.json').read_text());content={name:(root/'scripts'/file).read_text() for name,file in [('prepare.py','Prepare-MinioSource.py'),('pack.py','Pack-MinioImage.py'),('bootstrap.go','MinioBootstrap.go')]};tag='local-'+hashlib.sha256((meta['sourceSha256']+''.join(content.values())).encode()).hexdigest()[:16];meta['image']='knowledge-brain/minio:'+tag;content['build-source.json']=json.dumps(meta);name='minio-image-build-'+str(int(time.time()))
+apply(dict(apiVersion='v1',kind='ConfigMap',metadata=dict(name=name,namespace='brain-apps'),data=content))
+mounts=[dict(name='scripts',mountPath='/scripts',readOnly=True),dict(name='source',mountPath='/source'),dict(name='artifacts',mountPath='/artifacts')]
+init=[dict(name='source',image='python:3.13.7-alpine',command=['python','/scripts/prepare.py'],volumeMounts=mounts),dict(name='build',image=meta['builderImage'],command=['bash','-ec','cd /source; CGO_ENABLED=0 go build -trimpath -ldflags "-s -w -X github.com/minio/minio/cmd.Version=2025-10-15T17:29:55Z -X github.com/minio/minio/cmd.ReleaseTag=RELEASE.2025-10-15T17-29-55Z" -o /artifacts/minio .; CGO_ENABLED=0 go build -trimpath -o /artifacts/bootstrap /scripts/bootstrap.go'],resources=dict(requests=dict(cpu='1',memory='1Gi'),limits=dict(cpu='2',memory='4Gi')),volumeMounts=mounts),dict(name='pack',image='python:3.13.7-alpine',command=['python','/scripts/pack.py'],volumeMounts=mounts)]
+serve=dict(name='artifacts',image='python:3.13.7-alpine',command=['python','-m','http.server','9080','--directory','/artifacts'],ports=[dict(name='artifacts',containerPort=9080)],readinessProbe=dict(httpGet=dict(path='/image.sha256',port='artifacts'),periodSeconds=5),securityContext=dict(runAsUser=10001,runAsNonRoot=True,allowPrivilegeEscalation=False,readOnlyRootFilesystem=True,capabilities=dict(drop=['ALL'])),resources=dict(requests=dict(cpu='25m',memory='32Mi'),limits=dict(cpu='250m',memory='96Mi')),volumeMounts=[dict(name='artifacts',mountPath='/artifacts',readOnly=True)])
+apply(dict(apiVersion='v1',kind='Pod',metadata=dict(name=name,namespace='brain-apps',labels={'app':'space-image-artifacts','build-id':name}),spec=dict(restartPolicy='Never',activeDeadlineSeconds=1200,automountServiceAccountToken=False,securityContext=dict(fsGroup=10001),initContainers=init,containers=[serve],volumes=[dict(name='scripts',configMap=dict(name=name)),dict(name='source',emptyDir=dict(sizeLimit='2Gi')),dict(name='artifacts',emptyDir=dict(sizeLimit='1Gi'))])))
+apply(dict(apiVersion='v1',kind='Service',metadata=dict(name=name,namespace='brain-apps'),spec=dict(selector={'build-id':name},ports=[dict(name='artifacts',port=9080,targetPort=9080)])))
+apply(dict(apiVersion='networking.k8s.io/v1',kind='NetworkPolicy',metadata=dict(name=name,namespace='brain-apps'),spec=dict(podSelector=dict(matchLabels={'build-id':name}),policyTypes=['Ingress'],ingress=[{'from':[{'podSelector':{'matchLabels':{'local-image-import':'true'}}}],'ports':[{'protocol':'TCP','port':9080}]}])))
+(root/'.local/minio-image.json').write_text(json.dumps(dict(pod=name,tag=tag,image=meta['image']),indent=2));print('BUILD_POD='+name);print('LOCAL_IMAGE='+meta['image'])

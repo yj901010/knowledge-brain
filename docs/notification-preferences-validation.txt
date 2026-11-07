@@ -1,0 +1,118 @@
+Private Space in-app notification preferences validation, 2026-10-18
+
+621 backend tests, zero failures/errors, 31 unchanged environment-gated skips
+(590 passed). Notification24 uses actual own PostgreSQL and both scoped Kafka
+topics without skips; Gateway43 also no skips. New tests cover virtual defaults
+and read/no-op side-effect freedom, explicit independent npN, stale same-value
+conflict, own immutable history, full preference/suppression Outbox rollback,
+preference/dispatch concurrency with one stable outcome, changed event/dispatch
+identity rejection across received/missed states, duplicate recovery after enable
+and a fresh store instance, tenant/type-bound20+3 pages, exact immutable source
+bytes, original traces/actors and live new topic Outbox/Debezium/CDC headers.
+Strict JSON/Origin/credentials/body/query validation and fresh scoped authority
+remain. Final runtime image additionally compiles the bounded no-inbox-item metric
+label for ignored/duplicate/suppressed events.
+
+Focused deployed browser2 and full deployed browser72 pass over verified HTTPS.
+Actual default-on arrival, mute,23 missed records without inbox arrivals, unchanged
+old notification, live20+3 history, re-enable and new arrival, no missed backfill,
+Planning dispatch/source independence, cross-Space denial, current-version conflict,
+lost reply refresh, explicit acknowledgment, discarded late closed reads, revoked
+session cleanup, escaped HTML/no external request,390px fit and no private browser
+storage are covered. Two real Keycloak registrations preserve preference IDs and
+guest revisions; subsequent changes record the registered actor. Screenshots were
+inspected. Two real Notification Pod restarts preserve disabled/enabled settings,
+immutable missed history/source pins, independent audit and one outcome; enabling
+never delivers the old missed reminder while a new scheduled reminder arrives.
+Only synthetic fixture sources are archived afterward; notification facts remain.
+The first runtime harness incorrectly expected200 for source archival's documented
+204 response; the harness expectation was corrected and this scoped runtime check
+was repeated successfully. No production behavior or full regression needed changes.
+
+New immutable Registry source SHA/VALIDITY FULL/COMPATIBILITY FULL_TRANSITIVE;
+four OpenAPI operations and every local reference resolve. Existing Planning,
+Learning, dispatch and in-app schemas remain byte-for-byte unchanged. CDC denies
+seven canonical SELECTs and twelve cross-owner CONNECTs, reads only own Outbox;
+the existing Notification connector, publication, slot and offsets are preserved.
+No canonical data, PVC, topic or prior offset is reset. Twelve app Deployments
+Ready and all eight existing Connectors/tasks RUNNING. Both exact images imported
+on both nodes. Three temporary builder Pod/Service/NetworkPolicy/source ConfigMap
+sets removed after verifying source owners, UIDs, exit0 and deployed images.
+No new dependency, external communication channel or AI capability was introduced.
+
+{
+  "date": "2026-10-18",
+  "jobs": {
+    "backend": "backend-validation-1792299235163321000",
+    "focusedBrowser": "graph-web-validation-1792299475",
+    "browser": "graph-web-validation-1792299657",
+    "registry": "notification-policy-contract-1792299190",
+    "notificationCdc": "notification-cdc-bootstrap-1792299386"
+  },
+  "backend": {
+    "tests": 621,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 31
+  },
+  "passedBackend": 590,
+  "notificationOwnPostgresAndKafkaTests": 24,
+  "gatewayTests": 43,
+  "focusedBrowserTests": 2,
+  "browserTests": 72,
+  "registeredPreferenceClaimChecks": 2,
+  "registryPolicySha256": "38ae9ea5228be1ef4148f6cb8c5261013692045f764a34fc01625d92dc0a56cb",
+  "existingPlanningAndLearningSchemasUnchanged": true,
+  "existingDispatchAndInAppSchemasUnchanged": true,
+  "openapiReferences": 1289,
+  "newOperations": [
+    "getPrivateNotificationPreference",
+    "setPrivateNotificationPreference",
+    "getPrivateNotificationPreferenceRevisions",
+    "listPrivateMissedNotifications"
+  ],
+  "readyDeployments": 12,
+  "runningConnectors": [
+    "space-outbox",
+    "planning-outbox",
+    "notification-outbox",
+    "knowledge-outbox",
+    "media-outbox",
+    "content-outbox",
+    "learning-outbox",
+    "identity-outbox"
+  ],
+  "notificationConnectorAndSlotUnchanged": true,
+  "images": {
+    "notification": "knowledge-brain/notification-service:local-079b18bc2c2e4ad2",
+    "gateway": "knowledge-brain/gateway-service:local-cbe63e2269618e5d"
+  },
+  "runtime": {
+    "spaceId": "01a14d6a-ea18-78e9-a559-4d32beabd882",
+    "preferenceId": "01a14d6a-ffa1-7dc6-a4c7-ce0b0494c746",
+    "suppressionId": "01a14d6b-43eb-791a-8edb-9fa2deb5caf3",
+    "suppressedDispatchId": "01a14d6b-27f0-78f2-99bb-672343281083",
+    "newNotificationId": "01a14d6c-734e-7898-9f18-ea6bb0581968",
+    "newDispatchId": "01a14d6c-5ab9-7acc-99cc-394cc32d6637",
+    "pausedRestart": {
+      "old": "527a8c44-3b0a-4b35-8853-374f3930832c",
+      "new": "b8e92b90-bc45-4688-8499-7c60c16fa5de"
+    },
+    "activeRestart": {
+      "old": "b8e92b90-bc45-4688-8499-7c60c16fa5de",
+      "new": "a0398773-735b-4f06-a429-6e8664d43d55"
+    },
+    "versions": [
+      1,
+      2
+    ],
+    "disabledPreferenceAndAuditPreserved": true,
+    "missedPinsAndSingleOutcomePreserved": true,
+    "enableNeverBackfills": true,
+    "newDispatchReceived": true,
+    "sourcesAndArchivalIndependent": true,
+    "replicasPreserved": 1
+  },
+  "ownedBuilderSetsRemoved": 3,
+  "hostHttpsVerified": true
+}

@@ -1,0 +1,2282 @@
+openapi: 3.1.0
+info:
+  title: Private Markdown Note API
+  version: 1.0.0
+  description: Content-owned Personal Space notes. Space authorization verified on
+    every call; guest cookie only. Deletes retire notes and retain history. Raw Markdown
+    is not rendered. Wiki Links and backlinks are Content-owned and Space-authorized;
+    GET metadata is private.
+servers:
+- url: https://localhost:8443
+security:
+- guestCookie: []
+paths:
+  /api/spaces/{spaceId}/notes:
+    parameters:
+    - name: spaceId
+      in: path
+      required: true
+      schema: &id001
+        type: string
+        format: uuid
+        description: Canonical UUIDv7
+    post:
+      operationId: createNote
+      parameters:
+      - &id002
+        name: Origin
+        in: header
+        required: true
+        schema:
+          type: string
+          description: Must equal configured browser origin
+      requestBody: &id003
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Edit'
+      responses:
+        '201':
+          description: Success
+          headers:
+            ETag:
+              description: Strong version ETag, for example "1"
+              schema:
+                type: string
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Location:
+              schema:
+                type: string
+              description: Created Note path
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Note'
+        '400':
+          description: Invalid identifier, JSON, page or Markdown bounds
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Missing, expired or revoked guest cookie
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Origin, method or role denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Unknown, inaccessible or retired active Note
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '412':
+          description: Version differs; reload before saving
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '413':
+          description: JSON body exceeds 256 KiB
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '415':
+          description: JSON required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '428':
+          description: If-Match missing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '502':
+          description: Gateway cannot reach Content
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Content persistence or Space/Identity authority unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '504':
+          description: Gateway complete-response timeout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    get:
+      operationId: listNotes
+      description: Same-Space private Notes in ascending immutable Note ID order. ACTIVE
+        is the default. RETIRED discovers retained titles and versions for history reads;
+        item GET and writes still require an active Note. Unknown or duplicate query
+        parameters are rejected. Reading does not restore Notes or emit domain events.
+      parameters:
+      - name: state
+        in: query
+        required: false
+        schema:
+          type: string
+          enum: [ACTIVE, RETIRED]
+          default: ACTIVE
+      - name: after
+        in: query
+        required: false
+        schema: *id001
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      responses:
+        '200':
+          description: Success
+          headers:
+            ETag:
+              description: Strong version ETag, for example "1"
+              schema:
+                type: string
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Page'
+        '400':
+          description: Invalid identifier, JSON, page or Markdown bounds
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Missing, expired or revoked guest cookie
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Origin, method or role denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Unknown, inaccessible or retired active Note
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '412':
+          description: Version differs; reload before saving
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '413':
+          description: JSON body exceeds 256 KiB
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '415':
+          description: JSON required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '428':
+          description: If-Match missing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '502':
+          description: Gateway cannot reach Content
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Content persistence or Space/Identity authority unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '504':
+          description: Gateway complete-response timeout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/spaces/{spaceId}/notes/{noteId}:
+    parameters:
+    - name: spaceId
+      in: path
+      required: true
+      schema: *id001
+    - name: noteId
+      in: path
+      required: true
+      schema: *id001
+    get:
+      operationId: getNote
+      responses:
+        '200':
+          description: Success
+          headers:
+            ETag:
+              description: Strong version ETag, for example "1"
+              schema:
+                type: string
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Note'
+        '400':
+          description: Invalid identifier, JSON, page or Markdown bounds
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Missing, expired or revoked guest cookie
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Origin, method or role denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Unknown, inaccessible or retired active Note
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '412':
+          description: Version differs; reload before saving
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '413':
+          description: JSON body exceeds 256 KiB
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '415':
+          description: JSON required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '428':
+          description: If-Match missing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '502':
+          description: Gateway cannot reach Content
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Content persistence or Space/Identity authority unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '504':
+          description: Gateway complete-response timeout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      operationId: updateNote
+      parameters:
+      - *id002
+      - &id004
+        name: If-Match
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^"[1-9][0-9]*"$
+          description: Single strong ETag from the last Note response
+      requestBody: *id003
+      responses:
+        '200':
+          description: Success
+          headers:
+            ETag:
+              description: Strong version ETag, for example "1"
+              schema:
+                type: string
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Note'
+        '400':
+          description: Invalid identifier, JSON, page or Markdown bounds
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Missing, expired or revoked guest cookie
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Origin, method or role denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Unknown, inaccessible or retired active Note
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '412':
+          description: Version differs; reload before saving
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '413':
+          description: JSON body exceeds 256 KiB
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '415':
+          description: JSON required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '428':
+          description: If-Match missing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '502':
+          description: Gateway cannot reach Content
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Content persistence or Space/Identity authority unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '504':
+          description: Gateway complete-response timeout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      operationId: retireNote
+      parameters:
+      - *id002
+      - *id004
+      responses:
+        '204':
+          description: Success
+          headers:
+            ETag:
+              description: Strong version ETag, for example "1"
+              schema:
+                type: string
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+        '400':
+          description: Invalid identifier, JSON, page or Markdown bounds
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Missing, expired or revoked guest cookie
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Origin, method or role denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Unknown, inaccessible or retired active Note
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '412':
+          description: Version differs; reload before saving
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '413':
+          description: JSON body exceeds 256 KiB
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '415':
+          description: JSON required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '428':
+          description: If-Match missing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '502':
+          description: Gateway cannot reach Content
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Content persistence or Space/Identity authority unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '504':
+          description: Gateway complete-response timeout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/spaces/{spaceId}/notes/{noteId}/revisions:
+    parameters:
+    - name: spaceId
+      in: path
+      required: true
+      schema: *id001
+    - name: noteId
+      in: path
+      required: true
+      schema: *id001
+    get:
+      operationId: listNoteRevisions
+      description: Retired notes remain visible to authorized members through history.
+        Descending version; use last version as before cursor.
+      parameters:
+      - name: before
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+          minimum: 1
+          default: 9223372036854775807
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 5
+      responses:
+        '200':
+          description: Success
+          headers:
+            ETag:
+              description: Strong version ETag, for example "1"
+              schema:
+                type: string
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Revision'
+        '400':
+          description: Invalid identifier, JSON, page or Markdown bounds
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Missing, expired or revoked guest cookie
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Origin, method or role denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Unknown, inaccessible or retired active Note
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '412':
+          description: Version differs; reload before saving
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '413':
+          description: JSON body exceeds 256 KiB
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '415':
+          description: JSON required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '428':
+          description: If-Match missing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '502':
+          description: Gateway cannot reach Content
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Content persistence or Space/Identity authority unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '504':
+          description: Gateway complete-response timeout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/spaces/{spaceId}/notes/{noteId}/links:
+    parameters:
+    - name: spaceId
+      in: path
+      required: true
+      schema: &id005
+        type: string
+        format: uuid
+        description: Canonical UUIDv7
+    - name: noteId
+      in: path
+      required: true
+      schema: *id005
+    get:
+      operationId: getNoteLinks
+      description: Outgoing links in Markdown occurrence order; exclusive ordinal
+        after. noteVersion and linkVersion are independent.
+      parameters:
+      - name: after
+        in: query
+        schema:
+          type: integer
+          minimum: 0
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      responses:
+        '200':
+          description: Outgoing links in Markdown occurrence order; exclusive ordinal
+            after. noteVersion and linkVersion are independent.
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WikiLinkPage'
+        '400':
+          description: Invalid cursor, page limit or identifier
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Missing, expired or revoked browser credential
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Route denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Unknown, inaccessible or retired Note
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '502':
+          description: Gateway cannot reach Content
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Persistence/Space/Identity authority unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '504':
+          description: Gateway response deadline exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/spaces/{spaceId}/notes/{noteId}/backlinks:
+    parameters:
+    - name: spaceId
+      in: path
+      required: true
+      schema: *id005
+    - name: noteId
+      in: path
+      required: true
+      schema: *id005
+    get:
+      operationId: getNoteBacklinks
+      description: Active source summaries in UUID order; exclusive UUID after. Repeated
+        edges counted per source.
+      parameters:
+      - name: after
+        in: query
+        schema: *id005
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      responses:
+        '200':
+          description: Active source summaries in UUID order; exclusive UUID after.
+            Repeated edges counted per source.
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BacklinkPage'
+        '400':
+          description: Invalid cursor, page limit or identifier
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Missing, expired or revoked browser credential
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Route denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Unknown, inaccessible or retired Note
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '502':
+          description: Gateway cannot reach Content
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Persistence/Space/Identity authority unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '504':
+          description: Gateway response deadline exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/spaces/{spaceId}/notes/{noteId}/metadata:
+    parameters: &id008
+    - &id009
+      name: spaceId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    - name: noteId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    get:
+      summary: Read note tags and typed properties
+      security: &id006
+      - guestCookie: []
+      responses:
+        '200': &id007
+          description: Private metadata snapshot; metadata ETag is independent of
+            Markdown version
+          headers:
+            ETag:
+              schema:
+                type: string
+              example: '"m1"'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NoteMetadata'
+        '401':
+          description: Unauthenticated
+        '404':
+          description: Unavailable or unauthorized
+    put:
+      summary: Replace the complete tag and property set atomically
+      security: *id006
+      parameters:
+      - name: If-Match
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^"m(0|[1-9][0-9]*)"$
+        example: '"m0"'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MetadataEdit'
+      responses:
+        '200': *id007
+        '400':
+          description: Invalid typed value or bounds
+        '401':
+          description: Unauthenticated
+        '403':
+          description: Invalid browser Origin
+        '404':
+          description: Unavailable or unauthorized
+        '409':
+          description: Space property type conflict
+        '412':
+          description: Stale metadata ETag
+        '413':
+          description: JSON exceeds 16 KiB
+        '428':
+          description: If-Match required
+        '503':
+          description: Authorization dependency unavailable
+  /api/spaces/{spaceId}/notes/{noteId}/metadata/revisions:
+    parameters: *id008
+    get:
+      summary: Read private immutable metadata snapshots, including retired notes
+      security: *id006
+      parameters:
+      - name: before
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 5
+      responses:
+        '200':
+          description: Newest first; exclusive before metadata version
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MetadataRevision'
+        '404':
+          description: Unavailable or unauthorized
+  /api/spaces/{spaceId}/tags:
+    get:
+      summary: List Space tags with active-note usage counts
+      security: *id006
+      parameters:
+      - *id009
+      - name: q
+        in: query
+        required: false
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 128
+        description: Optional literal name substring, normalized to NFC before matching.
+          The normalized query must contain 1..64 Unicode code points; raw input is
+          bounded to 128 code points. Case and spaces are significant; no trimming,
+          wildcard or regular-expression expansion. Reject controls and invalid Unicode.
+          Applied before UUIDv7 keyset pagination; repeat the same query on every page.
+      - name: after
+        in: query
+        schema:
+          type: string
+          format: uuid
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      responses:
+        '200':
+          description: UUID keyset page; unused definitions retained
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MetadataDefinitionPage'
+        '400':
+          description: Invalid, empty, oversized or duplicate query or page parameter
+        '404':
+          description: Unavailable or unauthorized
+  /api/spaces/{spaceId}/property-definitions:
+    get:
+      summary: List Space property-definitions with active-note usage counts
+      security: *id006
+      parameters:
+      - *id009
+      - name: q
+        in: query
+        required: false
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 128
+        description: Optional literal name substring, normalized to NFC before matching.
+          The normalized query must contain 1..64 Unicode code points; raw input is
+          bounded to 128 code points. Case and spaces are significant; no trimming,
+          wildcard or regular-expression expansion. Reject controls and invalid Unicode.
+          Applied before UUIDv7 keyset pagination; repeat the same query on every page.
+      - name: after
+        in: query
+        schema:
+          type: string
+          format: uuid
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      responses:
+        '200':
+          description: UUID keyset page; unused definitions retained
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MetadataDefinitionPage'
+        '400':
+          description: Invalid, empty, oversized or duplicate query or page parameter
+        '404':
+          description: Unavailable or unauthorized
+  /api/spaces/{spaceId}/daily-notes:
+    parameters:
+    - &id011
+      name: spaceId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    post:
+      summary: Open or create the unique Daily Note for a Space calendar date
+      description: No overwrite on repeated opens. Immutable initial timezone. A retired
+        date cannot be recreated. Body <=1 KiB. Same-origin HTTPS required; uses existing
+        NOTE_WRITE authority. Location references the canonical Note; ETag is its
+        Markdown version.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - date
+              - timezone
+              properties:
+                date: &id010
+                  type: string
+                  format: date
+                  pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+                timezone: &id012
+                  type: string
+                  minLength: 1
+                  maxLength: 100
+                  description: Explicit TZDB/IANA ZoneId, for example Asia/Seoul or
+                    UTC. Fixed-offset strings are rejected.
+            example:
+              date: '2026-10-07'
+              timezone: Asia/Seoul
+      responses:
+        '201':
+          description: Created atomically with Note and events
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DailyNoteEntry'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+              example: no-store
+            ETag:
+              schema:
+                type: string
+              example: '"1"'
+            Location:
+              schema:
+                type: string
+              description: Canonical Note resource path
+        '200':
+          description: Existing Note returned unchanged
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DailyNoteEntry'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+              example: no-store
+            ETag:
+              schema:
+                type: string
+              example: '"1"'
+            Location:
+              schema:
+                type: string
+              description: Canonical Note resource path
+        '400':
+          description: Invalid date, timezone or JSON
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+              example: no-store
+        '401':
+          description: Unauthenticated
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+              example: no-store
+        '403':
+          description: Invalid Origin
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+              example: no-store
+        '404':
+          description: Unauthorized Space
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+              example: no-store
+        '409':
+          description: Timezone conflict or retired Daily Note
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+              example: no-store
+        '413':
+          description: Body exceeds 1 KiB
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+              example: no-store
+        '415':
+          description: JSON required
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+              example: no-store
+        '503':
+          description: Authorization dependency unavailable
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+              example: no-store
+      security:
+      - guestCookie: []
+    get:
+      summary: List private Journal entries by descending calendar date
+      parameters:
+      - name: from
+        in: query
+        schema: *id010
+      - name: to
+        in: query
+        schema: *id010
+      - name: before
+        in: query
+        schema: *id010
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      description: from/to inclusive, before exclusive; no cross-domain Activity projection.
+        Only active Daily Notes; ordinary Notes are not included.
+      responses:
+        '200':
+          description: Journal summary keyset page
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DailyNotePage'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+              example: no-store
+        '400':
+          description: Invalid dates, range or limit
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+              example: no-store
+        '401':
+          description: Unauthenticated
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+              example: no-store
+        '404':
+          description: Unauthorized Space
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+              example: no-store
+      security:
+      - guestCookie: []
+  /api/spaces/{spaceId}/daily-notes/{date}:
+    parameters:
+    - *id011
+    - name: date
+      in: path
+      required: true
+      schema: *id010
+    get:
+      summary: Read a private Daily Note by its immutable calendar date
+      responses:
+        '200':
+          description: Daily binding and current canonical Note; ETag is Note version
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DailyNoteEntry'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+              example: no-store
+            ETag:
+              schema:
+                type: string
+              example: '"1"'
+        '400':
+          description: Invalid date
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+              example: no-store
+        '401':
+          description: Unauthenticated
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+              example: no-store
+        '404':
+          description: Unavailable, retired or unauthorized
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+              example: no-store
+      security:
+      - guestCookie: []
+  /api/spaces/{spaceId}/daily-notes/today:
+    parameters:
+    - *id011
+    get:
+      summary: Resolve today in an explicit timezone without creating anything
+      parameters:
+      - name: timezone
+        in: query
+        required: true
+        schema: *id012
+      description: Response date uses server Clock instant in requested timezone.
+        Existing entry retains its creation timezone; null if absent/retired. no-store;
+        never implicitly uses server/browser timezone.
+      responses:
+        '200':
+          description: Resolved local date and optional existing private Daily Note
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DailyNoteToday'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+              example: no-store
+        '400':
+          description: Missing or invalid timezone
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+              example: no-store
+        '401':
+          description: Unauthenticated
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+              example: no-store
+        '404':
+          description: Unauthorized Space
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+              example: no-store
+      security:
+      - guestCookie: []
+  /api/spaces/{spaceId}/notes/{noteId}/attachments:
+    parameters:
+    - name: spaceId
+      in: path
+      required: true
+      schema: &id013
+        type: string
+        format: uuid
+        description: Canonical UUIDv7
+    - name: noteId
+      in: path
+      required: true
+      schema: *id013
+    get:
+      operationId: getNoteAttachments
+      responses:
+        '200':
+          description: 'Private response; Cache-Control: no-store'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttachmentSnapshot'
+          headers:
+            ETag:
+              schema:
+                type: string
+              description: Independent strong attachment ETag, e.g. "a1"
+        '400':
+          description: Invalid UUIDv7, bounds, JSON or checksum
+        '401':
+          description: Guest identity required
+        '403':
+          description: Same HTTPS Origin or permission required
+        '404':
+          description: Unavailable in authorized Space
+        '409':
+          description: Upload not ready or allocation quota reached
+        '413':
+          description: JSON body exceeds 2 KiB
+        '415':
+          description: application/json required
+        '503':
+          description: Owning authority or storage unavailable
+    put:
+      operationId: replaceNoteAttachments
+      responses:
+        '200':
+          description: 'Private response; Cache-Control: no-store'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttachmentSnapshot'
+          headers:
+            ETag:
+              schema:
+                type: string
+              description: Independent strong attachment ETag, e.g. "a1"
+        '400':
+          description: Invalid UUIDv7, bounds, JSON or checksum
+        '401':
+          description: Guest identity required
+        '403':
+          description: Same HTTPS Origin or permission required
+        '404':
+          description: Unavailable in authorized Space
+        '409':
+          description: Upload not ready or allocation quota reached
+        '413':
+          description: JSON body exceeds 2 KiB
+        '415':
+          description: application/json required
+        '503':
+          description: Owning authority or storage unavailable
+        '412':
+          description: Attachment version changed
+        '428':
+          description: If-Match required
+      parameters:
+      - name: Origin
+        in: header
+        required: true
+        schema:
+          type: string
+          const: https://localhost:8443
+      - name: If-Match
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^"a(0|[1-9][0-9]*)"$
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AttachmentEdit'
+  /api/spaces/{spaceId}/notes/{noteId}/attachments/revisions:
+    parameters:
+    - name: spaceId
+      in: path
+      required: true
+      schema: *id013
+    - name: noteId
+      in: path
+      required: true
+      schema: *id013
+    get:
+      operationId: getNoteAttachmentRevisions
+      responses:
+        '200':
+          description: 'Private response; Cache-Control: no-store'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttachmentHistory'
+        '400':
+          description: Invalid UUIDv7, bounds, JSON or checksum
+        '401':
+          description: Guest identity required
+        '403':
+          description: Same HTTPS Origin or permission required
+        '404':
+          description: Unavailable in authorized Space
+        '409':
+          description: Upload not ready or allocation quota reached
+        '413':
+          description: JSON body exceeds 2 KiB
+        '415':
+          description: application/json required
+        '503':
+          description: Owning authority or storage unavailable
+      parameters:
+      - name: before
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 5
+  /api/spaces/{spaceId}/tags/{tagId}/notes:
+    parameters:
+    - name: spaceId
+      in: path
+      required: true
+      schema: &tagNotesId001
+        type: string
+        format: uuid
+        description: Canonical UUIDv7
+    - name: tagId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        description: UUIDv7 of a tag defined in this Space
+    get:
+      description: Fresh Space authorization on every page. Known unused tags return
+        an empty page; unknown or foreign tags return 404. UUIDv7 ascending keyset;
+        live reads, not a snapshot. Read-only canonical Content relationship; no search
+        or graph projection dependency. Only after and limit query parameters are accepted.
+      parameters:
+      - name: after
+        in: query
+        required: false
+        schema: *tagNotesId001
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      responses:
+        '200':
+          description: Success
+          headers:
+            ETag:
+              description: Strong version ETag, for example "1"
+              schema:
+                type: string
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Page'
+        '400':
+          description: Invalid identifier, JSON, page or Markdown bounds
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Missing, expired or revoked guest cookie
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Origin, method or role denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Space or tag unavailable
+        '412':
+          description: Version differs; reload before saving
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '413':
+          description: JSON body exceeds 256 KiB
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '415':
+          description: JSON required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '428':
+          description: If-Match missing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '502':
+          description: Gateway cannot reach Content
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Content persistence or Space/Identity authority unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '504':
+          description: Gateway complete-response timeout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      summary: List active private Notes assigned to a Space tag
+  /api/spaces/{spaceId}/property-definitions/{propertyId}/notes:
+    parameters:
+    - name: spaceId
+      in: path
+      required: true
+      schema: &propertyNotesId001
+        type: string
+        format: uuid
+        description: Canonical UUIDv7
+    - name: propertyId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        description: UUIDv7 of a property defined in this Space
+    get:
+      description: Fresh Space permission on every page. Known unused definitions return
+        an empty page; unknown/foreign properties return 404. Only after, limit, value,
+        minValue, maxValue and tagId query
+        keys are allowed. Live UUIDv7 keyset pages, not a snapshot; values use the fixed
+        Space property type. NUMBER values must be read with decimal precision. Reads
+        create no revisions or events.
+      parameters:
+      - name: value
+        in: query
+        required: false
+        allowEmptyValue: true
+        schema:
+          type: string
+          maxLength: 200
+        description: Optional exact typed value. Absent means all assigned Notes; empty
+          string matches empty STRING or an empty STRING_LIST element. STRING/DATE/BOOLEAN/NUMBER
+          compare exact values (numbers use decimal equivalence); STRING_LIST matches a
+          complete element. Strings are case/whitespace sensitive, no wildcard. Encode with
+          URLSearchParams. BOOLEAN true/false, DATE valid YYYY-MM-DD, NUMBER exact JSON
+          numeric syntax (96 characters, at most three exponent digits; normalized precision
+          at most 38, scale at most 18 and at most 56 integer digits). NUL is rejected.
+          Mutually exclusive with minValue/maxValue. Conditions remain on every keyset
+          page; no full-text matching.
+      - name: minValue
+        in: query
+        required: false
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description: Inclusive lower bound for NUMBER or DATE only, using the same typed
+          syntax and precision limits as value. May be used alone or with maxValue.
+          Cannot be combined with value. If both bounds are present, minValue must not
+          exceed maxValue. Omit a bound to leave that direction unbounded. Apply bounds
+          before keyset pagination and send them again on every page.
+      - name: tagId
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Canonical lowercase UUIDv7 of one tag defined in this Space. AND
+          with the selected property and optional value or minValue/maxValue conditions,
+          before keyset pagination. Omit for any tag membership. Known unused tags return
+          an empty page; unknown or foreign tags return 404. Send again on every page.
+      - name: maxValue
+        in: query
+        required: false
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description: Inclusive upper bound for NUMBER or DATE only, using the same typed
+          syntax and precision limits as value. May be used alone or with minValue.
+          Cannot be combined with value. Invalid, empty, inverted or unsupported typed
+          bounds return 400. Every valid page requires fresh Space authorization and
+          a property defined in the same Space.
+      - name: after
+        in: query
+        required: false
+        schema: *propertyNotesId001
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      responses:
+        '200':
+          description: Success
+          headers:
+            ETag:
+              description: Strong version ETag, for example "1"
+              schema:
+                type: string
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PropertyNotesPage'
+        '400':
+          description: Invalid identifier, JSON, page or Markdown bounds
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Missing, expired or revoked guest cookie
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Origin, method or role denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Space or property unavailable
+        '412':
+          description: Version differs; reload before saving
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '413':
+          description: JSON body exceeds 256 KiB
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '415':
+          description: JSON required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '428':
+          description: If-Match missing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '502':
+          description: Gateway cannot reach Content
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Content persistence or Space/Identity authority unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '504':
+          description: Gateway complete-response timeout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      summary: List active private Notes and their current value for a Space property
+components:
+  securitySchemes:
+    guestCookie:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest
+  schemas:
+    PropertyNote:
+      type: object
+      additionalProperties: false
+      required:
+      - noteId
+      - title
+      - version
+      - metadataVersion
+      - updatedAt
+      - value
+      properties:
+        noteId:
+          type: string
+          format: uuid
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        version:
+          type: integer
+          minimum: 1
+        metadataVersion:
+          type: integer
+          minimum: 1
+        updatedAt:
+          type: string
+          format: date-time
+          description: Note body update time; property changes have their own metadataVersion
+        value:
+          oneOf:
+          - type: string
+          - type: number
+          - type: boolean
+          - type: array
+            maxItems: 20
+            items:
+              type: string
+              maxLength: 200
+          description: Current canonical typed value; NUMBER is an exact JSON decimal,
+            not binary floating point. Type is given by the parent page.
+    PropertyNotesPage:
+      type: object
+      additionalProperties: false
+      required:
+      - propertyId
+      - name
+      - type
+      - items
+      - nextAfter
+      properties:
+        tagId:
+          type: [string, 'null']
+          format: uuid
+          description: Applied tag condition, or null when no tag filter is active.
+        propertyId:
+          type: string
+          format: uuid
+        name:
+          type: string
+          minLength: 1
+          maxLength: 64
+        type:
+          type: string
+          enum:
+          - STRING
+          - NUMBER
+          - BOOLEAN
+          - DATE
+          - STRING_LIST
+        items:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/PropertyNote'
+        nextAfter:
+          type:
+          - string
+          - 'null'
+          format: uuid
+    Edit:
+      type: object
+      additionalProperties: false
+      required:
+      - title
+      - markdown
+      properties:
+        title: &id014
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: Nonblank, no NUL; <=200 Unicode code points
+        markdown: &id015
+          type: string
+          description: Raw Markdown, no NUL, <=32768 UTF-8 bytes; never rendered by
+            this API
+    Note:
+      type: object
+      required:
+      - noteId
+      - spaceId
+      - visibility
+      - state
+      - version
+      - title
+      - markdown
+      - createdAt
+      - updatedAt
+      properties:
+        noteId: *id001
+        spaceId: *id001
+        visibility:
+          type: string
+          const: PRIVATE
+        state:
+          type: string
+          enum:
+          - ACTIVE
+          - RETIRED
+        version:
+          type: integer
+          format: int64
+          minimum: 1
+        title: *id014
+        markdown: *id015
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    Revision:
+      type: object
+      required:
+      - revisionId
+      - noteId
+      - version
+      - state
+      - title
+      - markdown
+      - actorId
+      - occurredAt
+      properties:
+        revisionId: *id001
+        noteId: *id001
+        version:
+          type: integer
+          format: int64
+        state:
+          type: string
+          enum:
+          - ACTIVE
+          - RETIRED
+        title:
+          type: string
+        markdown:
+          type: string
+        actorId: *id001
+        occurredAt:
+          type: string
+          format: date-time
+    Summary:
+      type: object
+      required:
+      - noteId
+      - title
+      - version
+      - updatedAt
+      properties:
+        noteId: *id001
+        title:
+          type: string
+        version:
+          type: integer
+          format: int64
+        updatedAt:
+          type: string
+          format: date-time
+    Page:
+      type: object
+      required:
+      - items
+      - nextAfter
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Summary'
+        nextAfter:
+          type:
+          - string
+          - 'null'
+          format: uuid
+    Error:
+      type: object
+      required:
+      - error
+      properties:
+        error:
+          type: string
+    WikiLink:
+      type: object
+      required:
+      - linkId
+      - ordinal
+      - startOffset
+      - endOffset
+      - targetToken
+      - label
+      - fragment
+      - targetNoteId
+      - targetTitle
+      - status
+      properties:
+        linkId:
+          type: string
+          format: uuid
+          description: Canonical UUIDv7
+        ordinal:
+          type: integer
+          minimum: 0
+        startOffset:
+          type: integer
+          minimum: 0
+          description: Inclusive UTF-16 code-unit offset in Markdown
+        endOffset:
+          type: integer
+          description: Exclusive UTF-16 code-unit offset
+        targetToken:
+          type: string
+        label:
+          type:
+          - string
+          - 'null'
+        fragment:
+          type:
+          - string
+          - 'null'
+        targetNoteId:
+          type:
+          - string
+          - 'null'
+          format: uuid
+          description: Canonical UUIDv7
+        targetTitle:
+          type:
+          - string
+          - 'null'
+        status:
+          type: string
+          enum:
+          - UNRESOLVED
+          - AMBIGUOUS
+          - RESOLVED
+          - TARGET_RETIRED
+    WikiLinkPage:
+      type: object
+      required:
+      - noteVersion
+      - linkVersion
+      - items
+      - nextAfter
+      properties:
+        noteVersion:
+          type: integer
+          format: int64
+          minimum: 1
+        linkVersion:
+          type: integer
+          format: int64
+          minimum: 1
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/WikiLink'
+        nextAfter:
+          type:
+          - integer
+          - 'null'
+          minimum: 0
+    Backlink:
+      type: object
+      required:
+      - sourceNoteId
+      - title
+      - version
+      - linkCount
+      properties:
+        sourceNoteId:
+          type: string
+          format: uuid
+          description: Canonical UUIDv7
+        title:
+          type: string
+        version:
+          type: integer
+          format: int64
+        linkCount:
+          type: integer
+          format: int64
+          minimum: 1
+    BacklinkPage:
+      type: object
+      required:
+      - items
+      - nextAfter
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Backlink'
+        nextAfter:
+          type:
+          - string
+          - 'null'
+          format: uuid
+          description: Canonical UUIDv7
+    MetadataEdit:
+      type: object
+      additionalProperties: false
+      required:
+      - tags
+      - properties
+      properties:
+        tags:
+          type: array
+          maxItems: 32
+          uniqueItems: true
+          items:
+            type: string
+            minLength: 1
+            maxLength: 64
+        properties:
+          type: object
+          maxProperties: 32
+          additionalProperties:
+            $ref: '#/components/schemas/TypedPropertyInput'
+    TypedPropertyInput:
+      type: object
+      additionalProperties: false
+      required:
+      - type
+      - value
+      properties:
+        type: &id016
+          type: string
+          enum:
+          - STRING
+          - NUMBER
+          - BOOLEAN
+          - DATE
+          - STRING_LIST
+        value: &id017
+          oneOf:
+          - type: string
+          - type: number
+          - type: boolean
+          - type: array
+            items:
+              type: string
+      oneOf: &id018
+      - properties:
+          type:
+            const: STRING
+          value:
+            type: string
+            maxLength: 1000
+      - properties:
+          type:
+            const: NUMBER
+          value:
+            type: number
+      - properties:
+          type:
+            const: BOOLEAN
+          value:
+            type: boolean
+      - properties:
+          type:
+            const: DATE
+          value:
+            type: string
+            format: date
+            pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+      - properties:
+          type:
+            const: STRING_LIST
+          value:
+            type: array
+            maxItems: 20
+            items:
+              type: string
+              maxLength: 200
+    NoteMetadata:
+      type: object
+      required:
+      - noteId
+      - metadataVersion
+      - tags
+      - properties
+      properties:
+        noteId:
+          type: string
+          format: uuid
+        metadataVersion:
+          type: integer
+          minimum: 0
+        tags:
+          type: array
+          items:
+            type: object
+            properties:
+              tagId:
+                type: string
+                format: uuid
+              name:
+                type: string
+        properties:
+          type: array
+          items:
+            type: object
+            properties:
+              propertyId:
+                type: string
+                format: uuid
+              name:
+                type: string
+              type: *id016
+              value: *id017
+            oneOf: *id018
+    MetadataRevision:
+      type: object
+      properties:
+        revisionId:
+          type: string
+          format: uuid
+        metadataVersion:
+          type: integer
+        actorId:
+          type: string
+          format: uuid
+        occurredAt:
+          type: string
+          format: date-time
+        snapshot:
+          $ref: '#/components/schemas/NoteMetadata'
+    MetadataDefinitionPage:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+              name:
+                type: string
+              type:
+                type: string
+              activeNoteCount:
+                type: integer
+                minimum: 0
+        nextAfter:
+          type:
+          - string
+          - 'null'
+          format: uuid
+    DailyNoteEntry:
+      type: object
+      required:
+      - date
+      - timezone
+      - note
+      properties:
+        date: *id010
+        timezone: *id012
+        note:
+          $ref: '#/components/schemas/Note'
+    DailyNoteToday:
+      type: object
+      required:
+      - date
+      - timezone
+      - entry
+      properties:
+        date: *id010
+        timezone: *id012
+        entry:
+          oneOf:
+          - $ref: '#/components/schemas/DailyNoteEntry'
+          - type: 'null'
+    DailyNotePage:
+      type: object
+      required:
+      - items
+      - nextBefore
+      properties:
+        items:
+          type: array
+          items:
+            type: object
+            required:
+            - date
+            - timezone
+            - noteId
+            - title
+            - version
+            - updatedAt
+            properties:
+              date: *id010
+              timezone: *id012
+              noteId:
+                type: string
+                format: uuid
+              title:
+                type: string
+              version:
+                type: integer
+                minimum: 1
+              updatedAt:
+                type: string
+                format: date-time
+        nextBefore:
+          type:
+          - string
+          - 'null'
+          format: date
+    AttachmentItem:
+      type: object
+      properties:
+        attachmentId: *id013
+        mediaId: *id013
+        filename:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: NFC filename, no control characters or slash
+        mimeType:
+          type: string
+          enum:
+          - application/octet-stream
+          - application/pdf
+          - image/png
+          - image/jpeg
+          - image/gif
+          - image/webp
+        byteSize:
+          type: integer
+          minimum: 1
+          maximum: 10485760
+        sha256:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+    AttachmentSnapshot:
+      type: object
+      properties:
+        noteId: *id013
+        attachmentVersion:
+          type: integer
+          minimum: 0
+        items:
+          type: array
+          maxItems: 20
+          items:
+            $ref: '#/components/schemas/AttachmentItem'
+    AttachmentEdit:
+      type: object
+      additionalProperties: false
+      required:
+      - mediaIds
+      properties:
+        mediaIds:
+          type: array
+          maxItems: 20
+          uniqueItems: true
+          items: *id013
+    AttachmentRevision:
+      type: object
+      properties:
+        revisionId: *id013
+        attachmentVersion:
+          type: integer
+          minimum: 1
+        actorId: *id013
+        occurredAt:
+          type: string
+          format: date-time
+        snapshot:
+          $ref: '#/components/schemas/AttachmentSnapshot'
+    AttachmentHistory:
+      type: array
+      maxItems: 10
+      items:
+        $ref: '#/components/schemas/AttachmentRevision'

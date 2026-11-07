@@ -1,0 +1,4 @@
+package io.knowledgebrain.integration;
+import org.springframework.context.annotation.*;import org.springframework.beans.factory.annotation.Value;import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+@Configuration(proxyBeanMethods=false) @ConditionalOnProperty(name="brain.integration.api.enabled",havingValue="true")
+class ApiConfiguration {@Bean GitHubWorkClient workClient(GitHubClient github){return new GitHubWorkClient(github);}@Bean GitHubClient github(){return new GitHubClient();}@Bean SpaceAuthorizationClient authority(@Value("${brain.integration.space.origin}")String origin,@Value("${brain.integration.space.trust-file}")String trust,@Value("${brain.integration.space.authorization-key}")String key)throws Exception{return new SpaceAuthorizationClient(origin,trust,key);}}

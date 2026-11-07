@@ -1,0 +1,7 @@
+syntax = "proto3";
+package integration.github.v1;
+option java_package = "io.knowledgebrain.contracts.integration.github.v1";
+option java_multiple_files = true;
+message GitHubEventEnvelopeV1 { string event_id=1; string event_type=2; uint32 event_version=3; int64 occurred_at_epoch_millis=4; string producer=5; string aggregate_type=6; string aggregate_id=7; string space_id=8; string actor_id=9; string trace_id=10; bytes payload=11; }
+message GitHubRepositorySnapshotV1 {string repository_id=1;string revision_id=2;uint64 version=3;string state=4;string visibility=5;string external_id=6;string full_name=7;string url=8;string default_branch=9;string connected_by=10;string created_at=11;string updated_at=12;string last_synced_at=13;}
+message GitHubCommitImportedV1 {string commit_id=1;string repository_id=2;uint64 version=3;string visibility=4;string source_visibility=5;string repository_external_id=6;string repository_full_name=7;string sha=8;string subject=9;string author_login=10;string committed_at=11;string imported_at=12;string url=13;}

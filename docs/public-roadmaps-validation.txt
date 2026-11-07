@@ -1,0 +1,28 @@
+Public Roadmap contribution/review/merge — 2026-10-20
+
+Full backend: backend-validation-1792492072619051100: 756 total, 745 passed, 11 environment-gated exclusions,0 errors/failures, BUILD SUCCESS.
+Learning + actual PostgreSQL/Kafka: backend-validation-1792491885829265400:88/88 passed.
+Final Gateway source: backend-validation-1792492403130444000:57/57 passed.
+Full verified-HTTPS browser attempt: graph-web-validation-1792492530:100 passed/1 failed; public update relation selector lacked an exact accessible label.
+After explicit accessible-label correction, focused registered public flow: graph-web-validation-1792493271:1/1 passed; CREATE/UPDATE/preview/review/merge/rejection/history/stale-base/self-review/revocation verified. All101 unique browser test paths are covered by the100 passing regressions and resolved public flow.
+TypeScript/Next/license/CSP static export: graph-static-build-1792493053703695800: passed.
+OpenAPI references resolved: 1391.
+Public protobuf canonical LF SHA256: daa70fb1df20cb932c4118bc33404b7a295641b07c1b1910c1729a1f02a513cd.
+
+Registry public-roadmap-contract-validation-1792492351: passed FULL/FULL_TRANSITIVE immutable V1.
+Registry roadmap-contribution-contract-validation-1792492352: passed FULL/FULL_TRANSITIVE immutable V1.
+Initial two attempts per contract failed with ConnectionRefused during Registry startup after Docker/cluster restart; successful registration preceded Learning deployment.
+The first static build caught one extra closing parenthesis; corrected before the successful build/image.
+
+Deployed space: knowledge-brain/space-service:local-ec86141b2dddef7f; builder space-image-build-1792492150; imports space-image-import-1792492279-0,space-image-import-1792492279-1
+Deployed learning: knowledge-brain/learning-service:local-ec86141b2dddef7f; builder learning-image-build-1792492150; imports learning-image-import-1792492277-0,learning-image-import-1792492278-1
+Deployed gateway: knowledge-brain/gateway-service:local-96c331c0f311aac9; builder gateway-image-build-1792493105; imports gateway-image-import-1792493140-0,gateway-image-import-1792493140-1
+
+12 app Deployments Ready;8 existing connectors/tasks RUNNING. Existing Learning connector config/CDC slot unchanged.
+Two new literal Kafka topics/ACLs. Existing seven Learning private schemas and Activity20 stream/recovery scope preserved.
+Actual Learning Pod restart changed UID and retained public v2/v1 canonical graphs, immutable proposals, stale approved proposal and review history exactly.
+No private source data copy, destructive reset, projection replay, PVC/topic/CDC slot/checkpoint deletion.
+Four owned builder sets removed: three active imported images and the superseded Gateway build; ownership checked for Pods, Services, NetworkPolicies and source ConfigMaps.
+Host CA-verified HTTPS /graph/roadmaps=200; anonymous private-session public API=401; internal authority path=403.
+
+Detailed machine-readable evidence: .local/public-roadmaps-proof.json, .local/public-roadmaps-runtime-proof.json, .local/public-roadmaps-contract-proof.json.

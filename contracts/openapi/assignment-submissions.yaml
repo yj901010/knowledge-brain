@@ -1,0 +1,433 @@
+openapi: 3.1.0
+info:
+  title: Private Assignment Submissions and Immutable Attempts
+  version: 1.0.0
+  description: Collaboration-owned Submission. One UUIDv7 aggregate per Assignment/author;
+    explicit resubmission advances only Submission version. Each immutable attempt
+    pins a local Assignment revision. Group -> Study -> Assignment -> Submission locks
+    serialize instruction edits, close/archive and submit. Current snapshot, immutable
+    attempt and Protobuf Outbox commit atomically. Fresh Space role/Group/Space matching
+    authority; AUTHOR_AND_OWNER audience excludes other members. Owner can read but
+    cannot change another author. Viewer reads own past answers only. Strict bounded
+    JSON, no-store, trace/schema headers, revision pagination. No automatic private
+    note/evidence/file import, public sharing, grading, withdrawal, learning completion
+    or notification. Events collaboration.submission.v1; Registry collaboration/submission-events/1.
+    Consumers must honor audience, deduplicate eventId and apply increasing versions.
+security:
+- browserSession: []
+paths:
+  /api/groups/{groupId}/studies/{studyId}/assignments/{assignmentId}/submissions:
+    parameters: &id011
+    - &id012
+      name: groupId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    - &id013
+      name: studyId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    - &id014
+      name: assignmentId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    get:
+      operationId: listAssignmentSubmissionsAsOwner
+      description: OWNER-only metadata catalog; no answer content. Removed authors
+        remain visible to current OWNER.
+      parameters:
+      - name: after
+        in: query
+        required: false
+        schema:
+          $ref: '#/components/schemas/Id'
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      responses:
+        '200':
+          description: Freshly authorized submission result
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Page'
+        '400': &id001
+          description: Strict input/key/query/version invalid
+        '401': &id002
+          description: Browser session invalid
+        '403': &id003
+          description: Registered current role required; only OWNER enumerates; OWNER/MEMBER
+            may submit; HTTPS same-origin writes
+        '404': &id004
+          description: Group/Space/Study/Assignment unavailable or submission not
+            readable by actor
+        '409': &id005
+          description: Assignment not OPEN, Study archived, or same key with changed
+            original content/assignmentVersion/base version
+        '412': &id006
+          description: Stale own submission version or changed assignment instructions
+        '413': &id007
+          description: Request body exceeds 65536 bytes
+        '415': &id008
+          description: JSON required
+        '428': &id009
+          description: Submission If-Match required
+        '503': &id010
+          description: Space authorization or Collaboration database unavailable
+    post:
+      operationId: submitOwnAssignmentAnswer
+      description: Authenticated author only, OPEN assignment and nonarchived Study.
+        New explicit attempt 201; exact key replay 200 returns original immutable
+        attempt even after later resubmission/closure/archive. Original content +
+        assignmentVersion + If-Match base must match. Fresh writer role always required.
+        Refetch mine after response to obtain latest current answer; no replay restores
+        an older answer.
+      parameters:
+      - name: Origin
+        in: header
+        required: true
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^[0-9a-f]{32}$
+      - name: If-Match
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^"su(0|[1-9][0-9]*)"$
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Input'
+      responses:
+        '201':
+          description: Freshly authorized submission result
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"su(0|[1-9][0-9]*)"$
+            Location:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Submission'
+        '200':
+          description: Freshly authorized submission result
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"su(0|[1-9][0-9]*)"$
+            Location:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Submission'
+        '400': *id001
+        '401': *id002
+        '403': *id003
+        '404': *id004
+        '409': *id005
+        '412': *id006
+        '413': *id007
+        '415': *id008
+        '428': *id009
+        '503': *id010
+  /api/groups/{groupId}/studies/{studyId}/assignments/{assignmentId}/submissions/mine:
+    parameters: *id011
+    get:
+      operationId: getOwnAssignmentSubmission
+      description: Current registered OWNER/MEMBER/VIEWER reads own latest answer,
+        including closed/archived resources. Empty submission returns null with su0.
+        No author query selector.
+      responses:
+        '200':
+          description: Freshly authorized submission result
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"su(0|[1-9][0-9]*)"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Mine'
+        '400': *id001
+        '401': *id002
+        '403': *id003
+        '404': *id004
+        '409': *id005
+        '412': *id006
+        '413': *id007
+        '415': *id008
+        '428': *id009
+        '503': *id010
+  /api/groups/{groupId}/studies/{studyId}/assignments/{assignmentId}/submissions/{submissionId}:
+    parameters:
+    - *id012
+    - *id013
+    - *id014
+    - name: submissionId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    get:
+      operationId: getAssignmentSubmission
+      description: Author or current Group OWNER only; other members receive 404.
+        Current membership is always required.
+      responses:
+        '200':
+          description: Freshly authorized submission result
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"su(0|[1-9][0-9]*)"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Submission'
+        '400': *id001
+        '401': *id002
+        '403': *id003
+        '404': *id004
+        '409': *id005
+        '412': *id006
+        '413': *id007
+        '415': *id008
+        '428': *id009
+        '503': *id010
+  /api/groups/{groupId}/studies/{studyId}/assignments/{assignmentId}/submissions/{submissionId}/revisions:
+    parameters:
+    - *id012
+    - *id013
+    - *id014
+    - name: submissionId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    get:
+      operationId: getAssignmentSubmissionHistory
+      description: Author or current Group OWNER only; other members receive 404.
+        Current membership is always required.
+      responses:
+        '200':
+          description: Freshly authorized submission result
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/History'
+        '400': *id001
+        '401': *id002
+        '403': *id003
+        '404': *id004
+        '409': *id005
+        '412': *id006
+        '413': *id007
+        '415': *id008
+        '428': *id009
+        '503': *id010
+      parameters:
+      - name: before
+        in: query
+        required: false
+        schema: &id015
+          type: integer
+          format: int64
+          minimum: 1
+          maximum: 9223372036854775807
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 5
+components:
+  securitySchemes:
+    browserSession:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest
+  schemas:
+    Id:
+      type: string
+      format: uuid
+      pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+    Submission:
+      type: object
+      additionalProperties: false
+      required:
+      - submissionId
+      - assignmentId
+      - studyId
+      - groupId
+      - spaceId
+      - authorId
+      - version
+      - assignmentVersion
+      - content
+      - audience
+      - createdAt
+      - updatedAt
+      properties:
+        submissionId:
+          $ref: '#/components/schemas/Id'
+        assignmentId:
+          $ref: '#/components/schemas/Id'
+        studyId:
+          $ref: '#/components/schemas/Id'
+        groupId:
+          $ref: '#/components/schemas/Id'
+        spaceId:
+          $ref: '#/components/schemas/Id'
+        authorId:
+          $ref: '#/components/schemas/Id'
+        version: *id015
+        assignmentVersion: *id015
+        content: &id017
+          type: string
+          description: Explicit nonblank answer; valid Unicode, no NUL, UTF-8 <=32768
+            bytes.
+        audience:
+          const: AUTHOR_AND_OWNER
+        createdAt: &id016
+          type: string
+          format: date-time
+        updatedAt: *id016
+    Summary:
+      type: object
+      additionalProperties: false
+      required:
+      - submissionId
+      - authorId
+      - version
+      - assignmentVersion
+      - updatedAt
+      properties:
+        submissionId:
+          $ref: '#/components/schemas/Id'
+        authorId:
+          $ref: '#/components/schemas/Id'
+        version: *id015
+        assignmentVersion: *id015
+        updatedAt: *id016
+    Input:
+      type: object
+      additionalProperties: false
+      required:
+      - content
+      - assignmentVersion
+      properties:
+        content: *id017
+        assignmentVersion: *id015
+    Mine:
+      type: object
+      additionalProperties: false
+      required:
+      - submission
+      - canSubmit
+      properties:
+        submission:
+          oneOf:
+          - $ref: '#/components/schemas/Submission'
+          - type: 'null'
+        canSubmit:
+          type: boolean
+          description: Point-in-time fresh OWNER/MEMBER + OPEN assignment + nonarchived
+            Study; write rechecks.
+    Revision:
+      type: object
+      additionalProperties: false
+      required:
+      - revisionId
+      - version
+      - actorId
+      - occurredAt
+      - snapshot
+      properties:
+        revisionId:
+          $ref: '#/components/schemas/Id'
+        version: *id015
+        actorId:
+          $ref: '#/components/schemas/Id'
+        occurredAt: *id016
+        snapshot:
+          $ref: '#/components/schemas/Submission'
+    Page:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - nextAfter
+      properties:
+        items:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/Summary'
+        nextAfter:
+          oneOf:
+          - $ref: '#/components/schemas/Id'
+          - type: 'null'
+    History:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - nextBefore
+      properties:
+        items:
+          type: array
+          maxItems: 10
+          items:
+            $ref: '#/components/schemas/Revision'
+        nextBefore:
+          oneOf:
+          - *id015
+          - type: 'null'

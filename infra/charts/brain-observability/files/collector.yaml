@@ -1,0 +1,83 @@
+extensions:
+  health_check: {endpoint: '0.0.0.0:13133'}
+  file_storage: {directory: /data/queues, create_directory: true}
+receivers:
+  otlp:
+    protocols:
+      http:
+        endpoint: 0.0.0.0:4318
+        tls: {cert_file: /tls/tls.crt, key_file: /tls/tls.key, client_ca_file: /tls/ca.crt}
+processors:
+  memory_limiter: {check_interval: 1s, limit_mib: 280, spike_limit_mib: 50}
+  filter/private_details:
+    error_mode: propagate
+    traces:
+      span: ['Len(links) > 0']
+      spanevent: ['true']
+    metrics:
+      metric: ['IsMatch(scope.name, ".*micrometer.*") and not IsMatch(name, "^(brain\\.|hikaricp\\.)")']
+  transform/privacy:
+    error_mode: propagate
+    trace_statements:
+    - context: resource
+      statements:
+      - keep_keys(attributes, ["service.name", "service.namespace", "deployment.environment.name", "k8s.namespace.name"])
+    - context: scope
+      statements:
+      - set(name, "application")
+      - keep_keys(attributes, [])
+    - context: span
+      statements:
+      - set(name, "operation")
+      - set(name, Concat([attributes["http.request.method"], attributes["http.route"]], " ")) where attributes["http.route"] != nil and attributes["http.request.method"] != nil
+      - replace_pattern(name, "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}", "{id}")
+      - keep_keys(attributes, ["http.request.method", "http.response.status_code", "http.route", "error.type", "db.system.name", "db.operation.name", "messaging.system", "messaging.operation.type"])
+      - set(status.message, "")
+    log_statements:
+    - context: resource
+      statements:
+      - keep_keys(attributes, ["service.name", "service.namespace", "deployment.environment.name", "k8s.namespace.name"])
+    - context: scope
+      statements:
+      - set(name, "application")
+      - keep_keys(attributes, [])
+    - context: log
+      statements:
+      - keep_keys(attributes, [])
+      - merge_maps(attributes, ExtractPatterns(body, "trace_id=(?P<domain_trace_id>[0-9a-f]{32})"), "upsert") where IsString(body)
+      - merge_maps(attributes, ExtractPatterns(body, "^(?P<component>gateway_response|activity_projection|brain_network|note_projection|graph_projection)"), "upsert") where IsString(body)
+      - set(body, "operational log")
+    metric_statements:
+    - context: resource
+      statements:
+      - keep_keys(attributes, ["service.name", "service.namespace", "deployment.environment.name", "k8s.namespace.name"])
+    - context: scope
+      statements:
+      - set(name, "application")
+      - keep_keys(attributes, [])
+    - context: datapoint
+      statements:
+      - keep_keys(attributes, ["service", "status", "kind", "type", "outcome", "mode", "operation", "method", "uri", "http.route", "http.request.method", "http.response.status_code", "jvm.memory.type", "jvm.memory.pool.name", "jvm.gc.name", "jvm.gc.action", "jvm.thread.daemon", "jvm.thread.state", "state", "area", "pool", "action", "cause"])
+      - replace_pattern(attributes["uri"], "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}", "{id}") where attributes["uri"] != nil
+      - replace_pattern(attributes["uri"], "\\?.*", "") where attributes["uri"] != nil
+  batch: {timeout: 2s, send_batch_size: 256, send_batch_max_size: 512}
+exporters:
+  otlphttp/tempo:
+    endpoint: http://brain-tempo:4318
+    sending_queue: {enabled: true, queue_size: 500, num_consumers: 2, storage: file_storage}
+    retry_on_failure: {enabled: true, max_elapsed_time: 60s}
+  otlphttp/loki:
+    endpoint: http://brain-loki:3100/otlp
+    sending_queue: {enabled: true, queue_size: 500, num_consumers: 2, storage: file_storage}
+    retry_on_failure: {enabled: true, max_elapsed_time: 60s}
+  prometheus:
+    endpoint: 0.0.0.0:8889
+    resource_to_telemetry_conversion: {enabled: true}
+    metric_expiration: 1m
+    enable_open_metrics: true
+service:
+  extensions: [health_check, file_storage]
+  pipelines:
+    traces: {receivers: [otlp], processors: [memory_limiter, filter/private_details, transform/privacy, batch], exporters: [otlphttp/tempo]}
+    logs: {receivers: [otlp], processors: [memory_limiter, transform/privacy, batch], exporters: [otlphttp/loki]}
+    metrics: {receivers: [otlp], processors: [memory_limiter, filter/private_details, transform/privacy, batch], exporters: [prometheus]}

@@ -1,0 +1,17 @@
+syntax = "proto3";
+package planning.task.v1;
+option java_package = "io.knowledgebrain.contracts.planning.task.v1";
+option java_multiple_files = true;
+message TaskEventEnvelopeV1 {
+ string event_id=1;string event_type=2;uint32 event_version=3;int64 occurred_at_epoch_millis=4;
+ string producer=5;string aggregate_type=6;string aggregate_id=7;string space_id=8;
+ string actor_id=9;string trace_id=10;bytes payload=11;
+}
+// Complete Planning-owned immutable private Task revision. Empty due_date means no date.
+// Empty due_date/goal_id mean no date/link. Goal and Task states remain independent.
+// Retired revisions retain audit; goal_id is a Planning-owned stable ID in the same Space.
+message TaskChangedPayloadV1 {
+ string task_id=1;string revision_id=2;uint64 version=3;string visibility=4;string state=5;
+ string title=6;string description=7;string status=8;string due_date=9;
+ string created_at=10;string updated_at=11;string goal_id=12;
+}

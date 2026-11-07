@@ -1,0 +1,17 @@
+Full regression: backend-validation-1791385336
+Tests/failures/errors/skips: [165, 0, 0, 0]
+Canonical graph reset/schema/rebuild: note-graph-rebuild-1791386398
+1114 Note snapshots and 1114 link snapshots; both Kafka tails and durable group checkpoint PASS.
+HTTPS-to-graph runtime: graph-projection-validation-1791386753
+PASS independent link revision, resolution, stable target ID, private Space isolation, maximum 256 occurrences, retirement cleanup.
+
+Final deployed Query: local-6a5662e00d05c0d5 (Java 25 runtime)
+Final deployed Content: local-b531ad7106cfdfc6
+Failure/concurrent rebuild verification: graph-projection-validation-1791387784 Complete
+Canonical concurrent rebuild: note-graph-rebuild-1791387914 Complete
+1134 Note snapshots and 1134 link snapshots, concurrent source revision and both captured Kafka tails PASS.
+PASS stopped Query consumer catches both streams after Pod replacement.
+PASS actual Query readiness fails during Cassandra outage and recovers.
+PASS Cassandra Pod UID changed; original PVC UID retained.
+PASS fresh graph client confirms pending changes, concurrent rebuild updates and retirement cleanup.
+Final observed Query/Content deployments and Cassandra StatefulSet: 1/1 Ready.

@@ -1,0 +1,6 @@
+apiVersion: v2
+name: brain-registry
+type: application
+version: 0.1.0
+appVersion: "3.3.3"
+description: Authenticated Apicurio Registry with persistent KafkaSQL storage

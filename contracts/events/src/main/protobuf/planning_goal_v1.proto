@@ -1,0 +1,16 @@
+syntax = "proto3";
+package planning.goal.v1;
+option java_package = "io.knowledgebrain.contracts.planning.goal.v1";
+option java_multiple_files = true;
+message GoalEventEnvelopeV1 {
+ string event_id=1;string event_type=2;uint32 event_version=3;int64 occurred_at_epoch_millis=4;
+ string producer=5;string aggregate_type=6;string aggregate_id=7;string space_id=8;
+ string actor_id=9;string trace_id=10;bytes payload=11;
+}
+// Complete Planning-owned immutable private Goal revision. Empty target_date means no date.
+// A date has no timezone or automatic completion/reminder behavior. Retired revisions retain audit.
+message GoalChangedPayloadV1 {
+ string goal_id=1;string revision_id=2;uint64 version=3;string visibility=4;string state=5;
+ string title=6;string description=7;string status=8;string target_date=9;
+ string created_at=10;string updated_at=11;
+}

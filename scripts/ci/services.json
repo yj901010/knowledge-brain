@@ -1,0 +1,15 @@
+[
+  {"name":"gateway-service","module":"services/gateway-service","database":"brain_gateway","testPrefix":null},
+  {"name":"identity-service","module":"services/identity-service","database":"brain_identity","testPrefix":"BRAIN_TEST"},
+  {"name":"space-service","module":"services/space-service","database":"brain_space","testPrefix":"BRAIN_TEST_SPACE"},
+  {"name":"knowledge-service","module":"services/knowledge-service","database":"brain_knowledge","testPrefix":"BRAIN_TEST_KNOWLEDGE"},
+  {"name":"content-service","module":"services/content-service","database":"brain_content","testPrefix":"BRAIN_TEST_CONTENT"},
+  {"name":"learning-service","module":"services/learning-service","database":"brain_learning","testPrefix":"BRAIN_TEST_LEARNING"},
+  {"name":"planning-service","module":"services/planning-service","database":"brain_planning","testPrefix":"BRAIN_TEST_PLANNING"},
+  {"name":"collaboration-service","module":"services/collaboration-service","database":"brain_collaboration","testPrefix":"BRAIN_TEST_COLLABORATION"},
+  {"name":"activity-service","module":"services/activity-service","database":"brain_activity","testPrefix":"BRAIN_TEST_ACTIVITY"},
+  {"name":"media-service","module":"services/media-service","database":"brain_media","testPrefix":"BRAIN_TEST_MEDIA"},
+  {"name":"integration-service","module":"services/integration-service","database":"brain_integration","testPrefix":"BRAIN_TEST_INTEGRATION"},
+  {"name":"notification-service","module":"services/notification-service","database":"brain_notification","testPrefix":"BRAIN_TEST_NOTIFICATION"},
+  {"name":"brain-query-service","module":"services/brain-query-service","database":"brain_brainquery","testPrefix":"BRAIN_TEST_QUERY"}
+]

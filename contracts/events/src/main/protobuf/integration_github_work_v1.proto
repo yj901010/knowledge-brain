@@ -1,0 +1,30 @@
+syntax = "proto3";
+package integration.githubwork.v1;
+option java_package="io.knowledgebrain.contracts.integration.githubwork.v1";
+option java_multiple_files=true;
+message GitHubWorkEventEnvelopeV1 {
+ string event_id=1; string event_type=2; uint32 event_version=3; int64 occurred_at_epoch_millis=4; string producer=5; string aggregate_type=6; string aggregate_id=7; string space_id=8; string actor_id=9; string trace_id=10; bytes payload=11;
+}
+message GitHubWorkItemObservedV1 {
+ string item_id=1;
+ string revision_id=2;
+ string repository_id=3;
+ string visibility=4;
+ string source_visibility=5;
+ string kind=6;
+ uint64 number=7;
+ string external_id=8;
+ string repository_external_id=9;
+ string repository_full_name=10;
+ string title=11;
+ string state=12;
+ string author_login=13;
+ optional bool draft=14;
+ string created_at=15;
+ string updated_at=16;
+ string closed_at=17;
+ string url=18;
+ uint64 version=19;
+ string first_observed_at=20;
+ string observed_at=21;
+}

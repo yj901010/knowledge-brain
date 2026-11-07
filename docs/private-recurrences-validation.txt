@@ -1,0 +1,154 @@
+Private finite recurrence validation, 2026-10-17
+
+{
+  "jobs": {
+    "backend": "backend-validation-1792246711824379100",
+    "focusedBrowser": "graph-web-validation-1792247317",
+    "browser": "graph-web-validation-1792247739",
+    "registry": "planning-contract-validation-1792246454",
+    "cdc": "planning-cdc-bootstrap-1792246711"
+  },
+  "backend": {
+    "tests": 570,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 31
+  },
+  "planningActualOwnPostgresAndFourKafkaTopicsTests": 64,
+  "activityActualStorageAndTenTopicKafkaTests": 21,
+  "browserTests": 64,
+  "focusedBrowserTests": 3,
+  "registeredRecurrenceClaimChecks": 2,
+  "registryRecurrenceSha256": "83a708bd0104d92ce8a17e4b9ba244d950a0c96820f7da32264ed713cd975962",
+  "unchangedPlanningSchemaHashes": {
+    "goal": "643ed1f2566750ffc0bb21b63d2837ad8aaa625d0fe1ed3d2ca21a85cc6391b3",
+    "task": "844707c3cbe6339cc44de5499f37198bf315953db5a71c9f7720403cddff78c3",
+    "schedule": "3e5b1e083bc344d027a080382b418f7a7981a0fdec45b44fe4e29fc40d035ee2"
+  },
+  "unchangedLearningSchemaHashes": {
+    "association": "1e210a4b741051d23b1e560384c6b9adfde008ccc91b28594495c846fec034a7",
+    "media": "570c5ed12f35a119b9bda059c98a2fea913e19cf329adaa964b96de97f1bbc52",
+    "note": "432a3664007de5f39da77d077b745c534147c8dc50be424dab4cd04e56ccce2b",
+    "concept": "defd2827328024b6fee71e56a3a40c650f335f0359d03dcf62ef0d6a2b31ef04",
+    "progress": "ef3bf592594564efa67c9ddd1f3b9f3dddb7f6cc5e6fc7d20943464f013c1113",
+    "study": "98b45509343000736c25510aa59fb5cd814a9f2672de5e9dcdd242a2cf55a90e",
+    "roadmap": "a2c1db67ceded3c5c965b92797b2caa0e7224aeb71386e71899d2edd4db5e1a9"
+  },
+  "openapiReferences": 1248,
+  "newOperations": [
+    "listPrivateRecurrences",
+    "createPrivateRecurrence",
+    "previewPrivateRecurrence",
+    "readPrivateRecurrence",
+    "readPrivateRecurrenceHistory",
+    "previewPrivateRecurrenceCancellation",
+    "retirePrivateRecurrenceFromOccurrence"
+  ],
+  "planningValidatorFourExactReadOnlyTopics": true,
+  "activityKeepsTenExactReadOnlyTopics": true,
+  "recurrenceProducerExactAcl": true,
+  "cdcCanonicalSelectDenials": 9,
+  "cdcOtherDatabaseConnectDenials": 12,
+  "readyDeployments": 11,
+  "runningConnectors": [
+    "space-outbox",
+    "planning-outbox",
+    "knowledge-outbox",
+    "media-outbox",
+    "content-outbox",
+    "learning-outbox",
+    "identity-outbox"
+  ],
+  "images": {
+    "planning": "knowledge-brain/planning-service:local-a5b1fe0845209fe8",
+    "activity": "knowledge-brain/activity-service:local-43ff4e0c7d4e4131",
+    "gateway": "knowledge-brain/gateway-service:local-3074a4244ceb1e2f"
+  },
+  "runtime": {
+    "browserJob": "graph-web-validation-1792247739",
+    "spaceId": "01a14a4a-82c1-7b23-b36b-c391ccf3b464",
+    "recurrenceId": "01a14a4a-a1c4-74c4-8e12-fbb301714e9d",
+    "taskId": "01a14a4a-9192-7e35-a502-10fe022b5878",
+    "scheduleIds": [
+      "01a14a4a-a1c7-7180-a4a4-e806093de9a5",
+      "01a14a4a-a1c9-700a-99b4-b7e8131799e8",
+      "01a14a4a-a1cb-7bf2-a77e-b17d6d96e6ea"
+    ],
+    "image": "knowledge-brain/planning-service:local-a5b1fe0845209fe8",
+    "oldPodUids": [
+      "93781f6e-4bb7-4277-b83e-edc1c046cca2"
+    ],
+    "newPodUids": [
+      "3de2a3cd-4547-4c11-915c-dc8e23499383"
+    ],
+    "canonicalIdsEditsPinsAndAuditSurviveRestart": true,
+    "staleBulkConfirmationRejectedWithoutPartialRetirement": true,
+    "identicalBulkRetryCreatesNoAdditionalRevision": true,
+    "originalCreateRetrySurvivesTaskRetirementAndSeriesCancellation": true,
+    "earlierAndPreviouslyRetiredChildrenUnchanged": true,
+    "taskHistoryUnchangedByRecurrenceOperations": true,
+    "independentChildActivityVersions": [
+      3,
+      2,
+      1
+    ]
+  },
+  "ownedBuilderSetsRemoved": 2,
+  "hostHttpsVerified": true
+}
+
+Full reactor: 570 tests, zero failures/errors, 31 unchanged environment-gated
+skips. Planning's 64 tests run against own PostgreSQL/four scoped Kafka topics,
+with zero skips; Activity's 21 against own Inbox/ClickHouse/ten Kafka topics also
+run with zero skips. New tests cover calendar day/week arithmetic across DST;
+explicit gap/overlap resolution, positive interval and 0001..9999 limits;
+100-child atomic create and original retry after actor/Task/series changes;
+same-Space own composite FK, unavailable/foreign Task denial; stale preview
+hash rollback; changed child versions and archived targets invalidating bulk
+confirmation; unchanged earlier ordinals; controlled parent Outbox failures
+rolling back already-created/retired children; concurrent creates/cancel retries
+with one canonical outcome; 20+3 filter-bound series cursor pages; strict JSON,
+integer overflow/trailing/duplicate fields, same-origin/fresh authority and rcN
+version boundaries. Seven exact parent/child Protobuf envelopes and headers,
+stable IDs and source versions match committed Outbox bytes on actual Kafka.
+
+Three new deployed browser scenarios pass, along with the full 64-test suite.
+They verify GAP/OVERLAP issues without writes, explicit UTC choices, immutable
+original pins, real agenda/child editing and child activity, unchanged Task/Goal
+facts, original creation retry and 409/stale-preview errors, missing/changed rcN,
+stale bulk confirmation without partial mutation, retired Task-compatible retry,
+24 parent catalogs with 20+3 active pagination and cross-filter/Space denial,
+preserved source/audit after archival, escaped text and sibling Note drafts,
+lost-create reply reusing one key, explicit current child checks, original v1
+history, mobile 390px fit, late closed replies/503 recovery and real revocation.
+Desktop/mobile screenshots inspected. Two actual Keycloak registration/Space
+claims preserve series IDs, child pins and guest actor history; registered
+cancellation uses its new actor and leaves earlier child active. Existing
+Planning/Learning/Knowledge/Note/Media/public contribution browser flows pass.
+
+Verified host HTTPS runtime fixtures retain exact parent/child IDs, original
+UTC/local/zone/offset pins, individually moved/retired child snapshots and all
+canonical revision IDs after restarting only Planning. Original create replay
+works after Task retirement. After restart, stale bulk confirmation is rejected
+without partial retirement; the fresh confirmation retires precisely selected
+active children. Same cancellation replay produces no extra revision; earlier
+and previously archived children and Task audit remain unchanged. The existing
+Activity pipeline displays child versions 3/2/1. Validation tokens stay in memory.
+
+Registry recurrence-events/v1 exactly matches new immutable source SHA256 with
+FULL validity/FULL_TRANSITIVE compatibility; all ten prior source schema hashes
+remain unchanged. Recurrence adds only its literal topic/producer ACL plus the
+fourth read-only Planning verifier topic; Activity remains ten-topic read-only.
+CDC can SELECT Outbox but is denied nine canonical tables and 12 other owner
+DBs, with the same one-table publication. Existing slots/configs/offsets remain.
+All local OpenAPI refs and seven new operations resolve. All 11 apps Ready and
+seven connector/tasks RUNNING; Graph and MinIO verified host HTTPS available.
+Two exact successful owned builder sets removed after UID/selector/source-owner
+and deployed-image checks. No canonical row/table/PVC/topic/offset/slot reset.
+
+This is finite DAILY/WEEKLY count-based recurrence, with immutable original rule,
+independently editable child Schedules and explicit from-ordinal bulk archive.
+No infinite/monthly/end-date/RRULE import, silent gap skip/shift, future-rule
+bulk rewrite, reminders/notification delivery, new dependency/dataset/AI or
+frontend redesign is claimed. Existing service/DB/event ownership is preserved.
+Central monitoring stack/dashboard deployment remains platform work.

@@ -1,0 +1,632 @@
+openapi: 3.1.0
+info:
+  title: Private Group Study Assignments
+  version: 1.0.0
+  description: Collaboration-owned Study Assignment definitions, separate from personal
+    Planning tasks, Learning progress and Submission. Registered active OWNER/MEMBER/VIEWER
+    read all states including DRAFT and immutable history; only OWNER writes after
+    fresh Space participation and exact ACTIVE Group/Space checks. DRAFT -> OPEN ->
+    CLOSED, RETIRED archive from any state; no reopening. Metadata corrections allowed
+    until archived. Archived parent Study prohibits new assignments and actual changes;
+    exact state retry with current ETag is a no-op. Assignment asN version is independent
+    of Study stN; stale version 412, missing 428. Creation key scoped to Study/creator,
+    exact original title/description replays current state even after edits, child/parent
+    archive or process restart; changed input 409. Group -> Study -> Assignment row
+    locks serialize parent archive and mutations. Snapshot, immutable revision and
+    Outbox commit in one local transaction. collaboration.assignment.v1 / collaboration/assignment-events/1.
+    Strict bounded JSON, keyset/history pagination, no-store, same-origin HTTPS writes,
+    trace propagation. No private data copied, deadline, submission, assessment or
+    personal completion in this slice.
+security:
+- browserSession: []
+paths:
+  /api/groups/{groupId}/studies/{studyId}/assignments:
+    parameters:
+    - name: groupId
+      in: path
+      schema:
+        $ref: '#/components/schemas/Id'
+      required: true
+    - name: studyId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    get:
+      operationId: listStudyAssignments
+      responses:
+        '200':
+          description: Freshly authorized Study Assignment result
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Page'
+        '400':
+          description: Invalid UUID/body/query/key/strong assignment ETag
+        '401':
+          description: Invalid session
+        '403':
+          description: Registered account required; only OWNER can write; same-origin
+            HTTPS required
+        '404':
+          description: Membership/config/Space or exact scoped Study/Assignment unavailable
+        '409':
+          description: Changed original creation intent, invalid lifecycle, or archived
+            Study/Assignment
+        '412':
+          description: Stale Assignment asN version
+        '413':
+          description: Body >65536 bytes
+        '415':
+          description: JSON required
+        '428':
+          description: If-Match required
+        '503':
+          description: Space authority or Collaboration persistence unavailable
+      parameters:
+      - name: after
+        in: query
+        schema:
+          $ref: '#/components/schemas/Id'
+        required: false
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+        required: false
+    post:
+      operationId: createStudyAssignment
+      responses:
+        '200':
+          description: Freshly authorized Study Assignment result
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"as[1-9][0-9]*"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Assignment'
+        '400':
+          description: Invalid UUID/body/query/key/strong assignment ETag
+        '401':
+          description: Invalid session
+        '403':
+          description: Registered account required; only OWNER can write; same-origin
+            HTTPS required
+        '404':
+          description: Membership/config/Space or exact scoped Study/Assignment unavailable
+        '409':
+          description: Changed original creation intent, invalid lifecycle, or archived
+            Study/Assignment
+        '412':
+          description: Stale Assignment asN version
+        '413':
+          description: Body >65536 bytes
+        '415':
+          description: JSON required
+        '428':
+          description: If-Match required
+        '503':
+          description: Space authority or Collaboration persistence unavailable
+        '201':
+          description: Freshly authorized Study Assignment result
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"as[1-9][0-9]*"$
+            Location:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Assignment'
+      parameters:
+      - name: Origin
+        in: header
+        schema:
+          type: string
+        required: true
+      - name: Idempotency-Key
+        in: header
+        schema:
+          type: string
+          pattern: ^[0-9a-f]{32}$
+        required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Settings'
+  /api/groups/{groupId}/studies/{studyId}/assignments/{assignmentId}:
+    parameters:
+    - name: groupId
+      in: path
+      schema:
+        $ref: '#/components/schemas/Id'
+      required: true
+    - name: studyId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    - name: assignmentId
+      in: path
+      schema:
+        $ref: '#/components/schemas/Id'
+      required: true
+    get:
+      operationId: readStudyAssignment
+      responses:
+        '200':
+          description: Freshly authorized Study Assignment result
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"as[1-9][0-9]*"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Assignment'
+        '400':
+          description: Invalid UUID/body/query/key/strong assignment ETag
+        '401':
+          description: Invalid session
+        '403':
+          description: Registered account required; only OWNER can write; same-origin
+            HTTPS required
+        '404':
+          description: Membership/config/Space or exact scoped Study/Assignment unavailable
+        '409':
+          description: Changed original creation intent, invalid lifecycle, or archived
+            Study/Assignment
+        '412':
+          description: Stale Assignment asN version
+        '413':
+          description: Body >65536 bytes
+        '415':
+          description: JSON required
+        '428':
+          description: If-Match required
+        '503':
+          description: Space authority or Collaboration persistence unavailable
+    put:
+      operationId: editStudyAssignment
+      responses:
+        '200':
+          description: Freshly authorized Study Assignment result
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"as[1-9][0-9]*"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Assignment'
+        '400':
+          description: Invalid UUID/body/query/key/strong assignment ETag
+        '401':
+          description: Invalid session
+        '403':
+          description: Registered account required; only OWNER can write; same-origin
+            HTTPS required
+        '404':
+          description: Membership/config/Space or exact scoped Study/Assignment unavailable
+        '409':
+          description: Changed original creation intent, invalid lifecycle, or archived
+            Study/Assignment
+        '412':
+          description: Stale Assignment asN version
+        '413':
+          description: Body >65536 bytes
+        '415':
+          description: JSON required
+        '428':
+          description: If-Match required
+        '503':
+          description: Space authority or Collaboration persistence unavailable
+      parameters:
+      - name: Origin
+        in: header
+        schema:
+          type: string
+        required: true
+      - name: If-Match
+        in: header
+        schema:
+          type: string
+          pattern: ^"as[1-9][0-9]*"$
+        required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Settings'
+    delete:
+      operationId: archiveStudyAssignment
+      responses:
+        '200':
+          description: Freshly authorized Study Assignment result
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"as[1-9][0-9]*"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Assignment'
+        '400':
+          description: Invalid UUID/body/query/key/strong assignment ETag
+        '401':
+          description: Invalid session
+        '403':
+          description: Registered account required; only OWNER can write; same-origin
+            HTTPS required
+        '404':
+          description: Membership/config/Space or exact scoped Study/Assignment unavailable
+        '409':
+          description: Changed original creation intent, invalid lifecycle, or archived
+            Study/Assignment
+        '412':
+          description: Stale Assignment asN version
+        '413':
+          description: Body >65536 bytes
+        '415':
+          description: JSON required
+        '428':
+          description: If-Match required
+        '503':
+          description: Space authority or Collaboration persistence unavailable
+      parameters:
+      - name: Origin
+        in: header
+        schema:
+          type: string
+        required: true
+      - name: If-Match
+        in: header
+        schema:
+          type: string
+          pattern: ^"as[1-9][0-9]*"$
+        required: true
+  /api/groups/{groupId}/studies/{studyId}/assignments/{assignmentId}/state:
+    parameters:
+    - name: groupId
+      in: path
+      schema:
+        $ref: '#/components/schemas/Id'
+      required: true
+    - name: studyId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    - name: assignmentId
+      in: path
+      schema:
+        $ref: '#/components/schemas/Id'
+      required: true
+    put:
+      operationId: transitionStudyAssignment
+      responses:
+        '200':
+          description: Freshly authorized Study Assignment result
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"as[1-9][0-9]*"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Assignment'
+        '400':
+          description: Invalid UUID/body/query/key/strong assignment ETag
+        '401':
+          description: Invalid session
+        '403':
+          description: Registered account required; only OWNER can write; same-origin
+            HTTPS required
+        '404':
+          description: Membership/config/Space or exact scoped Study/Assignment unavailable
+        '409':
+          description: Changed original creation intent, invalid lifecycle, or archived
+            Study/Assignment
+        '412':
+          description: Stale Assignment asN version
+        '413':
+          description: Body >65536 bytes
+        '415':
+          description: JSON required
+        '428':
+          description: If-Match required
+        '503':
+          description: Space authority or Collaboration persistence unavailable
+      parameters:
+      - name: Origin
+        in: header
+        schema:
+          type: string
+        required: true
+      - name: If-Match
+        in: header
+        schema:
+          type: string
+          pattern: ^"as[1-9][0-9]*"$
+        required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StateInput'
+  /api/groups/{groupId}/studies/{studyId}/assignments/{assignmentId}/revisions:
+    parameters:
+    - name: groupId
+      in: path
+      schema:
+        $ref: '#/components/schemas/Id'
+      required: true
+    - name: studyId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    - name: assignmentId
+      in: path
+      schema:
+        $ref: '#/components/schemas/Id'
+      required: true
+    get:
+      operationId: readStudyAssignmentHistory
+      responses:
+        '200':
+          description: Freshly authorized Study Assignment result
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/History'
+        '400':
+          description: Invalid UUID/body/query/key/strong assignment ETag
+        '401':
+          description: Invalid session
+        '403':
+          description: Registered account required; only OWNER can write; same-origin
+            HTTPS required
+        '404':
+          description: Membership/config/Space or exact scoped Study/Assignment unavailable
+        '409':
+          description: Changed original creation intent, invalid lifecycle, or archived
+            Study/Assignment
+        '412':
+          description: Stale Assignment asN version
+        '413':
+          description: Body >65536 bytes
+        '415':
+          description: JSON required
+        '428':
+          description: If-Match required
+        '503':
+          description: Space authority or Collaboration persistence unavailable
+      parameters:
+      - name: before
+        in: query
+        schema:
+          type: integer
+          format: int64
+          minimum: 1
+        required: false
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 5
+        required: false
+components:
+  securitySchemes:
+    browserSession:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest
+  schemas:
+    Id:
+      type: string
+      format: uuid
+      pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+    Assignment:
+      type: object
+      additionalProperties: false
+      required:
+      - assignmentId
+      - studyId
+      - groupId
+      - spaceId
+      - creatorId
+      - version
+      - title
+      - description
+      - state
+      - visibility
+      - createdAt
+      - updatedAt
+      properties:
+        assignmentId:
+          $ref: '#/components/schemas/Id'
+        groupId:
+          $ref: '#/components/schemas/Id'
+        spaceId:
+          $ref: '#/components/schemas/Id'
+        creatorId:
+          $ref: '#/components/schemas/Id'
+        version:
+          type: integer
+          format: int64
+          minimum: 1
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+          description: UTF-8 at most 32768 bytes, valid Unicode, no NUL
+        state:
+          enum:
+          - DRAFT
+          - OPEN
+          - CLOSED
+          - RETIRED
+        visibility:
+          const: PRIVATE
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        studyId:
+          $ref: '#/components/schemas/Id'
+    Summary:
+      type: object
+      additionalProperties: false
+      required:
+      - assignmentId
+      - version
+      - title
+      - state
+      properties:
+        assignmentId:
+          $ref: '#/components/schemas/Id'
+        version:
+          type: integer
+          format: int64
+          minimum: 1
+        title:
+          type: string
+          maxLength: 200
+        state:
+          enum:
+          - DRAFT
+          - OPEN
+          - CLOSED
+          - RETIRED
+    Settings:
+      type: object
+      additionalProperties: false
+      required:
+      - title
+      - description
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: Nonblank, no control characters; preserved literally
+        description:
+          type: string
+          description: UTF-8 <=32768 bytes, valid Unicode, no NUL
+    StateInput:
+      type: object
+      additionalProperties: false
+      required:
+      - state
+      properties:
+        state:
+          enum:
+          - OPEN
+          - CLOSED
+    Page:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - nextAfter
+      properties:
+        items:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/Summary'
+        nextAfter:
+          oneOf:
+          - $ref: '#/components/schemas/Id'
+          - type: 'null'
+    Revision:
+      type: object
+      additionalProperties: false
+      required:
+      - revisionId
+      - version
+      - actorId
+      - occurredAt
+      - snapshot
+      properties:
+        revisionId:
+          $ref: '#/components/schemas/Id'
+        version:
+          type: integer
+          format: int64
+          minimum: 1
+        actorId:
+          $ref: '#/components/schemas/Id'
+        occurredAt:
+          type: string
+          format: date-time
+        snapshot:
+          $ref: '#/components/schemas/Assignment'
+    History:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - nextBefore
+      properties:
+        items:
+          type: array
+          maxItems: 10
+          items:
+            $ref: '#/components/schemas/Revision'
+        nextBefore:
+          oneOf:
+          - type: integer
+            format: int64
+            minimum: 1
+          - type: 'null'

@@ -1,0 +1,468 @@
+openapi: 3.1.0
+info:
+  title: Voluntary Course Enrollment and Private Participation History
+  version: 1.0.0
+  description: Collaboration owns Course enrollment, separate from Space membership
+    and Learning progress. Fresh registered Group OWNER/MEMBER may enroll only themselves
+    in ACTIVE Courses. All current Group roles, including demoted VIEWER, can withdraw
+    their own record even when Course is completed/retired. No owner impersonation
+    or peer write. Self and current OWNER alone read stored enrollment/history; only
+    OWNER lists minimal enrollment metadata. Roster includes historical/withdrawn/removed
+    participants and grants no access or completion status. No Group-wide progress
+    visibility added. First read is a nonpersistent NOT_ENROLLED/ce0 sentinel, no
+    IDs/events/history. PUT exact state with strong independent ceN, missing428/stale412;
+    no automatic replay after response loss. Read current result to recover. Same-value
+    current-version no-op emits nothing. Same enrollment ID survives withdrawal/rejoin.
+    New join/rejoin requires ACTIVE, records pin current Course revision; no mutation
+    of Course/Study/personal progress. Group -> Course -> Enrollment locks serialize
+    parent lifecycle. Current enrollment/revision/Outbox atomic, no cross-service
+    DB access. Existing CDC emits collaboration.course-enrollment.v1 using immutable
+    collaboration/course-enrollment-events/1. Consumers preserve PARTICIPANT_AND_OWNER
+    audience, deduplicate eventId and apply increasing aggregate versions. Memory-only
+    UI, explicit enrollment visibility consent, no-store, literal bounded responses.
+    Individual Learning progress remains subsequent work.
+security:
+- browserSession: []
+paths:
+  /api/groups/{groupId}/courses/{courseId}/enrollment:
+    parameters: &id011
+    - &id012
+      name: groupId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    - &id013
+      name: courseId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    get:
+      operationId: getMyCourseEnrollment
+      responses:
+        '200':
+          description: Fresh Group-authorized Course participation result
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"ce(0|[1-9][0-9]*)"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Mine'
+        '400': &id001
+          description: Strict JSON, exact state/UUIDv7/query/strong ceN ETag required
+        '401': &id002
+          description: Secure singleton browser session required
+        '403': &id003
+          description: Current registered Group role required; OWNER/MEMBER enroll
+            self, all roles withdraw self, OWNER alone reads roster
+        '404': &id004
+          description: Group/Space/Course/Enrollment unavailable, wrong parent or
+            peer enrollment hidden
+        '409': &id005
+          description: New enrollment/rejoin requires ACTIVE Course
+        '412': &id006
+          description: Stale own Enrollment version; refresh, never automatically
+            reapply
+        '413': &id007
+          description: Body exceeds65536 bytes
+        '415': &id008
+          description: JSON required
+        '428': &id009
+          description: If-Match ceN required, ce0 for first enrollment
+        '503': &id010
+          description: Space authority or Collaboration storage unavailable
+    put:
+      operationId: changeMyCourseEnrollment
+      responses:
+        '200':
+          description: Fresh Group-authorized Course participation result
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"ce(0|[1-9][0-9]*)"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Enrollment'
+        '400': *id001
+        '401': *id002
+        '403': *id003
+        '404': *id004
+        '409': *id005
+        '412': *id006
+        '413': *id007
+        '415': *id008
+        '428': *id009
+        '503': *id010
+      parameters:
+      - name: Origin
+        in: header
+        required: true
+        schema:
+          type: string
+      - name: If-Match
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^"ce(0|[1-9][0-9]*)"$
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Input'
+  /api/groups/{groupId}/courses/{courseId}/enrollment/revisions:
+    parameters: *id011
+    get:
+      operationId: getMyCourseEnrollmentRevisions
+      responses:
+        '200':
+          description: Fresh Group-authorized Course participation result
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/History'
+        '400': *id001
+        '401': *id002
+        '403': *id003
+        '404': *id004
+        '409': *id005
+        '412': *id006
+        '413': *id007
+        '415': *id008
+        '428': *id009
+        '503': *id010
+      parameters:
+      - name: before
+        in: query
+        required: false
+        schema: &id015
+          type: integer
+          format: int64
+          minimum: 1
+          maximum: 9223372036854775807
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 5
+  /api/groups/{groupId}/courses/{courseId}/enrollments:
+    parameters: *id011
+    get:
+      operationId: listCourseEnrollmentRecords
+      responses:
+        '200':
+          description: Fresh Group-authorized Course participation result
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Page'
+        '400': *id001
+        '401': *id002
+        '403': *id003
+        '404': *id004
+        '409': *id005
+        '412': *id006
+        '413': *id007
+        '415': *id008
+        '428': *id009
+        '503': *id010
+      parameters:
+      - name: after
+        in: query
+        required: false
+        schema:
+          $ref: '#/components/schemas/Id'
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+  /api/groups/{groupId}/courses/{courseId}/enrollments/{enrollmentId}:
+    parameters: &id014
+    - *id012
+    - *id013
+    - name: enrollmentId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    get:
+      operationId: getCourseEnrollment
+      responses:
+        '200':
+          description: Fresh Group-authorized Course participation result
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"ce(0|[1-9][0-9]*)"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StoredEnrollment'
+        '400': *id001
+        '401': *id002
+        '403': *id003
+        '404': *id004
+        '409': *id005
+        '412': *id006
+        '413': *id007
+        '415': *id008
+        '428': *id009
+        '503': *id010
+  /api/groups/{groupId}/courses/{courseId}/enrollments/{enrollmentId}/revisions:
+    parameters: *id014
+    get:
+      operationId: getCourseEnrollmentRevisions
+      responses:
+        '200':
+          description: Fresh Group-authorized Course participation result
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/History'
+        '400': *id001
+        '401': *id002
+        '403': *id003
+        '404': *id004
+        '409': *id005
+        '412': *id006
+        '413': *id007
+        '415': *id008
+        '428': *id009
+        '503': *id010
+      parameters:
+      - name: before
+        in: query
+        required: false
+        schema: *id015
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 5
+components:
+  securitySchemes:
+    browserSession:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest
+  schemas:
+    Id:
+      type: string
+      format: uuid
+      pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+    AbsentEnrollment:
+      type: object
+      additionalProperties: false
+      required:
+      - courseId
+      - groupId
+      - spaceId
+      - participantId
+      - audience
+      - enrollmentId
+      - version
+      - state
+      - courseVersion
+      - createdAt
+      - updatedAt
+      properties:
+        courseId: &id016
+          $ref: '#/components/schemas/Id'
+        groupId: &id017
+          $ref: '#/components/schemas/Id'
+        spaceId: &id018
+          $ref: '#/components/schemas/Id'
+        participantId: &id019
+          $ref: '#/components/schemas/Id'
+        audience: &id020
+          const: PARTICIPANT_AND_OWNER
+        enrollmentId:
+          type: 'null'
+        version:
+          const: 0
+        state:
+          const: NOT_ENROLLED
+        courseVersion:
+          const: 0
+        createdAt:
+          type: 'null'
+        updatedAt:
+          type: 'null'
+    StoredEnrollment:
+      type: object
+      additionalProperties: false
+      required:
+      - courseId
+      - groupId
+      - spaceId
+      - participantId
+      - audience
+      - enrollmentId
+      - version
+      - state
+      - courseVersion
+      - createdAt
+      - updatedAt
+      properties:
+        courseId: *id016
+        groupId: *id017
+        spaceId: *id018
+        participantId: *id019
+        audience: *id020
+        enrollmentId:
+          $ref: '#/components/schemas/Id'
+        version: *id015
+        state:
+          enum:
+          - ENROLLED
+          - WITHDRAWN
+        courseVersion: *id015
+        createdAt: &id021
+          type: string
+          format: date-time
+        updatedAt: *id021
+    Enrollment:
+      oneOf:
+      - $ref: '#/components/schemas/AbsentEnrollment'
+      - $ref: '#/components/schemas/StoredEnrollment'
+    Mine:
+      type: object
+      additionalProperties: false
+      required:
+      - enrollment
+      - courseState
+      - canEnroll
+      properties:
+        enrollment:
+          $ref: '#/components/schemas/Enrollment'
+        courseState:
+          enum:
+          - DRAFT
+          - ACTIVE
+          - COMPLETED
+          - RETIRED
+        canEnroll:
+          type: boolean
+          description: Fresh current OWNER/MEMBER and ACTIVE Course; writes recheck
+            current parent and role
+    Input:
+      type: object
+      additionalProperties: false
+      required:
+      - state
+      properties:
+        state:
+          enum:
+          - ENROLLED
+          - WITHDRAWN
+    Summary:
+      type: object
+      additionalProperties: false
+      required:
+      - enrollmentId
+      - participantId
+      - version
+      - state
+      - courseVersion
+      - updatedAt
+      properties:
+        enrollmentId:
+          $ref: '#/components/schemas/Id'
+        participantId:
+          $ref: '#/components/schemas/Id'
+        version: *id015
+        state:
+          enum:
+          - ENROLLED
+          - WITHDRAWN
+        courseVersion: *id015
+        updatedAt: *id021
+    Page:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - nextAfter
+      properties:
+        items:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/Summary'
+        nextAfter:
+          oneOf:
+          - $ref: '#/components/schemas/Id'
+          - type: 'null'
+    Revision:
+      type: object
+      additionalProperties: false
+      required:
+      - revisionId
+      - version
+      - actorId
+      - occurredAt
+      - snapshot
+      properties:
+        revisionId:
+          $ref: '#/components/schemas/Id'
+        version: *id015
+        actorId:
+          $ref: '#/components/schemas/Id'
+        occurredAt: *id021
+        snapshot:
+          $ref: '#/components/schemas/StoredEnrollment'
+    History:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - nextBefore
+      properties:
+        items:
+          type: array
+          maxItems: 10
+          items:
+            $ref: '#/components/schemas/Revision'
+        nextBefore:
+          oneOf:
+          - *id015
+          - type: 'null'

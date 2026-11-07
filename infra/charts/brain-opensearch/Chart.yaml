@@ -1,0 +1,5 @@
+apiVersion: v2
+name: brain-opensearch
+version: 0.1.0
+appVersion: "3.9.0"
+description: Private TLS search read-model infrastructure

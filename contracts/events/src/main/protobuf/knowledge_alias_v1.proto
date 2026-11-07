@@ -1,0 +1,35 @@
+syntax = "proto3";
+package knowledgebrain.knowledge.alias.v1;
+option java_package = "io.knowledgebrain.contracts.knowledge.alias.v1";
+option java_multiple_files = true;
+
+// Published independently as knowledge/alias-events version 1.
+// Existing Concept event versions remain immutable.
+message EventEnvelopeV1 {
+  string event_id = 1;
+  string event_type = 2;
+  uint32 event_version = 3;
+  int64 occurred_at_epoch_millis = 4;
+  string producer = 5;
+  string aggregate_type = 6;
+  string aggregate_id = 7;
+  string space_id = 8;
+  string actor_id = 9;
+  string trace_id = 10;
+  bytes payload = 11;
+}
+
+// Complete Alias revision snapshot, including its immutable parent Concept ID.
+// PRIVATE, SPACE-scoped labels never become universal aliases automatically.
+// Consumers deduplicate event_id and order snapshots by alias_id/version.
+// Parent Concept lifecycle is independent and must also be permission filtered.
+message AliasChangedPayloadV1 {
+  string alias_id = 1;
+  string concept_id = 2;
+  string revision_id = 3;
+  uint64 version = 4;
+  string state = 5;
+  string visibility = 6;
+  string scope = 7;
+  string label = 8;
+}

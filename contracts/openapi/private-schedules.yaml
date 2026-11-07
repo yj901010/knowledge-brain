@@ -1,0 +1,651 @@
+openapi: 3.1.0
+info:
+  title: Private one-time Planning schedules
+  version: 1.0.0
+  description: Planning-owned private one-time time intervals, optional same-Space Task links, immutable
+    revisions and Outbox. UTC source instants with pinned zone/local/offset labels. Common guest/registered
+    principals. Overlap conflicts between different schedules are allowed; no all-day, recurrence,
+    reminders, automatic status changes or activity projection.
+servers:
+- url: https://localhost:8443
+security:
+- sessionCookie: []
+paths:
+  /api/spaces/{spaceId}/schedules:
+    parameters:
+    - &id008
+      name: spaceId
+      in: path
+      required: true
+      schema: &id009
+        type: string
+        format: uuid
+        pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+    get:
+      operationId: listPrivateSchedules
+      description: Fresh SCHEDULE_READ. At most 93 inclusive local dates, converted with ZoneId.atStartOfDay;
+        an empty skipped-date window is 400. Select intervals with startsAt < exclusive window end
+        and endsAt > inclusive window start. Ascending (UTC startsAt, UUID) keyset with cursor bound
+        to Space/state/task/from/to/timeZone. Current catalog, not a frozen multi-request snapshot.
+      parameters:
+      - name: state
+        in: query
+        schema:
+          type: string
+          enum:
+          - ACTIVE
+          - RETIRED
+          default: ACTIVE
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      - name: from
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+      - name: to
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+      - name: timeZone
+        in: query
+        required: true
+        schema:
+          type: string
+          maxLength: 64
+          description: Exact supported IANA ZoneId, including UTC; raw numeric offsets are rejected.
+      - name: taskId
+        in: query
+        schema:
+          oneOf:
+          - type: string
+            enum:
+            - ALL
+            - NONE
+          - type: string
+            format: uuid
+            pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+          default: ALL
+      - name: after
+        in: query
+        schema:
+          type: string
+          pattern: ^[A-Za-z0-9_-]{1,768}$
+      responses:
+        '200':
+          description: Space-scoped active or archived catalog
+          headers:
+            Cache-Control: &id001
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Page'
+        '400': &id003
+          description: Invalid strict UUID/JSON/date/status/query, duplicate fields/headers or body
+          headers:
+            Cache-Control: *id001
+        '401': &id004
+          description: Missing/ambiguous/expired common application session
+          headers:
+            Cache-Control: *id001
+        '403': &id005
+          description: Same-origin write or current private Space permission denied
+          headers:
+            Cache-Control: *id001
+        '404': &id006
+          description: Schedule or PERSONAL/PRIVATE Space unavailable
+          headers:
+            Cache-Control: *id001
+        '503': &id007
+          description: Planning or live Space/Identity dependency unavailable
+          headers:
+            Cache-Control: *id001
+    post:
+      operationId: createPrivateSchedule
+      description: Fresh SCHEDULE_WRITE. Exactly six input fields; end must follow start. UTC instants
+        are fixed; local/offset labels are pinned under the named zone at mutation time. One 32-hex
+        Space creation key replays original v1 after edits/retirement/Task retirement/account claim;
+        changed intent is 409. Same-origin and no-store. New links serialize with Task retirement;
+        no source Task/Goal write.
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^[0-9a-f]{32}$
+      requestBody: &id010
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Input'
+      responses:
+        '201':
+          description: 'Created: schedule, first revision and Outbox committed atomically'
+          headers:
+            Cache-Control: *id001
+            ETag: &id002
+              schema:
+                type: string
+                pattern: ^"sc[1-9][0-9]*"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Schedule'
+        '200':
+          description: Original create representation replayed without writing
+          headers:
+            Cache-Control: *id001
+            ETag: *id002
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Schedule'
+        '400': *id003
+        '401': *id004
+        '403': *id005
+        '404': *id006
+        '503': *id007
+        '409':
+          description: Creation key already represents different input in this Space
+          headers:
+            Cache-Control: *id001
+        '413': &id011
+          description: JSON request exceeds 262144 bytes
+          headers:
+            Cache-Control: *id001
+        '415': &id012
+          description: JSON content type required
+          headers:
+            Cache-Control: *id001
+  /api/spaces/{spaceId}/schedules/{scheduleId}:
+    parameters:
+    - *id008
+    - &id016
+      name: scheduleId
+      in: path
+      required: true
+      schema: *id009
+    get:
+      operationId: readPrivateSchedule
+      description: Fresh SCHEDULE_READ. Active Schedule only; retired schedules return 404. No query
+        or body.
+      responses:
+        '200':
+          description: Current Schedule with strong scN version
+          headers:
+            Cache-Control: *id001
+            ETag: *id002
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Schedule'
+        '400': *id003
+        '401': *id004
+        '403': *id005
+        '404': *id006
+        '503': *id007
+    put:
+      operationId: updatePrivateSchedule
+      description: Fresh SCHEDULE_WRITE, six fields and independent strong scN If-Match. Stale check
+        precedes no-op. Retained retired-Task link may stay, be unlinked or replaced with an active
+        Task. Description/time/zone changes never update Task state/due date.
+      parameters:
+      - &id013
+        name: If-Match
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^"sc[1-9][0-9]*"$
+      requestBody: *id010
+      responses:
+        '200':
+          description: Updated or unchanged current Schedule
+          headers:
+            Cache-Control: *id001
+            ETag: *id002
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Schedule'
+        '400': *id003
+        '401': *id004
+        '403': *id005
+        '404': *id006
+        '503': *id007
+        '412': &id014
+          description: Current version differs from strong scN If-Match; no partial write
+          headers:
+            Cache-Control: *id001
+        '413': *id011
+        '415': *id012
+        '428': &id015
+          description: Required strong scN If-Match missing
+          headers:
+            Cache-Control: *id001
+    delete:
+      operationId: retirePrivateSchedule
+      description: Fresh SCHEDULE_WRITE; empty body/query. Marks lifecycle RETIRED, retaining last
+        progress/date/description and all immutable history. Known and archived discovery remain private.
+        No physical delete, restore or automatic cancellation.
+      parameters:
+      - *id013
+      responses:
+        '204':
+          description: Retirement, revision and Outbox committed atomically
+          headers:
+            Cache-Control: *id001
+            ETag: *id002
+        '400': *id003
+        '401': *id004
+        '403': *id005
+        '404': *id006
+        '503': *id007
+        '412': *id014
+        '428': *id015
+  /api/spaces/{spaceId}/schedules/{scheduleId}/revisions:
+    parameters:
+    - *id008
+    - *id016
+    get:
+      operationId: readPrivateScheduleRevisions
+      description: Fresh SCHEDULE_READ for known active or retired Schedule. Descending exclusive
+        version cursor; empty body. Historical snapshots are independent of current Schedule edits/retirement.
+      parameters:
+      - name: before
+        in: query
+        schema:
+          type: integer
+          format: int64
+          minimum: 1
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 5
+      responses:
+        '200':
+          description: Bounded immutable revisions
+          headers:
+            Cache-Control: *id001
+          content:
+            application/json:
+              schema:
+                type: array
+                maxItems: 10
+                items:
+                  $ref: '#/components/schemas/Revision'
+        '400': *id003
+        '401': *id004
+        '403': *id005
+        '404': *id006
+        '503': *id007
+  /api/spaces/{spaceId}/schedules/time-options:
+    parameters:
+    - name: spaceId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+    get:
+      operationId: resolvePrivateScheduleTime
+      description: Read-only fresh SCHEDULE_READ. Exact local second and IANA zone resolve to 0 gap,
+        1 unique or 2 overlapping UTC candidates. Client must explicitly choose an overlap candidate;
+        no source write, guessed offset or automatic gap shift.
+      parameters:
+      - name: local
+        in: query
+        required: true
+        schema:
+          type: string
+          pattern: ^(?!0000)[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}$
+      - name: timeZone
+        in: query
+        required: true
+        schema:
+          type: string
+          maxLength: 64
+          description: Exact supported IANA ZoneId, including UTC; raw numeric offsets are rejected.
+      responses:
+        '400':
+          description: Invalid strict UUID/JSON/date/status/query, duplicate fields/headers or body
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '401':
+          description: Missing/ambiguous/expired common application session
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '403':
+          description: Same-origin write or current private Space permission denied
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '404':
+          description: Schedule or PERSONAL/PRIVATE Space unavailable
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '503':
+          description: Planning or live Space/Identity dependency unavailable
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '200':
+          description: Private authorized time candidates
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                - spaceId
+                - local
+                - timeZone
+                - options
+                properties:
+                  spaceId: &id022
+                    type: string
+                    format: uuid
+                    pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+                  local:
+                    type: string
+                    pattern: ^(?!0000)[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}$
+                  timeZone:
+                    type: string
+                    maxLength: 64
+                    description: Exact supported IANA ZoneId, including UTC; raw numeric offsets are
+                      rejected.
+                  options:
+                    type: array
+                    maxItems: 2
+                    items:
+                      type: object
+                      additionalProperties: false
+                      required:
+                      - instant
+                      - offset
+                      properties:
+                        instant:
+                          type: string
+                          format: date-time
+                          pattern: ^(?!0000)[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+                          description: Strict UTC whole seconds, year 0001..9999; no offsets, fractions,
+                            leap seconds or 24:00 normalization.
+                        offset:
+                          type: string
+                          description: Pinned ZoneOffset, Z or signed HH:mm[:ss].
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest
+  schemas:
+    Input:
+      type: object
+      additionalProperties: false
+      required:
+      - title
+      - description
+      - startsAt
+      - endsAt
+      - timeZone
+      - taskId
+      properties:
+        title: &id017
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: Nonblank, at most 800 UTF-8 bytes; no control characters or unpaired surrogates.
+            Whitespace is preserved.
+        description: &id018
+          type: string
+          maxLength: 32768
+          description: At most 32768 UTF-8 bytes. Plain text; CR/LF/tab allowed; whitespace preserved.
+        startsAt:
+          type: string
+          format: date-time
+          pattern: ^(?!0000)[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+          description: Strict UTC whole seconds, year 0001..9999; no offsets, fractions, leap seconds
+            or 24:00 normalization.
+        endsAt:
+          type: string
+          format: date-time
+          pattern: ^(?!0000)[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+          description: Strict UTC whole seconds, year 0001..9999; no offsets, fractions, leap seconds
+            or 24:00 normalization.
+        timeZone:
+          type: string
+          maxLength: 64
+          description: Exact supported IANA ZoneId, including UTC; raw numeric offsets are rejected.
+        taskId:
+          oneOf:
+          - type: string
+            format: uuid
+            pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+          - type: 'null'
+          description: Null or active same-Space Planning Task for a new link. Unchanged retired-Task
+            links can be retained; explicit null unlinks. No Task/Goal progress or due date changes.
+    Schedule:
+      type: object
+      additionalProperties: false
+      required:
+      - scheduleId
+      - spaceId
+      - visibility
+      - state
+      - version
+      - title
+      - description
+      - createdAt
+      - updatedAt
+      - startsAt
+      - endsAt
+      - timeZone
+      - taskId
+      - startsLocal
+      - endsLocal
+      - startsOffset
+      - endsOffset
+      properties:
+        scheduleId: *id009
+        spaceId: *id009
+        visibility:
+          const: PRIVATE
+        state: &id021
+          type: string
+          enum:
+          - ACTIVE
+          - RETIRED
+        version: &id019
+          type: integer
+          format: int64
+          minimum: 1
+        title: *id017
+        description: *id018
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt: &id020
+          type: string
+          format: date-time
+        startsAt:
+          type: string
+          format: date-time
+          pattern: ^(?!0000)[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+          description: Strict UTC whole seconds, year 0001..9999; no offsets, fractions, leap seconds
+            or 24:00 normalization.
+        endsAt:
+          type: string
+          format: date-time
+          pattern: ^(?!0000)[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+          description: Strict UTC whole seconds, year 0001..9999; no offsets, fractions, leap seconds
+            or 24:00 normalization.
+        timeZone:
+          type: string
+          maxLength: 64
+          description: Exact supported IANA ZoneId, including UTC; raw numeric offsets are rejected.
+        taskId:
+          oneOf:
+          - type: string
+            format: uuid
+            pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+          - type: 'null'
+        startsLocal:
+          type: string
+          pattern: ^(?!0000)[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}$
+        endsLocal:
+          type: string
+          pattern: ^(?!0000)[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}$
+        startsOffset:
+          type: string
+          description: Pinned ZoneOffset, Z or signed HH:mm[:ss].
+        endsOffset:
+          type: string
+          description: Pinned ZoneOffset, Z or signed HH:mm[:ss].
+    Summary:
+      type: object
+      additionalProperties: false
+      required:
+      - scheduleId
+      - title
+      - version
+      - updatedAt
+      - state
+      - startsAt
+      - endsAt
+      - timeZone
+      - taskId
+      - startsLocal
+      - endsLocal
+      - startsOffset
+      - endsOffset
+      properties:
+        scheduleId: *id009
+        title: *id017
+        version: *id019
+        updatedAt: *id020
+        state: *id021
+        startsAt:
+          type: string
+          format: date-time
+          pattern: ^(?!0000)[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+          description: Strict UTC whole seconds, year 0001..9999; no offsets, fractions, leap seconds
+            or 24:00 normalization.
+        endsAt:
+          type: string
+          format: date-time
+          pattern: ^(?!0000)[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+          description: Strict UTC whole seconds, year 0001..9999; no offsets, fractions, leap seconds
+            or 24:00 normalization.
+        timeZone:
+          type: string
+          maxLength: 64
+          description: Exact supported IANA ZoneId, including UTC; raw numeric offsets are rejected.
+        taskId:
+          oneOf:
+          - type: string
+            format: uuid
+            pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+          - type: 'null'
+        startsLocal:
+          type: string
+          pattern: ^(?!0000)[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}$
+        endsLocal:
+          type: string
+          pattern: ^(?!0000)[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}$
+        startsOffset:
+          type: string
+          description: Pinned ZoneOffset, Z or signed HH:mm[:ss].
+        endsOffset:
+          type: string
+          description: Pinned ZoneOffset, Z or signed HH:mm[:ss].
+    Page:
+      type: object
+      additionalProperties: false
+      required:
+      - spaceId
+      - state
+      - items
+      - nextAfter
+      - taskFilter
+      - from
+      - to
+      - timeZone
+      properties:
+        spaceId: *id009
+        state: *id021
+        items:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/Summary'
+        nextAfter:
+          oneOf:
+          - type: string
+            pattern: ^[A-Za-z0-9_-]{1,768}$
+          - type: 'null'
+        taskFilter:
+          oneOf:
+          - type: string
+            enum:
+            - ALL
+            - NONE
+          - *id022
+        from:
+          type: string
+          format: date
+        to:
+          type: string
+          format: date
+        timeZone:
+          type: string
+          maxLength: 64
+          description: Exact supported IANA ZoneId, including UTC; raw numeric offsets are rejected.
+    Revision:
+      type: object
+      additionalProperties: false
+      required:
+      - revisionId
+      - scheduleId
+      - version
+      - actorId
+      - occurredAt
+      - snapshot
+      properties:
+        revisionId: *id009
+        scheduleId: *id009
+        version: *id019
+        actorId: *id009
+        occurredAt:
+          type: string
+          format: date-time
+        snapshot:
+          $ref: '#/components/schemas/Schedule'

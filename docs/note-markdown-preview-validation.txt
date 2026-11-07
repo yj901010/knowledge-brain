@@ -1,0 +1,15 @@
+Markdown preview validation - 2026-10-09
+AGENTS.md and PROJECT.md checked before implementation; Content canonical source/history/ETag and existing service boundaries preserved. No domain API/schema/event change.
+Ready=1: knowledge-brain/gateway-service:local-4e7e67901c9532ea
+Job PASS: gateway-image-import-1791539878-0
+Job PASS: gateway-image-import-1791539878-1
+Job PASS: graph-static-build-1791539787565077600
+Pinned dependencies: react-markdown 10.1.0 MIT; remark-gfm 4.0.1 MIT. 101 new resolved package entries: 100 MIT, one ISC. Existing locked versions unchanged. All 101 publisher license/notice files copied to export and combined notices. Native optional libraries remain build tooling only.
+Table alignment is represented by CSS classes; existing CSP connect/script/style/frame policies unchanged.
+No backend source changed. Browser tests use real canonical APIs, saved/draft/history text and current authorization; previews never mutate Note text.
+Browser Job graph-web-validation-1791539905: 9 passed including Markdown, one library test failed because the initially sampled projected 200-node set changed before selection. No application failure found. Test now refreshes the displayed graph and derives the outside Note from that actual response, preserving bounded-graph coverage without timing assumptions.
+Focused library rerun graph-web-validation-1791540268: 1 passed (34.4s). All ten browser scenarios passed across the full run and focused rerun on the same deployed application.
+Markdown browser coverage: CommonMark/GFM rendering, CSP-compatible aligned tables, static task checkboxes, escaped HTML, rejected unsafe URLs, no automatic external image/resource requests, explicit safe anchors, literal Wiki syntax, exact source/draft/history fidelity, no write on toggle, unchanged historical-read version, Note switching, mobile width and revoked-session clearing.
+Trusted local CA used; no TLS verification bypass. Temporary public reviewer permission retired by runner.
+Visual QA: markdown.png and markdown-mobile.png inspected; headings, lists, quote, table/code and existing scrollable inspector render correctly with no document horizontal overflow at 390px.
+Owned temporary gateway build Pods/Services/ConfigMaps/NetworkPolicies gateway-image-build-1791539646 and gateway-image-build-1791539832 removed. Gateway remains Ready=1 at local-4e7e67901c9532ea.

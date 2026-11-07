@@ -1,0 +1,418 @@
+openapi: 3.1.0
+info:
+  title: Explicit private in-app reminder dispatch
+  version: 1.0.0
+  description: 'Planning owns explicitly armed durable attempts. Existing Reminder
+    settings never auto-arm. Fresh common guest/registered SCHEDULE_READ/WRITE in
+    PERSONAL/PRIVATE Space; HTTPS, no-store, same-origin mutations, exact singleton
+    queries and exact JSON. Arm body contains only reminderVersion, requires current
+    active Reminder and same active pinned Schedule version, and a strictly future
+    remindsAt. No re-pin or canonical Schedule/Reminder mutation occurs. One outstanding
+    PENDING attempt per Reminder; another key is409. Same Space-scoped 32-hex key
+    with same reminder/version replays current attempt even after cancellation, firing,
+    source edits or account claim; changed intent409. Explicit cancellation locks
+    Schedule, Reminder, attempt in that order and checks strong dpN; stale412, absent428.
+    Current CANCELLED/SUPPRESSED retry is no-op; DISPATCHED409 cannot be recalled.
+    Cancelling permits a new explicit attempt/key. Worker processes due or invalidated
+    pending attempts: stale/retired source is SUPPRESSED, unchanged due intent atomically
+    becomes DISPATCHED with immutable revision, recoverable envelope and Outbox. Catch-up
+    after outage is allowed without changing intended scheduled time. Dispatch transaction
+    is the cancellation boundary; downstream delivery may arrive later. History uses
+    before version; catalog''s opaque after binds Space and Reminder. No email or
+    OS push channel.'
+servers:
+- url: https://localhost:8443
+security:
+- browserSession: []
+paths:
+  /api/spaces/{spaceId}/reminders/{reminderId}/deliveries:
+    parameters:
+    - &id002
+      name: spaceId
+      in: path
+      schema: &id001
+        type: string
+        format: uuid
+        pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+      required: true
+    - &id003
+      name: reminderId
+      in: path
+      schema: *id001
+      required: true
+    get:
+      operationId: listPrivateReminderDeliveries
+      parameters:
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+        required: false
+      - name: after
+        in: query
+        schema:
+          type: string
+          maxLength: 256
+        required: false
+      responses:
+        '200':
+          description: Canonical private result
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            ETag:
+              description: Strong version of this resource only
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Page'
+        '400':
+          description: Invalid exact input, bounds or query; future time required
+            for arm
+        '401':
+          description: Missing, revoked or ambiguous session
+        '403':
+          description: Same-origin, role or route denied
+        '404':
+          description: Unavailable private resource or source
+        '409':
+          description: Another pending attempt, conflicting key or already dispatched
+            cancellation
+        '412':
+          description: Stale source/reminder/resource version
+        '413':
+          description: Bounded body exceeded
+        '415':
+          description: JSON required
+        '428':
+          description: Strong If-Match required
+        '503':
+          description: Dependency unavailable
+    post:
+      operationId: armPrivateReminderDelivery
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        schema:
+          type: string
+          pattern: ^[0-9a-f]{32}$
+        required: true
+      responses:
+        '201':
+          description: Canonical private result
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            ETag:
+              description: Strong version of this resource only
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Delivery'
+        '400':
+          description: Invalid exact input, bounds or query; future time required
+            for arm
+        '401':
+          description: Missing, revoked or ambiguous session
+        '403':
+          description: Same-origin, role or route denied
+        '404':
+          description: Unavailable private resource or source
+        '409':
+          description: Another pending attempt, conflicting key or already dispatched
+            cancellation
+        '412':
+          description: Stale source/reminder/resource version
+        '413':
+          description: Bounded body exceeded
+        '415':
+          description: JSON required
+        '428':
+          description: Strong If-Match required
+        '503':
+          description: Dependency unavailable
+        '200':
+          description: Same key and reminder/version intent replays current attempt,
+            including terminal state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Delivery'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - reminderVersion
+              properties:
+                reminderVersion: &id005
+                  type: integer
+                  format: int64
+                  minimum: 1
+  /api/spaces/{spaceId}/reminders/{reminderId}/deliveries/{deliveryId}:
+    parameters:
+    - *id002
+    - *id003
+    - &id004
+      name: deliveryId
+      in: path
+      schema: *id001
+      required: true
+    get:
+      operationId: getPrivateReminderDelivery
+      parameters: []
+      responses:
+        '200':
+          description: Canonical private result
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            ETag:
+              description: Strong version of this resource only
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Delivery'
+        '400':
+          description: Invalid exact input, bounds or query; future time required
+            for arm
+        '401':
+          description: Missing, revoked or ambiguous session
+        '403':
+          description: Same-origin, role or route denied
+        '404':
+          description: Unavailable private resource or source
+        '409':
+          description: Another pending attempt, conflicting key or already dispatched
+            cancellation
+        '412':
+          description: Stale source/reminder/resource version
+        '413':
+          description: Bounded body exceeded
+        '415':
+          description: JSON required
+        '428':
+          description: Strong If-Match required
+        '503':
+          description: Dependency unavailable
+    delete:
+      operationId: cancelPrivateReminderDelivery
+      parameters:
+      - name: If-Match
+        in: header
+        schema:
+          type: string
+          pattern: ^"dp[1-9][0-9]{0,18}"$
+        required: true
+      responses:
+        '200':
+          description: Canonical private result
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            ETag:
+              description: Strong version of this resource only
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Delivery'
+        '400':
+          description: Invalid exact input, bounds or query; future time required
+            for arm
+        '401':
+          description: Missing, revoked or ambiguous session
+        '403':
+          description: Same-origin, role or route denied
+        '404':
+          description: Unavailable private resource or source
+        '409':
+          description: Another pending attempt, conflicting key or already dispatched
+            cancellation
+        '412':
+          description: Stale source/reminder/resource version
+        '413':
+          description: Bounded body exceeded
+        '415':
+          description: JSON required
+        '428':
+          description: Strong If-Match required
+        '503':
+          description: Dependency unavailable
+  /api/spaces/{spaceId}/reminders/{reminderId}/deliveries/{deliveryId}/revisions:
+    parameters:
+    - *id002
+    - *id003
+    - *id004
+    get:
+      operationId: listPrivateReminderDeliveryRevisions
+      parameters:
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 5
+        required: false
+      - name: before
+        in: query
+        schema: *id005
+        required: false
+      responses:
+        '200':
+          description: Canonical private result
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            ETag:
+              description: Strong version of this resource only
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: array
+                maxItems: 10
+                items:
+                  $ref: '#/components/schemas/Revision'
+        '400':
+          description: Invalid exact input, bounds or query; future time required
+            for arm
+        '401':
+          description: Missing, revoked or ambiguous session
+        '403':
+          description: Same-origin, role or route denied
+        '404':
+          description: Unavailable private resource or source
+        '409':
+          description: Another pending attempt, conflicting key or already dispatched
+            cancellation
+        '412':
+          description: Stale source/reminder/resource version
+        '413':
+          description: Bounded body exceeded
+        '415':
+          description: JSON required
+        '428':
+          description: Strong If-Match required
+        '503':
+          description: Dependency unavailable
+components:
+  securitySchemes:
+    browserSession:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest
+  schemas:
+    Delivery:
+      type: object
+      additionalProperties: false
+      required:
+      - deliveryId
+      - spaceId
+      - reminderId
+      - version
+      - state
+      - reason
+      - reminder
+      - armedBy
+      - traceId
+      - createdAt
+      - updatedAt
+      - triggeredAt
+      properties:
+        deliveryId: *id001
+        spaceId: *id001
+        reminderId: *id001
+        version: *id005
+        state:
+          type: string
+          enum:
+          - PENDING
+          - CANCELLED
+          - SUPPRESSED
+          - DISPATCHED
+        reason:
+          type: string
+          enum:
+          - ''
+          - USER_CANCELLED
+          - SOURCE_CHANGED
+        reminder:
+          $ref: private-reminders.yaml#/components/schemas/Reminder
+        armedBy: *id001
+        traceId:
+          type: string
+          pattern: ^[0-9a-f]{32}$
+        createdAt: &id006
+          type: string
+          format: date-time
+        updatedAt: *id006
+        triggeredAt:
+          type:
+          - string
+          - 'null'
+          format: date-time
+    Page:
+      type: object
+      additionalProperties: false
+      required:
+      - spaceId
+      - reminderId
+      - items
+      - nextAfter
+      properties:
+        spaceId: *id001
+        reminderId: *id001
+        items:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/Delivery'
+        nextAfter:
+          type:
+          - string
+          - 'null'
+          maxLength: 256
+    Revision:
+      type: object
+      additionalProperties: false
+      required:
+      - revisionId
+      - deliveryId
+      - version
+      - actorId
+      - occurredAt
+      - snapshot
+      properties:
+        revisionId: *id001
+        deliveryId: *id001
+        version: *id005
+        actorId: *id001
+        occurredAt: *id006
+        snapshot:
+          $ref: '#/components/schemas/Delivery'

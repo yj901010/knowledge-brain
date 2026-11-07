@@ -1,0 +1,6 @@
+apiVersion: v2
+name: brain-postgres
+description: Shared local PostgreSQL instance with independent service database ownership.
+type: application
+version: 0.1.0
+appVersion: "17.11"

@@ -1,0 +1,19 @@
+Private Group creation validation — 2026-10-22
+
+collaboration: 19 passed, 0 failures/errors, 0 existing conditional checks skipped; backend-validation-1792677198066252700-64763cbb
+space: 44 passed, 0 failures/errors, 2 existing conditional checks skipped; backend-validation-1792677209951675700-21fe689b
+gateway: 84 passed, 0 failures/errors, 0 existing conditional checks skipped; backend-validation-1792677533540085500-eb230512
+Browser: 1 comprehensive scenario passed with two actual Keycloak registrations and one guest; graph-web-validation-1792677700160526400
+PENDING request, PRIVATE GROUP Space/OWNER membership and ACTIVE completion stay in separate owner transactions. Local Outbox, immutable revisions and Protobuf contracts are verified.
+Outbox failures roll back local canonical state; concurrent replay and store restart retain one Group/Space and exactly two Group revisions/events. Changed creation intent is rejected.
+Fresh registered-principal and current PRIVATE GROUP OWNER checks deny guest/other account, retired Space and retired/downgraded membership; provision replay never restores access.
+Bounded strict JSON, same-origin writes, singleton opaque credentials and creation keys, canonical UUIDv7 routes, bounded candidate/history pagination and no-store verified.
+Real Debezium/Kafka tests compared record values byte-for-byte with both owning Outboxes, checked aggregate keys/trace/schema headers and stable unacknowledged replay.
+Actual browser creation/detail/history and response-loss retry passed; literal HTML-like description cannot execute, mobile fits, browser storage stays empty, denied refresh clears private UI.
+Personal Note content and Personal Space catalog remain unchanged; Group Space is rejected by Personal-only Note API.
+Collaboration CDC SELECT is limited to its Outbox; two canonical tables and 12 foreign owner DBs deny access. Nine existing/new CDC connectors are RUNNING.
+OpenAPI: 56 documents parsed, 1463 local references resolved. Registry FULL/FULL_TRANSITIVE rules and immutable bytes verified for both new contracts.
+Final module sources and shared event-contract bytes were compared with actual image build archives before deletion. All three images imported on both k3d nodes.
+All 13 application Deployments Ready. Host trusted HTTPS /graph and /graph/groups return 200 with no-store/CSP. Five owned temporary builder sets removed.
+No new runtime dependency/version/dataset, no AI and no cross-service database access. Full telemetry exporter/collector/dashboard rollout remains separate platform work.
+Next: Space-owned member invitations and membership roles; no invitation, shared learning content or automatic personal sharing is included in this slice.

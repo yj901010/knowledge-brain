@@ -1,0 +1,128 @@
+apiVersion: v1
+kind: Service
+metadata: {name: brain-cassandra}
+spec:
+  selector: {app: brain-cassandra}
+  ports: [{name: cql-tls, port: 9042, targetPort: 9042}]
+---
+apiVersion: v1
+kind: Service
+metadata: {name: brain-cassandra-nodes}
+spec:
+  clusterIP: None
+  publishNotReadyAddresses: true
+  selector: {app: brain-cassandra}
+  ports: [{name: internode-tls, port: 7001, targetPort: 7001}]
+{{- range $i := until (int .Values.replicas) }}
+---
+apiVersion: v1
+kind: Service
+metadata: {name: brain-cassandra-{{ $i }}}
+spec:
+  publishNotReadyAddresses: true
+  selector:
+    app: brain-cassandra
+    statefulset.kubernetes.io/pod-name: brain-cassandra-{{ $i }}
+  ports:
+    - {name: cql-tls, port: 9042, targetPort: 9042}
+    - {name: internode-tls, port: 7001, targetPort: 7001}
+{{- end }}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: {name: brain-cassandra-private}
+spec:
+  podSelector: {matchLabels: {app: brain-cassandra}}
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - namespaceSelector: {matchLabels: {kubernetes.io/metadata.name: brain-apps}}
+          podSelector: {matchLabels: {app.kubernetes.io/name: brain-query-service}}
+        - namespaceSelector: {matchLabels: {kubernetes.io/metadata.name: brain-data}}
+          podSelector: {matchLabels: {brain-graph-client: 'true'}}
+        - namespaceSelector: {matchLabels: {kubernetes.io/metadata.name: brain-apps}}
+          podSelector: {matchLabels: {brain-graph-rebuild: 'true'}}
+      ports: [{protocol: TCP, port: 9042}]
+    - from:
+        - podSelector: {matchLabels: {app: brain-cassandra}}
+      ports: [{protocol: TCP, port: 7001}]
+---
+apiVersion: v1
+kind: ConfigMap
+metadata: {name: brain-cassandra-start}
+data:
+  configure.py: |
+{{ .Files.Get "files/configure.py" | indent 4 }}
+{{- if .Values.enabled }}
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata: {name: brain-cassandra}
+spec:
+  serviceName: brain-cassandra-nodes
+  replicas: {{ .Values.replicas }}
+  selector: {matchLabels: {app: brain-cassandra}}
+  template:
+    metadata:
+      labels: {app: brain-cassandra}
+      annotations:
+        checksum/config: {{ .Files.Get "files/configure.py" | sha256sum | quote }}
+        brain/certificate-revision: {{ .Values.tlsRevision | quote }}
+    spec:
+      automountServiceAccountToken: false
+      securityContext: {runAsUser: 999, runAsGroup: 999, fsGroup: 999, runAsNonRoot: true, seccompProfile: {type: RuntimeDefault}}
+      initContainers:
+        - name: truststore
+          image: {{ .Values.keytoolImage }}
+          command: [bash, -ec]
+          args:
+            - 'rm -f -- /trust/truststore.p12; keytool -importcert -noprompt -alias brain-ca -file /server/ca.crt -keystore /trust/truststore.p12 -storetype PKCS12 -storepass:env TRUST_PASSWORD >/dev/null 2>&1'
+          env:
+            - name: TRUST_PASSWORD
+              valueFrom: {secretKeyRef: {name: brain-cassandra-node-tls, key: store-password}}
+          securityContext: {allowPrivilegeEscalation: false, readOnlyRootFilesystem: true, capabilities: {drop: [ALL]}}
+          resources: {requests: {cpu: 50m, memory: 128Mi}, limits: {cpu: 500m, memory: 256Mi}}
+          volumeMounts:
+            - {name: server-tls, mountPath: /server, readOnly: true}
+            - {name: trust, mountPath: /trust}
+            - {name: tmp, mountPath: /tmp}
+      containers:
+        - name: cassandra
+          image: {{ .Values.image }}
+          command: [bash, -ec]
+          args: ['python3 /start/configure.py; exec cassandra -f']
+          env:
+            - {name: CASSANDRA_CONF, value: /config}
+            - {name: MAX_HEAP_SIZE, value: {{ .Values.heap | quote }}}
+            - {name: HEAP_NEWSIZE, value: {{ .Values.newHeap | quote }}}
+            - {name: CASSANDRA_LOG_DIR, value: /var/log/cassandra}
+            - name: POD_IP
+              valueFrom: {fieldRef: {fieldPath: status.podIP}}
+          ports: [{name: cql-tls, containerPort: 9042}, {name: internode-tls, containerPort: 7001}]
+          startupProbe: {tcpSocket: {port: cql-tls}, periodSeconds: 5, failureThreshold: 90}
+          readinessProbe: {tcpSocket: {port: cql-tls}, periodSeconds: 5}
+          livenessProbe: {tcpSocket: {port: cql-tls}, periodSeconds: 15, failureThreshold: 6}
+          securityContext: {allowPrivilegeEscalation: false, readOnlyRootFilesystem: true, capabilities: {drop: [ALL]}}
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+          volumeMounts:
+            - {name: data, mountPath: /var/lib/cassandra}
+            - {name: logs, mountPath: /var/log/cassandra}
+            - {name: config, mountPath: /config}
+            - {name: start, mountPath: /start, readOnly: true}
+            - {name: server-tls, mountPath: /server, readOnly: true}
+            - {name: trust, mountPath: /trust, readOnly: true}
+            - {name: tmp, mountPath: /tmp}
+      volumes:
+        - {name: start, configMap: {name: brain-cassandra-start}}
+        - {name: server-tls, secret: {secretName: brain-cassandra-node-tls}}
+        - {name: trust, emptyDir: {sizeLimit: 1Mi}}
+        - {name: config, emptyDir: {sizeLimit: 8Mi}}
+        - {name: logs, emptyDir: {sizeLimit: 64Mi}}
+        - {name: tmp, emptyDir: {sizeLimit: 128Mi}}
+  volumeClaimTemplates:
+    - metadata: {name: data}
+      spec:
+        accessModes: [ReadWriteOnce]
+        resources: {requests: {storage: {{ .Values.storageSize }}}}
+{{- end }}

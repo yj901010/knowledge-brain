@@ -1,0 +1,5 @@
+package io.knowledgebrain.gateway;
+import org.junit.jupiter.api.Test;import static org.junit.jupiter.api.Assertions.*;
+class DiscussionRouteTest {
+ @Test void onlyDeclaredDiscussionAndImmutableReplyRoutesReachCollaboration(){String id="01900000-0000-7000-8000-000000000001",root="/api/groups/"+id+"/studies/"+id+"/discussions",item=root+"/"+id;for(String method:new String[]{"GET","POST"})assertEquals("collaboration",GatewayRoute.select(method,root).service());assertNotNull(GatewayRoute.select("GET",item));assertNotNull(GatewayRoute.select("DELETE",item));assertNotNull(GatewayRoute.select("PUT",item+"/state"));assertNotNull(GatewayRoute.select("GET",item+"/revisions"));for(String method:new String[]{"GET","POST"})assertNotNull(GatewayRoute.select(method,item+"/replies"));assertNotNull(GatewayRoute.select("GET",item+"/replies/"+id));for(String method:new String[]{"PUT","POST","DELETE","PATCH"})assertNull(GatewayRoute.select(method,item+"/replies/"+id));assertNull(GatewayRoute.select("PUT",item));assertNull(GatewayRoute.select("DELETE",root));assertNull(GatewayRoute.select("POST",item+"/revisions"));}
+}

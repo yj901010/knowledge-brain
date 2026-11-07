@@ -1,0 +1,7 @@
+syntax = "proto3";
+package knowledgebrain.notification.groupreview.v1;
+option java_package = "io.knowledgebrain.contracts.notification.groupreview.v1";
+option java_multiple_files = true;
+message GroupReviewEnvelopeV1 { string event_id=1; string event_type=2; uint32 event_version=3; int64 occurred_at_epoch_millis=4; string producer=5; string aggregate_type=6; string aggregate_id=7; string space_id=8; string actor_id=9; string trace_id=10; bytes payload=11; }
+message GroupReviewPreferenceV1 { string group_id=1; string recipient_id=2; uint64 membership_version=3; uint64 version=4; bool enabled=5; int64 enabled_after_epoch_millis=6; string updated_at=7; }
+message GroupReviewNotificationV1 { string notification_id=1; string group_id=2; string recipient_id=3; uint64 membership_version=4; uint64 version=5; bool read=6; string state=7; string source_event_id=8; string change_kind=9; string study_id=10; string assignment_id=11; string submission_id=12; uint64 submission_version=13; string source_aggregate_id=14; uint64 source_version=15; int64 source_occurred_at_epoch_millis=16; string delivered_at=17; string updated_at=18; }

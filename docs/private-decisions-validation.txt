@@ -1,0 +1,138 @@
+Private Decision validation, 2026-10-18
+
+674 backend tests, zero failures/errors,25 unchanged environment-gated skips
+(649 passed). Content118 uses actual own PostgreSQL and nine literal Content Kafka
+topics, no skips; Gateway52 no skips; Space35 with two existing skips. Coverage
+includes independent UTF-8/Unicode bounds on four retained multiline text fields,
+mandatory nonblank outcome AND rationale for DECIDED, retained text after returning
+to DRAFT, distinct archival, compact scoped paged catalogs/audit, strong dcN guards
+before no-op, fresh explicit DECISION_READ/WRITE authority, exact JSON/body/query/
+Origin/TLS/session validation, original creation intent replay after edit/archive/
+principal change, concurrent same-key creates/competing edits, controlled Outbox
+rollback including request key and immutable audit, independent source Note and
+exact own Kafka payload/bytes/actor/trace/schema headers/ordering through real CDC.
+
+Focused3 and full81 browser tests pass against the deployed image. Actual browser
+checks include23 independent records,20+3/20+2 catalog paging, status/lifecycle-bound
+cursors, retained v1 replay after edits/archival, invalid status/blank completion
+denials, foreign principals, immutable5+5 history, UI completion disabled until both
+outcome and rationale exist, lost committed create retries using the same frozen
+fields/key, real edit/archive conflicts with draft retention and reset confirmation,
+manual status filters, independently retained unsaved Note draft/canonical Note,
+escaped historical HTML with no remote request, mobile390px fit, no JavaScript
+errors/private browser storage, failed/closed reads and real credential revocation.
+Desktop/mobile screenshots inspected. Both real Keycloak registrations preserve
+guest Decision IDs/immutable revisions/actors/keys; later edits record registered
+actor, with original creation replay intact after archival. Real Content-only Pod
+restart preserves outcome/rationale/alternatives, status, current/history/catalogs
+and original request replay while retaining an independent Note unchanged. Synthetic
+active Decision is explicitly archived afterward using documented204.
+
+New Registry Decision hash/FULL/FULL_TRANSITIVE and all eight previous Content
+schema bytes verified against Registry. Prior Learning/Planning/Notification source
+hashes match completed proofs. Six new OpenAPI operations and all local references
+resolve. Space capability preserves NOTE/BOOKMARK/QUESTION actions and adds explicit
+DECISION actions. CDC selects own Outbox; Note and six Bookmark/Question/Decision
+canonical SELECTs and twelve other owner DB CONNECTs denied, one-table publication
+retained. Twelve app Deployments Ready and all eight Connector/task states RUNNING;
+exact existing Content connector config retained. Three images imported on both
+nodes. Three owned temporary builder Pod/Service/NetworkPolicy/source ConfigMap sets
+removed after exact labels/UID/source ownership/init-exit/deployed-image checks.
+No data/PVC/topic/slot/offset reset, new dependency/dataset, external messaging,
+cross-owner SQL or AI capability introduced. Personal records do not amend repository
+architecture decisions or publish/verify public Knowledge.
+
+{
+  "date": "2026-10-18",
+  "jobs": {
+    "backend": "backend-validation-1792315987496315900",
+    "focusedBrowser": "graph-web-validation-1792316208",
+    "browser": "graph-web-validation-1792316283",
+    "registry": "decision-contract-validation-1792315975",
+    "contentCdc": "content-cdc-bootstrap-1792316183"
+  },
+  "backend": {
+    "tests": 674,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 25
+  },
+  "passedBackend": 649,
+  "contentActualPostgresAndNineKafkaTopicsTests": 118,
+  "gatewayTests": 52,
+  "spaceTests": 35,
+  "focusedBrowserTests": 3,
+  "browserTests": 81,
+  "registeredDecisionClaimChecks": 2,
+  "registryDecisionSha256": "22cad4537af4c3f476f856f4fcba22f05f66b610c9f57bd2b8daeee5fe7dc27c",
+  "unchangedContentSchemaHashes": {
+    "note": "e62519e0ec755f41dabb2aafcec3b5503cbfbcea6934f1669978a8e9b80fd8d9",
+    "links": "69fa68736670be833ae97f6b72f9aa4e95e117bc4bb19e4b50b9ff3285331416",
+    "metadata": "80ceaaa95dec8f9a4bb71fed2ff2100d882310b53d0ca09da87913d2c946ffa4",
+    "daily": "d90b7403b7117b1c272606cc224481a087d016fc0123bc5782f3f418b53c669d",
+    "attachments": "ab2b00c4fbad16250b0d9bfefdf28f081d4c4db725ab77e565585bb19fee2007",
+    "concepts": "2d096a96ce77b1d3a5f56b2ce733412022ce89e7d6625385bdac4bc9c6cec3ac",
+    "bookmark": "fd8734005c8d77a0768e807bc86d30efea8aad389eeb6a1524d6812f9bcf1af5",
+    "question": "ae6e0a2dd6264b023a9d8e0372350de05ba0b495fa9c2f9f9016597f58d78e8e"
+  },
+  "otherPriorLearningPlanningNotificationSchemasUnchanged": true,
+  "openapiReferences": 1319,
+  "newOperations": [
+    "listPrivateDecisions",
+    "createPrivateDecision",
+    "getPrivateDecision",
+    "updatePrivateDecision",
+    "archivePrivateDecision",
+    "getPrivateDecisionRevisions"
+  ],
+  "readyDeployments": 12,
+  "runningConnectors": [
+    "space-outbox",
+    "planning-outbox",
+    "notification-outbox",
+    "knowledge-outbox",
+    "media-outbox",
+    "content-outbox",
+    "learning-outbox",
+    "identity-outbox"
+  ],
+  "contentConnectorAndSlotUnchanged": true,
+  "images": {
+    "space": "knowledge-brain/space-service:local-07909af32f9009f1",
+    "content": "knowledge-brain/content-service:local-07909af32f9009f1",
+    "gateway": "knowledge-brain/gateway-service:local-1c1552b1e26841c6"
+  },
+  "exactNodeImports": {
+    "space": [
+      "space-image-import-1792316086-0",
+      "space-image-import-1792316086-1"
+    ],
+    "content": [
+      "content-image-import-1792316090-0",
+      "content-image-import-1792316090-1"
+    ],
+    "gateway": [
+      "gateway-image-import-1792316125-0",
+      "gateway-image-import-1792316125-1"
+    ]
+  },
+  "runtime": {
+    "spaceId": "01a14e66-7fbe-77f3-8774-40dc72441d4b",
+    "decisionId": "01a14e66-9644-7200-b543-676b1c71f8fc",
+    "activeDecisionId": "01a14e66-be9c-75ad-8f04-700f08920783",
+    "noteId": "01a14e66-8e24-728b-92e7-f00a7667e7b1",
+    "contentRestart": {
+      "old": "156b9200-2527-49f5-9e40-44427b599a39",
+      "new": "e799e02b-601b-4c09-9509-b20a92b30b7e"
+    },
+    "originalIntentReplayPreserved": true,
+    "immutableRevisionsAndActorsPreserved": true,
+    "activeAndArchivedDiscoveryPreserved": true,
+    "manualStatusAndDirectOutcomesPreserved": true,
+    "noteSourceUnchanged": true,
+    "replicasPreserved": 1,
+    "keysTokensOnlyInMemory": true
+  },
+  "ownedBuilderSetsRemoved": 3,
+  "hostHttpsVerified": true
+}

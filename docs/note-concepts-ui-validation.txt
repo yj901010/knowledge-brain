@@ -1,0 +1,11 @@
+Note Concept links UI - 2026-10-09
+AGENTS.md and PROJECT.md read before implementation. Knowledge owns Concept catalog; Content owns ID references/history; Space remains fresh authority. Existing APIs/migrations/V1 events preserved. No new dependencies or backend source change.
+Next.js production compilation, TypeScript and static export passed: graph-static-build-1791546767731333700.
+Both imports complete: gateway-image-import-1791546931-0 and gateway-image-import-1791546931-1.
+Image: knowledge-brain/gateway-service:local-5be572093943d7de.
+Initial browser Job graph-web-validation-1791546953: 11 passed; public-reference test assumed the new public Concept was in the first 20-item catalog page, which no longer held after accumulated validation fixtures. Updated that test to traverse actual public cursor pages both before initial link and after reload; no application change required.
+Final full browser Job graph-web-validation-1791547120: all 12 passed (1.8m). Includes extended catalog-outage test performing an actual retained-reference removal, not just inspecting its button.
+Coverage: actual 101 private Concepts with 20-item UUID pages/no duplicates; canonical independent c-ETags; real 412 concurrent update and explicit latest restart; 503 preserves prior display/retry; stable link IDs; 5+2 canonical revision pages; unchanged Note body and ETag; shared 20-link cap; retained removal during catalog failure; Note-switch input/history clearing; foreign denial; mobile no horizontal overflow and revoked session clearing. Existing public/guest/registered references, reviewer/merge workflow, attachments, editor, graph, Journal, library, Wiki/backlinks, Markdown, metadata, retirement and search also passed.
+Local CA trusted without TLS verification bypass. Temporary public reviewer permission retired by runner.
+Desktop/mobile concepts.png and concepts-mobile.png visually inspected: independent version/timestamp/ID history readable in existing scrollable inspector; no horizontal document overflow at 390px.
+Gateway Ready=1 at knowledge-brain/gateway-service:local-5be572093943d7de. Owned gateway-image-build-1791546814 Pod/Service/ConfigMap/NetworkPolicy removed; persistent application data preserved.

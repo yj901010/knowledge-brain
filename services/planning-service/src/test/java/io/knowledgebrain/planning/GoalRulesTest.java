@@ -1,0 +1,6 @@
+package io.knowledgebrain.planning;
+import org.junit.jupiter.api.Test;import java.util.*;import static org.junit.jupiter.api.Assertions.*;
+class GoalRulesTest {
+ @Test void dateOnlyValuesPreserveBusinessDateAndExplicitNull(){for(String date:new String[]{null,"2028-02-29","0001-01-01","9999-12-31"})assertDoesNotThrow(()->GoalRules.input(new GoalStore.Input("Goal","\n preserved \t","COMPLETED",date)));for(String date:List.of("","2026-02-29","2026-1-01","0000-01-01","2026-10-15T00:00:00Z","2026-10-15+09:00"))assertThrows(RuntimeException.class,()->GoalRules.date(date));}
+ @Test void invalidTextStatusIdsAndTraceFailClosed(){for(String title:List.of(" ","a".repeat(201),"bad\nline","bad\u0000text","\ud800"))assertThrows(RuntimeException.class,()->GoalRules.input(new GoalStore.Input(title,"","NOT_STARTED",null)));assertThrows(RuntimeException.class,()->GoalRules.input(new GoalStore.Input("Goal","가".repeat(11000),"NOT_STARTED",null)));assertThrows(RuntimeException.class,()->GoalRules.input(new GoalStore.Input("Goal","","RETIRED",null)));assertThrows(RuntimeException.class,()->GoalRules.id(UUID.randomUUID().toString()));assertThrows(RuntimeException.class,()->GoalRules.trace("0".repeat(32)));}
+}

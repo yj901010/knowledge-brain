@@ -1,0 +1,46 @@
+syntax = "proto3";
+package knowledgebrain.knowledge.citation.v1;
+option java_package = "io.knowledgebrain.contracts.knowledge.citation.v1";
+option java_multiple_files = true;
+
+// Independently published as knowledge/citation-events version 1.
+// Existing Concept, Alias, Claim and Source event versions remain immutable.
+message EventEnvelopeV1 {
+  string event_id = 1;
+  string event_type = 2;
+  uint32 event_version = 3;
+  int64 occurred_at_epoch_millis = 4;
+  string producer = 5;
+  string aggregate_type = 6;
+  string aggregate_id = 7;
+  string space_id = 8;
+  string actor_id = 9;
+  string trace_id = 10;
+  bytes payload = 11;
+}
+
+// Complete PRIVATE citation snapshot with explicit immutable Claim/Source revision pins.
+// Empty URL represents canonical null. Metadata remains pinned after later edits/retirement.
+// Consumers deduplicate event_id and order snapshots by citation_id/version.
+// Citing a Source does not change Claim verification or either referenced aggregate version.
+message ClaimCitationChangedPayloadV1 {
+  string citation_id = 1;
+  string claim_id = 2;
+  string subject_concept_id = 3;
+  string claim_revision_id = 4;
+  uint64 claim_version = 5;
+  string predicate_concept_id = 6;
+  string object_type = 7;
+  string object_concept_id = 8;
+  string source_id = 9;
+  string source_revision_id = 10;
+  uint64 source_version = 11;
+  string title = 12;
+  string url = 13;
+  string citation = 14;
+  string license_note = 15;
+  string revision_id = 16;
+  uint64 version = 17;
+  string state = 18;
+  string visibility = 19;
+}

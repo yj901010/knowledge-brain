@@ -1,0 +1,5 @@
+package io.knowledgebrain.gateway;
+import org.junit.jupiter.api.Test;import static org.junit.jupiter.api.Assertions.*;
+class ReminderRouteTest {
+ @Test void onlySevenDeclaredReminderOperationsAreReachable(){String id="01a10000-0000-7000-8000-000000000000",root="/api/spaces/"+id+"/reminders";for(String method:new String[]{"GET","POST"})assertEquals("planning",GatewayRoute.select(method,root).service());for(String method:new String[]{"GET","PUT","DELETE"})assertEquals("planning",GatewayRoute.select(method,root+"/"+id).service());assertEquals("planning",GatewayRoute.select("POST",root+"/preview").service());assertEquals("planning",GatewayRoute.select("GET",root+"/"+id+"/revisions").service());assertNull(GatewayRoute.select("GET",root+"/preview"));assertNull(GatewayRoute.select("POST",root+"/"+id));assertNull(GatewayRoute.select("PUT",root+"/"+id+"/revisions"));assertNull(GatewayRoute.select("POST",root+"/"+id+"/send"));assertNull(GatewayRoute.select("GET","/internal/planning/reminders"));}
+}

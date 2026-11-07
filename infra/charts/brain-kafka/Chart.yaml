@@ -1,0 +1,6 @@
+apiVersion: v2
+name: brain-kafka
+description: Strimzi-managed Kafka with separate KRaft controller and broker pools
+type: application
+version: 0.1.0
+appVersion: "4.3.1"

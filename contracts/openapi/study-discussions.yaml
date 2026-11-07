@@ -1,0 +1,674 @@
+openapi: 3.1.0
+info:
+  title: Private Group Study Discussions and Immutable Replies
+  version: 1.0.0
+  description: Collaboration owns Discussion, moderation revisions and immutable Reply;
+    Space supplies fresh current membership/role. OWNER/MEMBER explicitly create Group-shared
+    topics/replies; VIEWER reads. OWNER alone locks, reopens or retires, even if another
+    MEMBER is the creator. Original topic text/replies are immutable; corrections
+    append new replies. OPEN <-> LOCKED; RETIRED irreversible. Archived Study prevents
+    actual writes, preserves authorized reads. Creation key scoped Study/creator returns
+    current snapshot; reply key scoped Discussion/author returns the same immutable
+    reply. Exact original intent retry survives state/parent archive and restart but
+    always requires current writer role. Replies require observed diN and pin the
+    local Discussion revision; they do not advance Discussion or Study version. Group
+    -> Study -> Discussion locks serialize moderation/archive and replies. Revision/current/Outbox
+    atomic. Strict JSON, no-store, bounded keysets/history and literal UI. Topics
+    collaboration.discussion.v1 and collaboration.discussion-reply.v1 share immutable
+    Registry collaboration/discussion-events/1. Preserve GROUP_MEMBERS audience, deduplicate
+    eventId and apply increasing aggregate versions. No Submission/private note/media
+    sharing or direct Kafka app producer.
+security:
+- browserSession: []
+paths:
+  /api/groups/{groupId}/studies/{studyId}/discussions:
+    parameters:
+    - &id011
+      name: groupId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    - &id012
+      name: studyId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    get:
+      operationId: listStudyDiscussions
+      responses:
+        '200':
+          description: Freshly authorized Group discussion result
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Page'
+        '400': &id001
+          description: Invalid exact input, UUIDv7, duplicate/trailing/extra JSON,
+            key/query/ETag
+        '401': &id002
+          description: Secure singleton browser session invalid
+        '403': &id003
+          description: Registered current role required; OWNER/MEMBER create/reply,
+            OWNER moderates; same-origin HTTPS writes
+        '404': &id004
+          description: Current Group/config/Space/Study/Discussion/Reply unavailable
+            or wrong parent
+        '409': &id005
+          description: Archived Study, locked/retired Discussion, or changed original
+            creation/reply intent
+        '412': &id006
+          description: Stale Discussion version
+        '413': &id007
+          description: Request body exceeds 65536 bytes
+        '415': &id008
+          description: JSON required
+        '428': &id009
+          description: Discussion If-Match required
+        '503': &id010
+          description: Space authorization or Collaboration persistence unavailable
+      parameters:
+      - name: after
+        in: query
+        required: false
+        schema:
+          $ref: '#/components/schemas/Id'
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+    post:
+      operationId: createStudyDiscussion
+      responses:
+        '200':
+          description: Freshly authorized Group discussion result
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"di[1-9][0-9]*"$
+            Location:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Discussion'
+        '400': *id001
+        '401': *id002
+        '403': *id003
+        '404': *id004
+        '409': *id005
+        '412': *id006
+        '413': *id007
+        '415': *id008
+        '428': *id009
+        '503': *id010
+        '201':
+          description: Freshly authorized Group discussion result
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"di[1-9][0-9]*"$
+            Location:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Discussion'
+      parameters:
+      - name: Origin
+        in: header
+        required: true
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^[0-9a-f]{32}$
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Input'
+  /api/groups/{groupId}/studies/{studyId}/discussions/{discussionId}:
+    parameters: &id013
+    - *id011
+    - *id012
+    - &id014
+      name: discussionId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    get:
+      operationId: getStudyDiscussion
+      responses:
+        '200':
+          description: Freshly authorized Group discussion result
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"di[1-9][0-9]*"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Discussion'
+        '400': *id001
+        '401': *id002
+        '403': *id003
+        '404': *id004
+        '409': *id005
+        '412': *id006
+        '413': *id007
+        '415': *id008
+        '428': *id009
+        '503': *id010
+    delete:
+      operationId: archiveStudyDiscussion
+      responses:
+        '200':
+          description: Freshly authorized Group discussion result
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"di[1-9][0-9]*"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Discussion'
+        '400': *id001
+        '401': *id002
+        '403': *id003
+        '404': *id004
+        '409': *id005
+        '412': *id006
+        '413': *id007
+        '415': *id008
+        '428': *id009
+        '503': *id010
+      parameters:
+      - name: Origin
+        in: header
+        required: true
+        schema:
+          type: string
+      - name: If-Match
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^"di[1-9][0-9]*"$
+  /api/groups/{groupId}/studies/{studyId}/discussions/{discussionId}/state:
+    parameters: *id013
+    put:
+      operationId: setStudyDiscussionState
+      responses:
+        '200':
+          description: Freshly authorized Group discussion result
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"di[1-9][0-9]*"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Discussion'
+        '400': *id001
+        '401': *id002
+        '403': *id003
+        '404': *id004
+        '409': *id005
+        '412': *id006
+        '413': *id007
+        '415': *id008
+        '428': *id009
+        '503': *id010
+      parameters:
+      - name: Origin
+        in: header
+        required: true
+        schema:
+          type: string
+      - name: If-Match
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^"di[1-9][0-9]*"$
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StateInput'
+  /api/groups/{groupId}/studies/{studyId}/discussions/{discussionId}/revisions:
+    parameters: *id013
+    get:
+      operationId: getStudyDiscussionRevisions
+      responses:
+        '200':
+          description: Freshly authorized Group discussion result
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/History'
+        '400': *id001
+        '401': *id002
+        '403': *id003
+        '404': *id004
+        '409': *id005
+        '412': *id006
+        '413': *id007
+        '415': *id008
+        '428': *id009
+        '503': *id010
+      parameters:
+      - name: before
+        in: query
+        required: false
+        schema: &id015
+          type: integer
+          format: int64
+          minimum: 1
+          maximum: 9223372036854775807
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 5
+  /api/groups/{groupId}/studies/{studyId}/discussions/{discussionId}/replies:
+    parameters: *id013
+    get:
+      operationId: listDiscussionReplies
+      responses:
+        '200':
+          description: Freshly authorized Group discussion result
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Replies'
+        '400': *id001
+        '401': *id002
+        '403': *id003
+        '404': *id004
+        '409': *id005
+        '412': *id006
+        '413': *id007
+        '415': *id008
+        '428': *id009
+        '503': *id010
+      parameters:
+      - name: after
+        in: query
+        required: false
+        schema:
+          $ref: '#/components/schemas/Id'
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 5
+    post:
+      operationId: createDiscussionReply
+      responses:
+        '200':
+          description: Freshly authorized Group discussion result
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"dr[1-9][0-9]*"$
+            Location:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reply'
+        '400': *id001
+        '401': *id002
+        '403': *id003
+        '404': *id004
+        '409': *id005
+        '412': *id006
+        '413': *id007
+        '415': *id008
+        '428': *id009
+        '503': *id010
+        '201':
+          description: Freshly authorized Group discussion result
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"dr[1-9][0-9]*"$
+            Location:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reply'
+      parameters:
+      - name: Origin
+        in: header
+        required: true
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^[0-9a-f]{32}$
+      - name: If-Match
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^"di[1-9][0-9]*"$
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReplyInput'
+  /api/groups/{groupId}/studies/{studyId}/discussions/{discussionId}/replies/{replyId}:
+    parameters:
+    - *id011
+    - *id012
+    - *id014
+    - name: replyId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    get:
+      operationId: getDiscussionReply
+      responses:
+        '200':
+          description: Freshly authorized Group discussion result
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"dr[1-9][0-9]*"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reply'
+        '400': *id001
+        '401': *id002
+        '403': *id003
+        '404': *id004
+        '409': *id005
+        '412': *id006
+        '413': *id007
+        '415': *id008
+        '428': *id009
+        '503': *id010
+components:
+  securitySchemes:
+    browserSession:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest
+  schemas:
+    Id:
+      type: string
+      format: uuid
+      pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+    Discussion:
+      type: object
+      additionalProperties: false
+      required:
+      - discussionId
+      - studyId
+      - groupId
+      - spaceId
+      - creatorId
+      - version
+      - title
+      - description
+      - state
+      - audience
+      - createdAt
+      - updatedAt
+      properties:
+        discussionId:
+          $ref: '#/components/schemas/Id'
+        studyId:
+          $ref: '#/components/schemas/Id'
+        groupId:
+          $ref: '#/components/schemas/Id'
+        spaceId:
+          $ref: '#/components/schemas/Id'
+        creatorId:
+          $ref: '#/components/schemas/Id'
+        version: *id015
+        title: &id017
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: Nonblank valid Unicode, no controls, literal text
+        description: &id019
+          type: string
+          description: Valid Unicode/no NUL; UTF-8 <=32768 bytes
+        state: &id018
+          enum:
+          - OPEN
+          - LOCKED
+          - RETIRED
+        audience:
+          const: GROUP_MEMBERS
+        createdAt: &id016
+          type: string
+          format: date-time
+        updatedAt: *id016
+    Summary:
+      type: object
+      additionalProperties: false
+      required:
+      - discussionId
+      - creatorId
+      - version
+      - title
+      - state
+      properties:
+        discussionId:
+          $ref: '#/components/schemas/Id'
+        creatorId:
+          $ref: '#/components/schemas/Id'
+        version: *id015
+        title: *id017
+        state: *id018
+    Input:
+      type: object
+      additionalProperties: false
+      required:
+      - title
+      - description
+      properties:
+        title: *id017
+        description: *id019
+    StateInput:
+      type: object
+      additionalProperties: false
+      required:
+      - state
+      properties:
+        state:
+          enum:
+          - OPEN
+          - LOCKED
+    ReplyInput:
+      type: object
+      additionalProperties: false
+      required:
+      - content
+      properties:
+        content: &id020
+          type: string
+          description: Nonblank valid Unicode/no NUL; UTF-8 <=32768 bytes
+    Reply:
+      type: object
+      additionalProperties: false
+      required:
+      - replyId
+      - discussionId
+      - studyId
+      - groupId
+      - spaceId
+      - authorId
+      - version
+      - discussionVersion
+      - content
+      - audience
+      - createdAt
+      properties:
+        replyId:
+          $ref: '#/components/schemas/Id'
+        discussionId:
+          $ref: '#/components/schemas/Id'
+        studyId:
+          $ref: '#/components/schemas/Id'
+        groupId:
+          $ref: '#/components/schemas/Id'
+        spaceId:
+          $ref: '#/components/schemas/Id'
+        authorId:
+          $ref: '#/components/schemas/Id'
+        version:
+          const: 1
+        discussionVersion: *id015
+        content: *id020
+        audience:
+          const: GROUP_MEMBERS
+        createdAt: *id016
+    Page:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - nextAfter
+      - canWrite
+      properties:
+        items:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/Summary'
+        nextAfter:
+          oneOf:
+          - $ref: '#/components/schemas/Id'
+          - type: 'null'
+        canWrite:
+          type: boolean
+          description: Fresh OWNER/MEMBER role and nonarchived Study, checked again
+            on every write
+    Replies:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - nextAfter
+      properties:
+        items:
+          type: array
+          maxItems: 10
+          items:
+            $ref: '#/components/schemas/Reply'
+        nextAfter:
+          oneOf:
+          - $ref: '#/components/schemas/Id'
+          - type: 'null'
+    Revision:
+      type: object
+      additionalProperties: false
+      required:
+      - revisionId
+      - version
+      - actorId
+      - occurredAt
+      - snapshot
+      properties:
+        revisionId:
+          $ref: '#/components/schemas/Id'
+        version: *id015
+        actorId:
+          $ref: '#/components/schemas/Id'
+        occurredAt: *id016
+        snapshot:
+          $ref: '#/components/schemas/Discussion'
+    History:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - nextBefore
+      properties:
+        items:
+          type: array
+          maxItems: 10
+          items:
+            $ref: '#/components/schemas/Revision'
+        nextBefore:
+          oneOf:
+          - *id015
+          - type: 'null'

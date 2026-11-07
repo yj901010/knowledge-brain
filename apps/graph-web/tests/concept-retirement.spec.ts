@@ -1,0 +1,81 @@
+import {test,expect,Page} from '@playwright/test';
+
+test('explicit personal Concept retirement, stale catalog rejection and independent retained Note references',async({page,browser})=>{
+ const other=await browser.newContext(),foreign=await other.newPage(),errors:string[]=[];
+ page.on('pageerror',error=>errors.push(error.message));
+ page.on('console',message=>{if(message.type()==='error'&&/Content Security Policy|Refused to/.test(message.text()))errors.push(message.text())});
+ async function call(p:Page,path:string,method='GET',body?:unknown,etag?:string){return p.evaluate(async({path,method,body,etag})=>{
+  const response=await fetch(path,{method,credentials:'same-origin',cache:'no-store',headers:{...(body?{'Content-Type':'application/json'}:{}),...(etag?{'If-Match':etag}:{})},body:body?JSON.stringify(body):undefined});
+  return {status:response.status,body:await response.json().catch(()=>null),etag:response.headers.get('ETag')};
+ },{path,method,body,etag})}
+ async function start(p:Page){await p.goto('/graph');await p.getByRole('button',{name:'내 개인 공간 시작',exact:true}).click();await expect(p.getByRole('button',{name:'+ 새 노트',exact:true})).toBeVisible({timeout:90000});return (await call(p,'/api/spaces/personal')).body.spaceId as string}
+ try{
+  const space=await start(page);await start(foreign);const base=`/api/spaces/${space}`;
+  const targetTitle='Concept retirement target',otherTitle='Concept retirement survivor';
+  const originalDescription='<script>window.conceptRetirementXss=true</script>\n<img src="https://example.invalid/retired-private.png" onerror="window.conceptRetirementXss=true">\nOriginal private Concept definition';
+  const first=await call(page,base+'/concepts','POST',{title:targetTitle,description:originalDescription}),second=await call(page,base+'/concepts','POST',{title:otherTitle,description:'Surviving private Concept definition'});
+  const created=await call(page,base+'/notes','POST',{title:'Concept retirement Note',markdown:'Unchanged Note source during Concept retirement'}),otherNote=await call(page,base+'/notes','POST',{title:'Other Concept retirement Note',markdown:'Other unchanged Note source'});
+  for(const response of [first,second,created,otherNote])expect(response.status).toBe(201);
+  const path=base+'/concepts/'+first.body.conceptId,secondPath=base+'/concepts/'+second.body.conceptId,notePath=base+'/notes/'+created.body.noteId,refs=notePath+'/concepts';
+  const linked=await call(page,refs,'PUT',{conceptIds:[first.body.conceptId,second.body.conceptId]},'"c0"');expect(linked.status).toBe(200);
+  const initialNote=await call(page,notePath),initialReferences=await call(page,refs);expect(initialReferences.etag).toBe('"c1"');expect(initialReferences.body.items).toHaveLength(2);
+  for(const response of [await call(foreign,path,'DELETE',undefined,first.etag!),await call(foreign,path+'/revisions?limit=5')]){expect(response.status).toBe(404);expect(JSON.stringify(response.body)).not.toContain('Original private Concept definition')}
+  const library=page.getByRole('region',{name:'전체 노트 목록'}),panel=page.getByRole('region',{name:'노트 개념 연결과 이력'}),detail=page.getByRole('region',{name:'개인 개념 상세와 수정 이력'});
+  const confirm=detail.getByRole('region',{name:'개인 개념 폐기 확인'}),ack=confirm.getByRole('checkbox',{name:'개념 폐기에 동의합니다',exact:true}),submit=confirm.getByRole('button',{name:'개념 폐기 확정',exact:true});
+  await library.getByRole('button',{name:'노트 목록 열기',exact:true}).click();await library.getByRole('button',{name:'Concept retirement Note',exact:true}).click();await panel.getByRole('button',{name:'개인 개념 상세: '+targetTitle,exact:true}).click();
+  await expect(detail.locator(':scope > pre')).toHaveText(originalDescription);await expect(detail.locator('script,img,iframe')).toHaveCount(0);expect(await page.evaluate(()=>Boolean((window as unknown as {conceptRetirementXss?:boolean}).conceptRetirementXss))).toBe(false);
+  let deletes=0;page.on('request',request=>{if(request.url().endsWith(path)&&request.method()==='DELETE')deletes++});
+  await detail.getByRole('button',{name:'개인 개념 폐기',exact:true}).click();await expect(submit).toBeDisabled();await expect(ack).not.toBeChecked();expect((await ack.boundingBox())!.width).toBeLessThanOrEqual(20);
+  await confirm.getByRole('button',{name:'개념 폐기 취소',exact:true}).click();await expect(confirm).toHaveCount(0);expect(deletes).toBe(0);expect((await call(page,path)).etag).toBe('"1"');
+  // A concurrent canonical update makes the already-acknowledged retirement stale.
+  await detail.getByRole('button',{name:'개인 개념 폐기',exact:true}).click();await ack.check();
+  const concurrent=await call(page,path,'PUT',{title:targetTitle,description:'Concurrent canonical private Concept definition'},first.etag!);expect(concurrent.status).toBe(200);expect(concurrent.etag).toBe('"2"');
+  const beforeRetirementHistory=await call(page,path+'/revisions?limit=5');expect(beforeRetirementHistory.status).toBe(200);expect(beforeRetirementHistory.body.map((row:{version:number;state:string})=>[row.version,row.state])).toEqual([[2,'ACTIVE'],[1,'ACTIVE']]);
+  const [staleRequest,staleResponse]=await Promise.all([page.waitForRequest(request=>request.url().endsWith(path)&&request.method()==='DELETE'),page.waitForResponse(response=>response.url().endsWith(path)&&response.request().method()==='DELETE'),submit.click()]);
+  expect(staleRequest.headers()['if-match']).toBe('"1"');expect(staleResponse.status()).toBe(412);await expect(detail.getByRole('status')).toContainText('다른 수정이 있습니다');await expect(ack).not.toBeChecked();await expect(submit).toBeDisabled();expect((await call(page,path)).etag).toBe('"2"');
+  await confirm.getByRole('button',{name:'최신 개념 내용 확인',exact:true}).click();await expect(confirm).toContainText('Concurrent canonical private Concept definition');await expect(submit).toBeDisabled();
+  await confirm.getByRole('button',{name:'최신 개념 버전으로 폐기 다시 확인',exact:true}).click();await expect(ack).not.toBeChecked();await expect(submit).toBeDisabled();
+  // An uncertain result keeps the same strong ETag and requires a fresh acknowledgement.
+  await page.route('**'+path,route=>route.request().method()==='DELETE'?route.fulfill({status:503,contentType:'application/json',body:'{}'}):route.continue());await ack.check();
+  const [failedRequest]=await Promise.all([page.waitForRequest(request=>request.url().endsWith(path)&&request.method()==='DELETE'),submit.click()]);expect(failedRequest.headers()['if-match']).toBe('"2"');
+  await expect(detail.getByRole('status')).toContainText('폐기 결과를 확인하지 못했습니다');await expect(ack).not.toBeChecked();await expect(submit).toBeDisabled();expect((await call(page,path)).etag).toBe('"2"');await page.unroute('**'+path);
+  await confirm.evaluate(element=>element.scrollIntoView({block:'start'}));await page.screenshot({path:'/tmp/graph-ui-results/concept-retirement.png',fullPage:true});await page.setViewportSize({width:390,height:844});await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);expect((await ack.boundingBox())!.width).toBeLessThanOrEqual(20);await confirm.evaluate(element=>element.scrollIntoView({block:'start'}));await page.screenshot({path:'/tmp/graph-ui-results/concept-retirement-mobile.png',fullPage:true});
+  // Hold a real pre-retirement catalog snapshot, then release it after the DELETE succeeds.
+  const oldCatalog=(await call(page,base+'/concepts?limit=20')).body;expect(oldCatalog.items.some((row:{conceptId:string})=>row.conceptId===first.body.conceptId)).toBe(true);
+  let releaseOld!:()=>void,finishOld!:()=>void,oldStarted=false,oldCount=0;const oldHeld=new Promise<void>(resolve=>{releaseOld=resolve}),oldFinished=new Promise<void>(resolve=>{finishOld=resolve}),catalogPattern='**'+base+'/concepts?*';
+  await page.route(catalogPattern,async route=>{if(oldCount++===0){oldStarted=true;try{await oldHeld;await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(oldCatalog)}).catch(()=>{})}finally{finishOld()}}else await route.continue()});
+  try{
+   await panel.getByRole('button',{name:'개인 개념 목록 새로고침',exact:true}).click();await expect.poll(()=>oldStarted).toBe(true);await ack.check();
+   const [retireRequest,retireResponse]=await Promise.all([page.waitForRequest(request=>request.url().endsWith(path)&&request.method()==='DELETE'),page.waitForResponse(response=>response.url().endsWith(path)&&response.request().method()==='DELETE'),submit.click()]);
+   expect(retireRequest.headers()['if-match']).toBe('"2"');expect(retireResponse.status()).toBe(204);expect(retireResponse.headers()['etag']).toBe('"3"');
+   await expect(detail.getByRole('status')).toHaveText('개념을 폐기했습니다. 기존 노트 연결은 유지됩니다.');await expect(confirm).toHaveCount(0);await expect(detail.locator(':scope > pre')).toHaveText('Concurrent canonical private Concept definition');await expect(detail).toContainText('RETIRED');
+   await expect(detail.getByRole('button',{name:'개인 개념 편집',exact:true})).toHaveCount(0);await expect(detail.getByRole('button',{name:'개인 개념 폐기',exact:true})).toHaveCount(0);
+   await expect(panel.getByRole('button',{name:'개인 개념 상세: '+otherTitle,exact:true})).toBeVisible();await expect(panel.getByRole('button',{name:'개인 개념 상세: '+targetTitle,exact:true})).toHaveCount(0);
+  }finally{releaseOld();if(oldStarted)await oldFinished;await page.unroute(catalogPattern)}
+  expect((await call(page,path)).status).toBe(404);const active=(await call(page,base+'/concepts?limit=20')).body;expect(active.items.map((row:{conceptId:string})=>row.conceptId)).toEqual([second.body.conceptId]);
+  await expect(panel.getByRole('button',{name:'개인 개념 상세: '+targetTitle,exact:true})).toHaveCount(0);await expect(panel.getByRole('checkbox',{name:targetTitle,exact:true})).toHaveCount(0);await expect(panel.getByRole('checkbox',{name:otherTitle,exact:true})).toBeChecked();
+  expect(deletes).toBe(3);expect(await call(page,notePath)).toEqual(initialNote);expect(await call(page,refs)).toEqual(initialReferences);expect((await call(page,secondPath)).etag).toBe('"1"');
+  const retiredHistory=await call(page,path+'/revisions?limit=5');expect(retiredHistory.status).toBe(200);expect(retiredHistory.body.map((row:{version:number;state:string})=>[row.version,row.state])).toEqual([[3,'RETIRED'],[2,'ACTIVE'],[1,'ACTIVE']]);expect(retiredHistory.body.slice(1)).toEqual(beforeRetirementHistory.body);expect(retiredHistory.body[0].title).toBe(targetTitle);expect(retiredHistory.body[0].description).toBe('Concurrent canonical private Concept definition');expect(new Set(retiredHistory.body.map((row:{revisionId:string})=>row.revisionId)).size).toBe(3);
+  for(const response of [await call(foreign,path,'DELETE',undefined,'"3"'),await call(foreign,path+'/revisions?limit=5')]){expect(response.status).toBe(404);expect(JSON.stringify(response.body)).not.toContain('Concurrent canonical private Concept definition')}
+  await detail.getByRole('button',{name:'개인 개념 수정 이력',exact:true}).click();await expect(detail.locator('.personal-concept-revisions button')).toHaveCount(3);expect((await detail.locator('.personal-concept-revisions button').allTextContents()).map(text=>Number(text.match(/^v(\d+)/)![1]))).toEqual([3,2,1]);await expect(detail).toContainText('RETIRED');
+  await detail.getByRole('button',{name:'v1 · '+targetTitle,exact:true}).click();await expect(detail.locator(':scope > pre')).toHaveText(originalDescription);await expect(detail.locator('script,img,iframe')).toHaveCount(0);await expect(detail.getByRole('button',{name:'개인 개념 편집',exact:true})).toHaveCount(0);
+  await detail.getByRole('button',{name:'현재 개념으로 돌아가기',exact:true}).click();await expect(detail.locator(':scope > pre')).toHaveText('Concurrent canonical private Concept definition');await expect(detail).toContainText('RETIRED');
+  expect(await call(page,path+'/revisions?limit=5')).toEqual(retiredHistory);expect(await call(page,notePath)).toEqual(initialNote);expect(await call(page,refs)).toEqual(initialReferences);
+  // Knowledge retirement leaves Content-owned immutable references intact and removable.
+  const retained=panel.getByRole('button',{name:`목록 밖 개념 ${first.body.conceptId.slice(-6)} · 연결 해제`,exact:true});await expect(retained).toBeVisible();await retained.click();await expect.poll(async()=>(await call(page,refs)).etag).toBe('"c2"');
+  const remaining=await call(page,refs);expect(remaining.body.conceptVersion).toBe(2);expect(remaining.body.items).toEqual(initialReferences.body.items.filter((row:{conceptId:string})=>row.conceptId!==first.body.conceptId));expect(await call(page,notePath)).toEqual(initialNote);expect(await call(page,path+'/revisions?limit=5')).toEqual(retiredHistory);await expect(retained).toHaveCount(0);
+  expect((await call(page,refs,'PUT',{conceptIds:[first.body.conceptId,second.body.conceptId]},remaining.etag!)).status).toBe(404);expect(await call(page,refs)).toEqual(remaining);expect(await call(page,notePath)).toEqual(initialNote);
+  await panel.getByRole('button',{name:'개인 개념 상세 닫기',exact:true}).click();await expect(detail).toHaveCount(0);
+  // Acknowledgement, retained history and in-memory detail are scoped to the selected Concept/Note.
+  await panel.getByRole('button',{name:'개인 개념 상세: '+otherTitle,exact:true}).click();await expect(detail.locator(':scope > pre')).toHaveText('Surviving private Concept definition');await expect(detail.locator('.personal-concept-revisions')).toHaveCount(0);await detail.getByRole('button',{name:'개인 개념 폐기',exact:true}).click();await ack.check();
+  await panel.getByRole('button',{name:'개인 개념 상세 닫기',exact:true}).click();await expect(detail).toHaveCount(0);await panel.getByRole('button',{name:'개인 개념 상세: '+otherTitle,exact:true}).click();await detail.getByRole('button',{name:'개인 개념 폐기',exact:true}).click();await expect(ack).not.toBeChecked();await ack.check();
+  await library.getByRole('button',{name:'Other Concept retirement Note',exact:true}).click();await expect(detail).toHaveCount(0);await expect(confirm).toHaveCount(0);await panel.getByRole('button',{name:'개인 개념 상세: '+otherTitle,exact:true}).click();await expect(detail.locator(':scope > pre')).toHaveText('Surviving private Concept definition');await detail.getByRole('button',{name:'개인 개념 폐기',exact:true}).click();await expect(ack).not.toBeChecked();expect((await call(page,secondPath)).etag).toBe('"1"');
+  // Revoke while a DELETE is pending; the eventual denial must clear every private surface.
+  let releaseDelete!:()=>void,finishDelete!:()=>void,deleteStarted=false;const deleteHeld=new Promise<void>(resolve=>{releaseDelete=resolve}),deleteFinished=new Promise<void>(resolve=>{finishDelete=resolve});
+  await page.route('**'+secondPath,async route=>{if(route.request().method()!=='DELETE'){await route.continue();return}deleteStarted=true;try{await deleteHeld;await route.continue().catch(()=>{})}finally{finishDelete()}});
+  try{await ack.check();await submit.click();await expect.poll(()=>deleteStarted).toBe(true);expect((await call(page,'/api/identity/guest-session/revoke','POST',{})).status).toBe(204)}finally{releaseDelete();if(deleteStarted)await deleteFinished;await page.unroute('**'+secondPath)}
+  await expect(page.getByRole('button',{name:'내 개인 공간 시작',exact:true})).toBeVisible();await expect(detail).toHaveCount(0);await expect(confirm).toHaveCount(0);await expect(panel).toHaveCount(0);await expect(page.locator('pre')).toHaveCount(0);
+  expect(await page.evaluate(()=>Object.keys(localStorage).length+Object.keys(sessionStorage).length)).toBe(0);expect(await page.evaluate(()=>Boolean((window as unknown as {conceptRetirementXss?:boolean}).conceptRetirementXss))).toBe(false);expect(errors).toEqual([]);
+  console.log('PERSONAL_CONCEPT_RETIREMENT_VERIFIED: explicit acknowledgement and cancel without DELETE; real stale ETag 412, latest inspection and fresh reconfirmation; 503 retry with the same strong ETag; canonical RETIRED version and unchanged immutable prior revisions; late old catalog response rejection; retained read-only detail/history; exact unchanged Note and Content reference c-ETag/Concept IDs/link IDs; retained-ID unlink changes references only and adding the retired ID is rejected; foreign DELETE/history denial; escaped descriptions, close and Note-switch acknowledgement clearing; mobile fit and pending DELETE revocation clearing without browser storage');
+ }finally{await other.close()}
+});

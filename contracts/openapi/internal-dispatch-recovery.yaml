@@ -1,0 +1,67 @@
+openapi: 3.1.0
+info:
+  title: Canonical dispatched reminder recovery
+  version: 1.0.0
+paths:
+  /internal/planning/dispatched-reminders:
+    get:
+      operationId: exportCanonicalDispatchedReminders
+      description: Dedicated Notification export Bearer capability over TLS; Cookie
+        forbidden. Only immutable DISPATCHED facts, no source SQL access. Ascending
+        UUID pages, default50/max100. Notification captures Kafka end offsets before
+        a full merge scan, then resumes at those offsets, so concurrently fired older
+        attempts are still consumed.
+      security:
+      - dispatchExport: []
+      parameters:
+      - name: after
+        in: query
+        schema: &id001
+          type: string
+          format: uuid
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+        required: false
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 50
+        required: false
+      responses:
+        '200':
+          description: Bounded canonical envelope page
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                - items
+                - nextAfter
+                properties:
+                  items:
+                    type: array
+                    maxItems: 100
+                    items:
+                      type: object
+                      additionalProperties: false
+                      required:
+                      - deliveryId
+                      - envelope
+                      properties:
+                        deliveryId: *id001
+                        envelope:
+                          type: string
+                          contentEncoding: base64
+                  nextAfter:
+                    type:
+                    - string
+                    - 'null'
+                    format: uuid
+components:
+  securitySchemes:
+    dispatchExport:
+      type: http
+      scheme: bearer

@@ -1,0 +1,61 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Release.Name }}-isolation-test
+  annotations:
+    helm.sh/hook: test
+    helm.sh/hook-delete-policy: before-hook-creation
+spec:
+  ttlSecondsAfterFinished: 86400
+  backoffLimit: 0
+  activeDeadlineSeconds: 180
+  template:
+    spec:
+      restartPolicy: Never
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999
+        runAsGroup: 999
+      containers:
+        - name: verify
+          image: {{ .Values.image | quote }}
+          command: [sh, /scripts/verify-isolation.sh]
+          env:
+            - name: PGHOST
+              value: {{ .Release.Name }}
+            - name: PGCONNECT_TIMEOUT
+              value: "5"
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: [ALL]
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 250m
+              memory: 128Mi
+          volumeMounts:
+            - name: scripts
+              mountPath: /scripts
+              readOnly: true
+            - name: owner-secrets
+              mountPath: /run/brain-db-secrets
+              readOnly: true
+      volumes:
+        - name: scripts
+          configMap:
+            name: {{ .Release.Name }}-scripts
+        - name: owner-secrets
+          projected:
+            defaultMode: 0444
+            sources:
+            {{- range $owner, $secret := .Values.owners }}
+              - secret:
+                  name: {{ $secret }}
+                  items:
+                    - key: password
+                      path: {{ $owner }}/password
+            {{- end }}

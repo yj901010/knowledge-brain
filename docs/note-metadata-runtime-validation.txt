@@ -1,0 +1,36 @@
+2026-10-07 Asia/Seoul: Tag + typed Properties milestone, local k3d-knowledge-brain
+
+Content image knowledge-brain/content-service:local-1bdb8b94632e07a5, Helm revision 4.
+Gateway image knowledge-brain/gateway-service:local-1bdb8b94632e07a5, Helm revision 4.
+Connect revision 5, private content.note-metadata.v1 topic and scoped ACLs Ready.
+Linux Kubernetes Maven/JDK25 builds; both images imported onto both k3d nodes.
+
+Full suite backend-validation-1791367101: 13 service modules, 100 tests,
+zero failures/errors/skips; real owning PostgreSQL and mTLS Kafka, including
+raw Outbox metadata byte identity, schema headers, IDs and version ordering.
+
+Contract job metadata-contract-validation-1791366926: FULL validity and
+FULL_TRANSITIVE compatibility; immutable content/note-metadata-events v1 SHA256
+80ceaaa95dec8f9a4bb71fed2ff2100d882310b53d0ca09da87913d2c946ffa4.
+Existing normalized Note and Wiki Link proto hashes unchanged.
+
+Common-origin HTTPS runtime jobs:
+metadata-api-validation-1791367291: Complete
+PASS HTTPS typed properties, canonical stable tags, Space privacy, Origin, metadata ETags, validation, schema conflict rollback, pagination and concurrent writers
+PASS Content Pod replacement preserves exact metadata IDs, typed values, versions and revision snapshots
+PASS clear retains definitions with zero usage; retirement retains private history; revocation fails closed
+notes-api-validation-1791367346: Complete
+PASS HTTPS guest identity, private Markdown CRUD setup, cross-Space isolation, Origin, bounds and safe pagination
+PASS If-Match required, stale edit rejected, simultaneous edit has one winner, immutable revision snapshots and pagination
+PASS soft deletion keeps private revisions, hides active reads/list, and guest revocation immediately denies Notes while other browser stays active
+wiki-api-validation-1791367346: Complete
+PASS real Wiki parsing, alias/fragment, code exclusions, pagination, stable rename/edit binding, future-note resolution and unchanged source version
+PASS duplicate-title ambiguity, explicit stable-ID selection, cross-Space privacy and declared read-only Gateway routes
+PASS retired targets never retarget, unlink/source retirement clears backlinks, and revoked guest cannot read link metadata
+
+Metadata verifier remained alive while Content Pod was deleted/recreated;
+exact metadata IDs, typed values, ETags/versions and history survived.
+All four Identity/Space/Content/Gateway deployments Ready 1/1.
+Helm lint passed for Connect and Content service; OpenAPI parsed and both
+contracts include metadata, revision and Space taxonomy routes.
+No new dependency, frontend/editor, Daily Note, search or graph projection.

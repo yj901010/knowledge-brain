@@ -1,0 +1,356 @@
+openapi: 3.1.0
+info:
+  title: Group Assignment shared rubric definitions
+  version: 1.0.0
+  description: 'Optional shared evaluation criteria, managed only by the current registered
+    Group OWNER while Assignment is DRAFT and Study nonarchived. User-approved policy2026-10-24:
+    freeze permanently once submissions open. OPEN/CLOSED/RETIRED reject every write
+    including no-op/clear; absent rubrics cannot be retrofitted. Study COMPLETED permits
+    DRAFT edits, RETIRED does not. Current MEMBER/VIEWER can read even DRAFT, matching
+    existing Assignment visibility. Criteria are advisory; existing private 0..100
+    manual grades and no-self-grading remain independent. No per-criterion scores,
+    calculated grades or automatic learning progress. Stable rubric/criterion UUIDv7,
+    independent rbN CAS, exact parent definition version pinned in every full snapshot.
+    Remove/clear retained in history; removed IDs cannot be reused. Group->Study->Assignment
+    locks serialize open/archive and edits. V14 Collaboration current/full revision/Outbox
+    atomic, only local provenance FKs. Fresh Space authorization precedes transaction;
+    no distributed atomic revocation. New immutable collaboration.assignment-rubric.v1
+    and collaboration/assignment-rubric-events/1; published contracts/migrations unchanged.'
+security:
+- browserSession: []
+paths:
+  /api/groups/{groupId}/studies/{studyId}/assignments/{assignmentId}/rubric:
+    parameters: &id003
+    - name: groupId
+      in: path
+      required: true
+      schema: &id001
+        $ref: assignment-submissions.yaml#/components/schemas/Id
+    - name: studyId
+      in: path
+      required: true
+      schema: *id001
+    - name: assignmentId
+      in: path
+      required: true
+      schema: *id001
+    get:
+      operationId: getAssignmentRubric
+      responses:
+        '200':
+          description: Authorized Group-shared rubric. Null before first definition,
+            with rb0; initial empty PUT is allocation-free. Current OWNER writes,
+            other current participants read. History retained after freeze/clear.
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema: &id002
+                type: string
+                pattern: ^"rb(0|[1-9][0-9]*)"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/View'
+        '400':
+          description: Exact JSON, bounded valid Unicode, canonical UUIDv7 and integer
+            versions, unique criterion IDs, 1..10 nonempty criteria with integer points
+            totaling100, canonical rbN and bounded duplicate-free query required.
+        '401':
+          description: Singleton secure HTTPS browser credential required.
+        '403':
+          description: Registered current Group access required; writes require current
+            OWNER and same-origin.
+        '404':
+          description: Assignment/scope unavailable or caller participation removed;
+            no cross-Group disclosure.
+        '409':
+          description: Assignment no longer DRAFT, Study archived, source assignmentVersion
+            changed, or criterion ID is not currently in this rubric. Reopen latest
+            definition and reconfirm.
+        '412':
+          description: Independent rubric version changed, including stale same-value
+            command. Explicit refresh required.
+        '413':
+          description: JSON body exceeds32768 bytes.
+        '415':
+          description: application/json required for write.
+        '428':
+          description: Strong If-Match rbN required; rb0 before first definition.
+        '503':
+          description: Space authority or storage unavailable.
+    put:
+      operationId: changeDraftAssignmentRubric
+      parameters:
+      - name: Origin
+        in: header
+        required: true
+        schema:
+          type: string
+      - name: If-Match
+        in: header
+        required: true
+        schema: *id002
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Input'
+      responses:
+        '200':
+          description: Authorized Group-shared rubric. Null before first definition,
+            with rb0; initial empty PUT is allocation-free. Current OWNER writes,
+            other current participants read. History retained after freeze/clear.
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema: *id002
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/View'
+        '400':
+          description: Exact JSON, bounded valid Unicode, canonical UUIDv7 and integer
+            versions, unique criterion IDs, 1..10 nonempty criteria with integer points
+            totaling100, canonical rbN and bounded duplicate-free query required.
+        '401':
+          description: Singleton secure HTTPS browser credential required.
+        '403':
+          description: Registered current Group access required; writes require current
+            OWNER and same-origin.
+        '404':
+          description: Assignment/scope unavailable or caller participation removed;
+            no cross-Group disclosure.
+        '409':
+          description: Assignment no longer DRAFT, Study archived, source assignmentVersion
+            changed, or criterion ID is not currently in this rubric. Reopen latest
+            definition and reconfirm.
+        '412':
+          description: Independent rubric version changed, including stale same-value
+            command. Explicit refresh required.
+        '413':
+          description: JSON body exceeds32768 bytes.
+        '415':
+          description: application/json required for write.
+        '428':
+          description: Strong If-Match rbN required; rb0 before first definition.
+        '503':
+          description: Space authority or storage unavailable.
+  /api/groups/{groupId}/studies/{studyId}/assignments/{assignmentId}/rubric/revisions:
+    parameters: *id003
+    get:
+      operationId: getAssignmentRubricHistory
+      parameters:
+      - name: before
+        in: query
+        schema: &id007
+          type: integer
+          format: int64
+          minimum: 1
+          maximum: 9223372036854775807
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 5
+      responses:
+        '200':
+          description: Authorized Group-shared rubric. Null before first definition,
+            with rb0; initial empty PUT is allocation-free. Current OWNER writes,
+            other current participants read. History retained after freeze/clear.
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/History'
+        '400':
+          description: Exact JSON, bounded valid Unicode, canonical UUIDv7 and integer
+            versions, unique criterion IDs, 1..10 nonempty criteria with integer points
+            totaling100, canonical rbN and bounded duplicate-free query required.
+        '401':
+          description: Singleton secure HTTPS browser credential required.
+        '403':
+          description: Registered current Group access required; writes require current
+            OWNER and same-origin.
+        '404':
+          description: Assignment/scope unavailable or caller participation removed;
+            no cross-Group disclosure.
+        '409':
+          description: Assignment no longer DRAFT, Study archived, source assignmentVersion
+            changed, or criterion ID is not currently in this rubric. Reopen latest
+            definition and reconfirm.
+        '412':
+          description: Independent rubric version changed, including stale same-value
+            command. Explicit refresh required.
+        '413':
+          description: JSON body exceeds32768 bytes.
+        '415':
+          description: application/json required for write.
+        '428':
+          description: Strong If-Match rbN required; rb0 before first definition.
+        '503':
+          description: Space authority or storage unavailable.
+components:
+  securitySchemes:
+    browserSession:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest
+  schemas:
+    Criterion:
+      type: object
+      additionalProperties: false
+      required:
+      - criterionId
+      - title
+      - description
+      - maxPoints
+      properties:
+        criterionId: *id001
+        title: &id004
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: Nonblank valid Unicode, no NUL/unpaired surrogate; at most100
+            Unicode codepoints. Render literally.
+        description: &id005
+          type: string
+          description: Valid Unicode, no NUL/unpaired surrogate, at most2048 UTF8
+            bytes; blank allowed. Render literally.
+        maxPoints: &id006
+          type: integer
+          minimum: 1
+          maximum: 100
+    InputCriterion:
+      type: object
+      additionalProperties: false
+      required:
+      - criterionId
+      - title
+      - description
+      - maxPoints
+      properties:
+        criterionId:
+          oneOf:
+          - *id001
+          - type: 'null'
+        title: *id004
+        description: *id005
+        maxPoints: *id006
+    Rubric:
+      type: object
+      additionalProperties: false
+      required:
+      - rubricId
+      - assignmentId
+      - studyId
+      - groupId
+      - spaceId
+      - creatorId
+      - actorId
+      - version
+      - assignmentVersion
+      - criteria
+      - createdAt
+      - updatedAt
+      properties:
+        rubricId: *id001
+        assignmentId: *id001
+        studyId: *id001
+        groupId: *id001
+        spaceId: *id001
+        creatorId: *id001
+        actorId: *id001
+        version: *id007
+        assignmentVersion: *id007
+        criteria:
+          type: array
+          maxItems: 10
+          items:
+            $ref: '#/components/schemas/Criterion'
+          description: Ordered stable criterion IDs; nonempty list must total100 points.
+            Empty list explicitly clears optional criteria while DRAFT.
+        createdAt: &id008
+          type: string
+          format: date-time
+        updatedAt: *id008
+    Input:
+      type: object
+      additionalProperties: false
+      required:
+      - assignmentVersion
+      - criteria
+      properties:
+        assignmentVersion: *id007
+        criteria:
+          type: array
+          maxItems: 10
+          items:
+            $ref: '#/components/schemas/InputCriterion'
+          description: Ordered stable criterion IDs; nonempty list must total100 points.
+            Empty list explicitly clears optional criteria while DRAFT.
+    View:
+      type: object
+      additionalProperties: false
+      required:
+      - assignmentVersion
+      - assignmentState
+      - rubric
+      - canWrite
+      properties:
+        assignmentVersion: *id007
+        assignmentState:
+          enum:
+          - DRAFT
+          - OPEN
+          - CLOSED
+          - RETIRED
+        rubric:
+          oneOf:
+          - $ref: '#/components/schemas/Rubric'
+          - type: 'null'
+        canWrite:
+          type: boolean
+          description: Fresh current OWNER and DRAFT Assignment under nonarchived
+            Study. Writes recheck lifecycle under local locks.
+    Revision:
+      type: object
+      additionalProperties: false
+      required:
+      - revisionId
+      - version
+      - actorId
+      - occurredAt
+      - snapshot
+      properties:
+        revisionId: *id001
+        version: *id007
+        actorId: *id001
+        occurredAt: *id008
+        snapshot:
+          $ref: '#/components/schemas/Rubric'
+    History:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - nextBefore
+      properties:
+        items:
+          type: array
+          maxItems: 10
+          items:
+            $ref: '#/components/schemas/Revision'
+        nextBefore:
+          oneOf:
+          - *id007
+          - type: 'null'

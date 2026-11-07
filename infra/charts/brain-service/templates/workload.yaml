@@ -1,0 +1,144 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}
+  {{- with .Values.resourceAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  progressDeadlineSeconds: {{ .Values.progressDeadlineSeconds | default 600 }}
+  {{- with .Values.deploymentStrategy }}
+  strategy:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ .Release.Name }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        app.kubernetes.io/name: {{ .Release.Name }}
+        {{- if .Values.observability.enabled }}
+        brain-telemetry: 'true'
+        {{- end }}
+    spec:
+      automountServiceAccountToken: false
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+      {{- if .Values.observability.enabled }}
+      initContainers:
+        - name: telemetry-agent
+          image: {{ .Values.observability.agentImage | quote }}
+          command: [cp, /javaagent.jar, /otel/opentelemetry-javaagent.jar]
+          securityContext: {allowPrivilegeEscalation: false, readOnlyRootFilesystem: true, capabilities: {drop: [ALL]}}
+          resources: {requests: {cpu: 25m, memory: 48Mi}, limits: {cpu: 250m, memory: 128Mi}}
+          volumeMounts: [{name: telemetry-agent, mountPath: /otel}]
+      {{- end }}
+      containers:
+        - name: application
+          image: {{ include "brain-service.image" . | quote }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8080
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          env:
+            - name: JAVA_TOOL_OPTIONS
+              value: "-XX:MaxRAMPercentage=65.0{{ if .Values.observability.enabled }} -javaagent:/otel/opentelemetry-javaagent.jar{{ end }}"
+            {{- if .Values.observability.enabled }}
+            - {name: BRAIN_OBSERVABILITY_ENABLED, value: 'true'}
+            - {name: OTEL_SERVICE_NAME, value: {{ .Release.Name | quote }}}
+            - {name: OTEL_RESOURCE_ATTRIBUTES, value: 'service.namespace=knowledge-brain,deployment.environment.name={{ .Values.observability.environmentName }},k8s.namespace.name={{ .Release.Namespace }}'}
+            - {name: OTEL_EXPORTER_OTLP_PROTOCOL, value: http/protobuf}
+            - {name: OTEL_EXPORTER_OTLP_ENDPOINT, value: {{ .Values.observability.endpoint | quote }}}
+            - {name: OTEL_EXPORTER_OTLP_CERTIFICATE, value: /telemetry-tls/ca.crt}
+            - {name: OTEL_EXPORTER_OTLP_CLIENT_CERTIFICATE, value: /telemetry-tls/tls.crt}
+            - {name: OTEL_EXPORTER_OTLP_CLIENT_KEY, value: /telemetry-tls/tls.key}
+            - {name: OTEL_EXPORTER_OTLP_TIMEOUT, value: '3000'}
+            - {name: OTEL_TRACES_SAMPLER, value: parentbased_traceidratio}
+            - {name: OTEL_TRACES_SAMPLER_ARG, value: {{ .Values.observability.sampleRatio | quote }}}
+            - {name: OTEL_METRIC_EXPORT_INTERVAL, value: '15000'}
+            - {name: OTEL_BSP_MAX_QUEUE_SIZE, value: '1024'}
+            - {name: OTEL_BLRP_MAX_QUEUE_SIZE, value: '1024'}
+            - {name: OTEL_INSTRUMENTATION_MICROMETER_ENABLED, value: 'true'}
+            - {name: OTEL_INSTRUMENTATION_LOGBACK_APPENDER_ENABLED, value: 'true'}
+            - {name: OTEL_INSTRUMENTATION_JDBC_STATEMENT_SANITIZER_ENABLED, value: 'true'}
+            {{- end }}
+            {{- with .Values.env }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          volumeMounts:
+            - name: temporary
+              mountPath: /tmp
+            {{- if .Values.observability.enabled }}
+            - {name: telemetry-agent, mountPath: /otel, readOnly: true}
+            - {name: telemetry-tls, mountPath: /telemetry-tls, readOnly: true}
+            {{- end }}
+            {{- with .Values.extraVolumeMounts }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          startupProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: http
+              scheme: {{ .Values.probeScheme | default "HTTP" }}
+            failureThreshold: 30
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: http
+              scheme: {{ .Values.probeScheme | default "HTTP" }}
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: http
+              scheme: {{ .Values.probeScheme | default "HTTP" }}
+            periodSeconds: 5
+      volumes:
+        {{- if .Values.observability.enabled }}
+        - {name: telemetry-agent, emptyDir: {sizeLimit: 64Mi}}
+        - {name: telemetry-tls, secret: {secretName: brain-telemetry-client}}
+        {{- end }}
+        - name: temporary
+          emptyDir:
+            sizeLimit: 128Mi
+        {{- with .Values.extraVolumes }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}
+  {{- with .Values.resourceAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  selector:
+    app.kubernetes.io/name: {{ .Release.Name }}
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http

@@ -1,0 +1,15 @@
+Claim revision comparison validation — 2026-10-21
+
+Pinned Next.js static export and TypeScript check passed: graph-static-build-1792586765821229800
+Real HTTPS browser tests: 11 passed, 0 failed/skipped; graph-web-validation-1792586986338543500
+3 new comparison scenarios + 8 existing Claim/typed-object/Citation/Qualifier/Claim activity regressions.
+Exact NUMBER precision, STRING vs NUMBER kind-only differences, all five object kinds, predicate and retirement differences passed.
+5+2 history pages, selection retention, latest-pair refresh, one-version empty state, equal/reversed version rejection, unchanged-content revisions passed.
+Immutable Claim revisions and independent Citation/Qualifier pins stayed identical before/after comparison; parent and new-Claim drafts retained; zero comparison writes.
+Duplicate revision IDs within/across pages, duplicate versions, wrong Claim/subject and malformed typed values rejected.
+Failed next-page reads clear old comparison snapshots; explicit retry, delayed close/selection replies and real guest revocation passed.
+Escaped long Unicode/HTML strings, 390px page-width assertion, no JS/CSP errors passed.
+Gateway imported on both local nodes and deployed: knowledge-brain/gateway-service:local-fb11aa8265a39b60
+Temporary Gateway builder Pod, Service, NetworkPolicy and owned source ConfigMaps removed after verification.
+All 12 application Deployments ready; host HTTPS /graph 200.
+No API, event, schema, canonical backend implementation, dependency or architecture changes.

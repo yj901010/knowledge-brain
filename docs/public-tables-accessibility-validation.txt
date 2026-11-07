@@ -1,0 +1,61 @@
+Public tables, accessibility and bounded graph responsiveness — verified 2026-11-07 KST
+
+Gateway: knowledge-brain/gateway-service@sha256:1658fe8e9579aa0e8d1bb00463fe4c44c1aa60fab0340e1bd0dd0a63df2dddf9
+Source build: local-usability-098300e797078261; runtime source archive/compiled static files bound to exact image.
+All54 image static files match current generated source; no stale hashed assets.
+Both original nodes contain matching immutable manifest/config; actual Pod reports this manifest.
+
+Gateway243 tests passed;20 delivery/runtime/Helm checks passed;76 HTTPS browser scenario executions passed (overlapping suites).
+  accessibility: 5 scenarios; graph-web-validation-1793979664563879800
+  graph-performance: 2 scenarios; graph-web-validation-1793979749835009500
+  workspace-flow: 25 scenarios; graph-web-validation-1793980041800365700
+  group-workspace: 16 scenarios; graph-web-validation-1793980191164655800
+  knowledge-workspace: 9 scenarios; graph-web-validation-1793980453077435400
+  roadmap-workspace: 17 scenarios; graph-web-validation-1793980520687646100
+  focused table visual:2 scenarios; graph-web-validation-1793980951833284500
+
+Automated axe4.14:29 workspace/form/dialog/graph states plus1 public table state;0 violations.
+Four routes, dark/light,1440/390px, mobile drawer/command palette, registered private Group forms,
+unsubmitted public drafts, full long-label node AX exposure, keyboard selection, native Note dialog
+focus/return and actual identity-revocation draft clearing were exercised. Public table reads sort
+loaded rows, preserve typed UUID literals, retain applied pagination filters and reject late/failed reads.
+Public table/registered draft checks made no public submission or reviewer grant.
+No accessibility rule/assertion was disabled. Audits wait for native CSS transitions to settle.
+Incomplete checks are retained in usability-accessibility-proof.json: decorative Unicode, clipped/
+offscreen scroll content and modal skip-link context require manual judgement.30 states are scoped
+automated evidence, not complete WCAG/screen-reader certification or continuous theme-frame contrast.
+
+Client-only graph fixtures; four samples each before/after; CDP page CPU rate1/4; no server/storage
+latency, sustained-load or real-device capacity claim. Larger graphs use actual same-origin Workers;
+Worker-unavailable fallback also passed. Original/async arithmetic is identical across five sizes,
+including self/missing edges; two abort cases passed. Larger responses await aria-busy=false before
+the unchanged200-node/1000-edge/label/keyboard/5-second regression assertions.
+CPU | nodes | edges | paint ms | max main-thread long task ms | camera ms (final)
+1 | 50 | 100 | 92 | 0 | 31
+1 | 200 | 1000 | 323 | 0 | 36
+4 | 50 | 100 | 374 | 56 | 42
+4 | 200 | 1000 | 546 | 85 | 89
+The200-node/1000-edge rate4 maximum task was295ms before and85ms finally.
+At rate1 it was160ms before and0 measured long tasks finally. Wall-clock paint is not uniformly faster;
+Worker startup/rendering remains. Do not extrapolate single local samples into production percentiles.
+
+Next16.4.5 same-minor maintenance: locked npm audit0 detections; exact Gateway Trivy0 HIGH/CRITICAL.
+MIT runtime notices and unmodified development-only MPL2.0 axe notices retained. No axe imports found
+in runtime JavaScript. Fresh Linux Node24.10 exact-fixture-commit CI built and verified54 hashed files.
+Original repository was not committed/pushed; hosted Actions/GHCR/adoption remain outstanding.
+Installer replaces only managed generated/compiled exports with reversible source-artifact backups.
+The original752-file source export contained711 paths absent from the final54-file export. A subsequent
+four-stale-compiled-file candidate was rejected before deployment; final artifact equality gate passed.
+Fresh-checkout receipt-directory/Python3.11 compatibility and settled/readiness test adaptations were
+validated separately after runtime build; application/Java/static runtime sources did not change.
+
+Actual Windows loopback HTTPS:all four routes200, project CA verified, worker-src self without unsafe-eval.
+Final runtime:2 original Ready nodes;14 Ready apps/7 monitoring/13 JVMs;10 RUNNING connector/tasks;
+no firing alerts; Valkey Ready;13 original PVC UID/specs and21 original app/monitoring Deployment UIDs
+retained. Only Gateway image changed in this package; all unrelated deployment specs remain identical.
+No service/API/event/schema change, canonical reset, automatic public sharing, external publication,
+new cost or V1 AI was introduced. Original old pre-reset dataset is not claimed restored.
+
+Evidence index:.local/usability-evidence-index.json; per-Job source hashes and exact image annotations,
+image/archive/static hashes, failed-candidate records, fresh CI proof, screenshots, source continuity,
+audit incompletes and raw performance samples are retained. Full V1 goal remains active.

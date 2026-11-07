@@ -1,0 +1,7 @@
+Knowledge/Brain compatibility backport (2026-11-06).
+Modified MapMakerInternalMap from Guava25.1-jre using the upstream33.7.2
+deserialization capacity clamp for CVE-2026-102554. All nested classes are
+rebuilt; the original driver bundle supplies all other classes unchanged.
+Original Apache2 licenses, attribution and Graal substitutions are retained.
+This own-GAV artifact is not a DataStax, Google or Apache Cassandra release.
+Source identities and hashes: META-INF/knowledge-brain/upstream.json.

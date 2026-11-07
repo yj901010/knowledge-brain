@@ -1,0 +1,168 @@
+openapi: 3.1.0
+info:
+  title: Group-wide own resubmission requests
+  version: 1.0.0
+  description: Fresh registered Group participants including VIEWER read only existing
+    requests on own submissions across all canonical Studies in the exact Group/Space.
+    Fourteen metadata fields retain current Study/Assignment labels and submitted
+    instruction versions. REQUESTED default; existing ALL/RESOLVED/CANCELLED/UNAVAILABLE
+    use atomic exact-version semantics. Resolution is newer answer arrival, never
+    grading/completion. Unknown metadata never means pending/resolved. No unrequested,
+    peer roster, reason, answer or score copies. Matching ACTIVE local Group/Space
+    check precedes one canonical own-author statement; filter before ascending Submission
+    UUIDv7 keyset/default20/max100. Explicit fresh participation opens original Study/Assignment
+    source with current OWNER flag; VIEWER stays readonly. Archived sources retain
+    pending metadata without reopening. No Course/enrollment requirement, writes/events/migration/dependencies,
+    cross-owner SQL, notification or private progress mutation. Existing endpoints
+    and writers preserved.
+servers:
+- url: https://localhost:8443
+security:
+- browserSession: []
+paths:
+  /api/groups/{groupId}/my-resubmission-requests:
+    parameters:
+    - name: groupId
+      in: path
+      required: true
+      schema: &id001
+        $ref: assignment-submissions.yaml#/components/schemas/Id
+    get:
+      operationId: getGroupOwnResubmissionRequests
+      parameters:
+      - name: filter
+        in: query
+        schema:
+          type: string
+          enum:
+          - REQUESTED
+          - RESOLVED
+          - CANCELLED
+          - ALL
+          - UNAVAILABLE
+          default: REQUESTED
+      - name: after
+        in: query
+        schema: *id001
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      responses:
+        '400':
+          description: Malformed/singleton query, limit, cursor or nonempty GET body
+        '401':
+          description: Secure singleton browser session required
+        '403':
+          description: Registered Group participation required
+        '404':
+          description: Missing current Group participation or exact parent scope
+        '503':
+          description: Space authority unavailable
+        '200':
+          description: Existing own requests across all Group Studies; content-free
+            atomic source-version metadata
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Page'
+components:
+  securitySchemes:
+    browserSession:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest
+  schemas:
+    Row:
+      type: object
+      additionalProperties: false
+      required:
+      - submissionId
+      - assignmentId
+      - assignmentTitle
+      - assignmentState
+      - version
+      - assignmentVersion
+      - updatedAt
+      - requestVersion
+      - requestState
+      - requestedSubmissionVersion
+      - resolvedSubmissionVersion
+      - studyId
+      - studyTitle
+      - studyState
+      properties:
+        submissionId: &id002
+          $ref: assignment-submissions.yaml#/components/schemas/Id
+        assignmentId: *id002
+        assignmentTitle:
+          type: string
+          minLength: 1
+          maxLength: 200
+        assignmentState:
+          type: string
+          enum:
+          - DRAFT
+          - OPEN
+          - CLOSED
+          - RETIRED
+        version: &id003
+          type: integer
+          format: int64
+          minimum: 1
+        assignmentVersion: *id003
+        updatedAt:
+          type: string
+          format: date-time
+        requestVersion: *id003
+        requestState:
+          type: string
+          enum:
+          - REQUESTED
+          - RESOLVED
+          - CANCELLED
+          - UNAVAILABLE
+        requestedSubmissionVersion: *id003
+        resolvedSubmissionVersion:
+          type:
+          - integer
+          - 'null'
+          format: int64
+          minimum: 1
+        studyId:
+          $ref: assignment-submissions.yaml#/components/schemas/Id
+        studyTitle:
+          type: string
+          minLength: 1
+          maxLength: 200
+        studyState:
+          type: string
+          enum:
+          - PLANNED
+          - ACTIVE
+          - COMPLETED
+          - RETIRED
+    Page:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - nextAfter
+      properties:
+        items:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/Row'
+        nextAfter:
+          anyOf:
+          - *id001
+          - type: 'null'

@@ -1,0 +1,830 @@
+openapi: 3.1.0
+info:
+  title: Private Learning, Planning and Content activity timeline
+  version: 1.8.0
+  description: Activity-owned read projection. Learning, Planning and Content remain
+    canonical. Save/change time is occurredAt; a StudySession start/end is separate.
+    Sixteen existing v1 event contracts remain unchanged. Dates require an explicit
+    IANA timezone; both ends are inclusive local days (DST aware), with at most 366
+    days difference. Empty GET body; strict singleton query parameters. Cursor is
+    bound to Space/date/timezone/kind; each request freshly authorizes TIMELINE_READ.
+    Retired facts remain historical private events. Default no dates means all retained
+    history. Note and Daily Note changes are separate streams; a Daily Note body save
+    creates both entries. Note previews preserve at most8192 UTF-8 bytes without splitting
+    code points, with original byte size/truncation metadata. Daily journal date/timezone
+    stay literal and independent of occurredAt. Integration owns immutable public-GitHub
+    observations imported into PRIVATE Space. GITHUB_COMMIT occurredAt is import time,
+    not the Git commit date; title/detail/targetPath use existing fields. Source visibility
+    PUBLIC never publishes private activity or implies personal contribution.
+servers:
+- url: https://localhost:8443
+security:
+- sessionCookie: []
+paths:
+  /api/spaces/{spaceId}/activity/timeline:
+    get:
+      operationId: readPrivateLearningActivity
+      parameters:
+      - name: spaceId
+        in: path
+        required: true
+        schema: &id002
+          type: string
+          format: uuid
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+      - name: from
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date
+      - name: to
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date
+      - name: timezone
+        in: query
+        required: false
+        schema:
+          type: string
+          default: UTC
+      - name: kind
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - ALL
+          - ROADMAP
+          - PROGRESS
+          - STUDY_SESSION
+          - NOTE_EVIDENCE
+          - CONCEPT_EVIDENCE
+          - MEDIA_EVIDENCE
+          - EVIDENCE_SESSION
+          - GOAL
+          - TASK
+          - SCHEDULE
+          - BOOKMARK
+          - QUESTION
+          - DECISION
+          - RECORD_CONCEPTS
+          - NOTE
+          - DAILY_NOTE
+          - NOTE_CONCEPTS
+          - NOTE_METADATA
+          - NOTE_LINKS
+          - NOTE_ATTACHMENTS
+          - CLAIM
+          - GITHUB_COMMIT
+          - GITHUB_EVIDENCE
+          - GITHUB_EVIDENCE_SESSION
+          - GITHUB_ISSUE
+          - GITHUB_PULL_REQUEST
+          default: ALL
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      - name: before
+        in: query
+        required: false
+        schema:
+          type: string
+          pattern: ^[A-Za-z0-9_-]{1,256}$
+      responses:
+        '200':
+          description: Private descending immutable activity page; at least once projection
+            is eventual
+          headers: &id001
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Page'
+        '400':
+          description: Malformed UUID, duplicate/unknown parameter, range/timezone/cursor
+            or nonempty GET body
+          headers: *id001
+        '401':
+          description: Missing, ambiguous or expired guest/registered application
+            session
+          headers: *id001
+        '403':
+          description: Permission denied
+          headers: *id001
+        '404':
+          description: Personal private Space unavailable to the live principal
+          headers: *id001
+        '503':
+          description: Authority, ClickHouse or initial/rebuild projection temporarily
+            unavailable
+          headers: *id001
+      description: 'ALL includes seven Learning and three Planning streams. Planning
+        entries retain lifecycle independently from status/date and pinned Schedule
+        UTC/local/zone/offsets. occurredAt is save/change time, not due date or scheduled
+        time. Original readPrivateLearningActivity operationId is retained for compatibility.
+        ALL also includes six Content streams: Bookmark, Question, Decision, RecordConceptsChanged,
+        Note and DailyNoteChanged; immutable history survives source edits/retirement.'
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest
+  schemas:
+    Entry:
+      type: object
+      additionalProperties: false
+      required:
+      - eventId
+      - spaceId
+      - actorId
+      - aggregateId
+      - roadmapId
+      - nodeId
+      - traceId
+      - occurredAt
+      - kind
+      - eventType
+      - aggregateType
+      - sourceVersion
+      - title
+      - nodeTitle
+      - state
+      - detail
+      - startedAt
+      - endedAt
+      - durationSeconds
+      - targetPath
+      - planning
+      - content
+      - note
+      - noteConcepts
+      - metadata
+      - noteLinks
+      - noteAttachments
+      properties:
+        eventId:
+          type: string
+          format: uuid
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+        spaceId:
+          type: string
+          format: uuid
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+        actorId:
+          type: string
+          format: uuid
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+        aggregateId:
+          type: string
+          format: uuid
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+        roadmapId:
+          oneOf:
+          - type: string
+            format: uuid
+            pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+          - type: 'null'
+        nodeId:
+          oneOf:
+          - *id002
+          - type: 'null'
+        traceId:
+          type: string
+          pattern: ^[0-9a-f]{32}$
+        occurredAt:
+          type: string
+          format: date-time
+        kind:
+          type: string
+          enum:
+          - ROADMAP
+          - PROGRESS
+          - STUDY_SESSION
+          - NOTE_EVIDENCE
+          - CONCEPT_EVIDENCE
+          - MEDIA_EVIDENCE
+          - EVIDENCE_SESSION
+          - GOAL
+          - TASK
+          - SCHEDULE
+          - BOOKMARK
+          - QUESTION
+          - DECISION
+          - RECORD_CONCEPTS
+          - NOTE
+          - DAILY_NOTE
+          - NOTE_CONCEPTS
+          - NOTE_METADATA
+          - NOTE_LINKS
+          - NOTE_ATTACHMENTS
+          - CLAIM
+          - GITHUB_COMMIT
+          - GITHUB_EVIDENCE
+          - GITHUB_EVIDENCE_SESSION
+          - GITHUB_ISSUE
+          - GITHUB_PULL_REQUEST
+        eventType:
+          type: string
+        aggregateType:
+          type: string
+        sourceVersion:
+          type: integer
+          minimum: 1
+        title:
+          type: string
+          maxLength: 800
+        nodeTitle:
+          type: string
+          maxLength: 800
+        state:
+          type: string
+          enum:
+          - ACTIVE
+          - RETIRED
+          - NOT_STARTED
+          - IN_PROGRESS
+          - COMPLETED
+          - LINKED
+          - UNLINKED
+          - IMPORTED
+        detail:
+          type: string
+          maxLength: 32768
+          description: Immutable event-time description/memo/context, maximum 32768
+            UTF-8 bytes; Question context 16384, Decision context 8192. Remaining
+            typed fields are in content. Note preview is at most8192 UTF-8 bytes from
+            a32768-byte canonical body. Legacy Note controls other than NUL are preserved
+            as allowed by the frozen Note contract; display as escaped text only.
+        startedAt:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        endedAt:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        durationSeconds:
+          type: integer
+          minimum: 0
+          maximum: 86400
+        targetPath:
+          type: string
+          description: Exact same-Space canonical owner GET path. Content association
+            aggregateId is association ID; content.recordId is the parent record ID.
+            Explicit current lookup never fills an editor.
+        planning:
+          oneOf:
+          - $ref: '#/components/schemas/Planning'
+          - type: 'null'
+        content:
+          oneOf:
+          - $ref: '#/components/schemas/Content'
+          - type: 'null'
+        note:
+          oneOf:
+          - $ref: '#/components/schemas/Note'
+          - type: 'null'
+        noteConcepts:
+          oneOf:
+          - $ref: '#/components/schemas/NoteConcepts'
+          - type: 'null'
+        metadata:
+          oneOf:
+          - $ref: '#/components/schemas/Metadata'
+          - type: 'null'
+        noteLinks:
+          oneOf:
+          - $ref: '#/components/schemas/NoteLinks'
+          - type: 'null'
+        noteAttachments:
+          oneOf:
+          - $ref: '#/components/schemas/NoteAttachments'
+          - type: 'null'
+        claim:
+          oneOf:
+          - $ref: '#/components/schemas/Claim'
+          - type: 'null'
+    Page:
+      type: object
+      additionalProperties: false
+      required:
+      - spaceId
+      - timezone
+      - kind
+      - consistency
+      - items
+      - nextBefore
+      properties:
+        spaceId: *id002
+        timezone:
+          type: string
+        kind:
+          enum:
+          - ALL
+          - ROADMAP
+          - PROGRESS
+          - STUDY_SESSION
+          - NOTE_EVIDENCE
+          - CONCEPT_EVIDENCE
+          - MEDIA_EVIDENCE
+          - EVIDENCE_SESSION
+          - GOAL
+          - TASK
+          - SCHEDULE
+          - BOOKMARK
+          - QUESTION
+          - DECISION
+          - RECORD_CONCEPTS
+          - NOTE
+          - DAILY_NOTE
+          - NOTE_CONCEPTS
+          - NOTE_METADATA
+          - NOTE_LINKS
+          - NOTE_ATTACHMENTS
+          - CLAIM
+          - GITHUB_COMMIT
+          - GITHUB_EVIDENCE
+          - GITHUB_EVIDENCE_SESSION
+          - GITHUB_ISSUE
+          - GITHUB_PULL_REQUEST
+        consistency:
+          const: EVENTUAL
+        items:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/Entry'
+        nextBefore:
+          type:
+          - string
+          - 'null'
+    Planning:
+      type: object
+      additionalProperties: false
+      required:
+      - status
+      - date
+      - goalId
+      - taskId
+      - startsAt
+      - endsAt
+      - timeZone
+      - startsLocal
+      - endsLocal
+      - startsOffset
+      - endsOffset
+      description: Null for Learning entries. Goal/Task status and optional literal
+        date are independent of lifecycle. Task retains only Goal ID, Schedule only
+        Task ID; linked titles/status are not inferred. Schedule UTC instants plus
+        local/zone/offset labels are pinned from the immutable event and never recomputed
+        with newer timezone rules. Study duration fields stay null/zero. Unused fields
+        are null.
+      properties:
+        status:
+          type:
+          - string
+          - 'null'
+          enum:
+          - NOT_STARTED
+          - IN_PROGRESS
+          - COMPLETED
+          - null
+        date:
+          type:
+          - string
+          - 'null'
+          format: date
+        goalId:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        taskId:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        startsAt:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        endsAt:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        timeZone:
+          type:
+          - string
+          - 'null'
+        startsLocal:
+          type:
+          - string
+          - 'null'
+        endsLocal:
+          type:
+          - string
+          - 'null'
+        startsOffset:
+          type:
+          - string
+          - 'null'
+        endsOffset:
+          type:
+          - string
+          - 'null'
+    Content:
+      type: object
+      additionalProperties: false
+      required:
+      - recordType
+      - recordId
+      - recordVersion
+      - status
+      - concepts
+      - url
+      - answer
+      - outcome
+      - rationale
+      - alternatives
+      properties:
+        recordType:
+          enum:
+          - BOOKMARK
+          - QUESTION
+          - DECISION
+        recordId: &id003
+          type: string
+          format: uuid
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+        recordVersion:
+          type: integer
+          minimum: 1
+        status:
+          type:
+          - string
+          - 'null'
+          enum:
+          - OPEN
+          - ANSWERED
+          - DRAFT
+          - DECIDED
+          - null
+        concepts:
+          type: array
+          maxItems: 20
+          items:
+            type: object
+            additionalProperties: false
+            required:
+            - linkId
+            - conceptId
+            properties:
+              linkId: *id003
+              conceptId: *id003
+        url:
+          type:
+          - string
+          - 'null'
+          maxLength: 2048
+        answer:
+          type:
+          - string
+          - 'null'
+          maxLength: 16384
+        outcome:
+          type:
+          - string
+          - 'null'
+          maxLength: 8192
+        rationale:
+          type:
+          - string
+          - 'null'
+          maxLength: 8192
+        alternatives:
+          type:
+          - string
+          - 'null'
+          maxLength: 8192
+      description: Null for Learning/Planning and legacy stored entries. Frozen Content
+        event facts, no current owner/Concept hydration. Source entries use sourceVersion=recordVersion;
+        RECORD_CONCEPTS sourceVersion is independent association version and recordVersion
+        is body version at the change. Ordered links carry only immutable IDs; empty
+        snapshot means all detached. Source titles are absent from link events; a
+        generic type label is used. Body text and URLs are rendered escaped, never
+        fetched. Lifecycle and manual question/decision status are independent. Unused
+        strings are null, source entry concepts empty.
+    Note:
+      type: object
+      additionalProperties: false
+      required:
+      - revisionId
+      - journalDate
+      - timeZone
+      - markdownBytes
+      - truncated
+      properties:
+        revisionId:
+          type:
+          - string
+          - 'null'
+          format: uuid
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+        journalDate:
+          type:
+          - string
+          - 'null'
+          format: date
+        timeZone:
+          type:
+          - string
+          - 'null'
+          maxLength: 100
+        markdownBytes:
+          type: integer
+          minimum: 0
+          maximum: 32768
+        truncated:
+          type: boolean
+      description: Null for all other/legacy entries. NOTE pins Content revisionId,
+        original Markdown UTF-8 byte length and truncation; journalDate/timeZone are
+        null. DAILY_NOTE pins journalDate and stored IANA timezone, no revisionId/body,
+        byte size0 and truncated=false. sourceVersion is the canonical Note body version
+        for both streams. targetPath is exactly same-Space notes/{aggregateId}; current
+        read is explicit and never fills an editor.
+    NoteConcepts:
+      type: object
+      additionalProperties: false
+      required:
+      - revisionId
+      - noteVersion
+      - concepts
+      properties:
+        revisionId:
+          type: string
+          format: uuid
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+        noteVersion:
+          type: integer
+          minimum: 1
+        concepts:
+          type: array
+          maxItems: 20
+          items:
+            type: object
+            additionalProperties: false
+            required:
+            - linkId
+            - conceptId
+            properties:
+              linkId: &id004
+                type: string
+                format: uuid
+                pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+              conceptId: *id004
+      description: NOTE_CONCEPTS only; null for other and legacy rows. Original Content
+        association revision ID and Note body version. sourceVersion is independent
+        conceptVersion. Ordered link/Concept IDs, including empty detach and retired
+        Note snapshots. No titles, body, Concept visibility or names are inferred.
+        Exact target notes/{aggregateId}/concepts; explicit current c-version ETag
+        is independent of Note body version.
+    Metadata:
+      type: object
+      additionalProperties: false
+      required:
+      - revisionId
+      - noteVersion
+      - tags
+      - properties
+      properties:
+        revisionId: &id005
+          type: string
+          format: uuid
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+        noteVersion:
+          type: integer
+          minimum: 1
+        tags:
+          type: array
+          maxItems: 32
+          items:
+            type: object
+            additionalProperties: false
+            required:
+            - tagId
+            - name
+            properties:
+              tagId: *id005
+              name: &id006
+                type: string
+                minLength: 1
+                maxLength: 64
+        properties:
+          type: array
+          maxItems: 32
+          items:
+            type: object
+            additionalProperties: false
+            required:
+            - propertyId
+            - name
+            - type
+            - jsonValue
+            properties:
+              propertyId: *id005
+              name: *id006
+              type:
+                enum:
+                - STRING
+                - NUMBER
+                - BOOLEAN
+                - DATE
+                - STRING_LIST
+              jsonValue:
+                type: string
+                maxLength: 100000
+                description: Exact original JSON scalar or string-list text from the
+                  frozen event. NUMBER remains a JSON text string in this HTTP field
+                  to preserve every decimal digit; never parse through binary floating
+                  point. PostgreSQL may expand a38-digit negative-scale input to56
+                  integer digits. Strings allow controls except NUL, DATE includes
+                  proleptic year0000.
+      description: NOTE_METADATA only; null in other and legacy rows. Original revision,
+        independent metadata sourceVersion and Note body version. Full event-time
+        names/IDs/types/values in original order. Retirement retains populated assignments;
+        clearing produces empty sets. No Note title or current definition hydration.
+        Exact target notes/{aggregateId}/metadata; explicit current m-version ETag
+        is independent of the body version.
+    NoteLinks:
+      type: object
+      additionalProperties: false
+      required:
+      - revisionId
+      - noteVersion
+      - links
+      properties:
+        revisionId: &id007
+          type: string
+          format: uuid
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+        noteVersion:
+          type: integer
+          minimum: 1
+        links:
+          type: array
+          maxItems: 256
+          items:
+            type: object
+            additionalProperties: false
+            required:
+            - linkId
+            - ordinal
+            - startOffset
+            - endOffset
+            - targetToken
+            - requestedTargetId
+            - label
+            - fragment
+            - targetNoteId
+            - status
+            properties:
+              linkId: *id007
+              ordinal:
+                type: integer
+                minimum: 0
+                maximum: 255
+              startOffset:
+                type: integer
+                minimum: 0
+                maximum: 32768
+              endOffset:
+                type: integer
+                minimum: 4
+                maximum: 32768
+              targetToken: &id008
+                type: string
+                maxLength: 200
+              requestedTargetId: &id009
+                oneOf:
+                - *id007
+                - type: 'null'
+              label: *id008
+              fragment: *id008
+              targetNoteId: *id009
+              status:
+                enum:
+                - RESOLVED
+                - UNRESOLVED
+                - AMBIGUOUS
+                - TARGET_RETIRED
+      description: NOTE_LINKS only; null for other and legacy rows. Original complete
+        outgoing occurrences ordered by ordinal, exact tokens/labels/fragments, optional
+        requested/bound IDs, and event-time resolution status. Offsets are UTF-16,
+        start inclusive/end exclusive. sourceVersion is linkVersion, independent of
+        body noteVersion. Source retirement empties links; retired targets keep their
+        bound immutable IDs. No target-title hydration. Explicit canonical current
+        read follows at most3 ordinal pages with matching noteVersion/linkVersion;
+        GET has no ETag/identity fields. Existing frozen content.note-links.v1 is
+        unchanged.
+    NoteAttachments:
+      type: object
+      additionalProperties: false
+      required:
+      - revisionId
+      - noteVersion
+      - attachments
+      properties:
+        revisionId: &id010
+          type: string
+          format: uuid
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+        noteVersion:
+          type: integer
+          minimum: 1
+        attachments:
+          type: array
+          maxItems: 20
+          items:
+            type: object
+            additionalProperties: false
+            required:
+            - attachmentId
+            - mediaId
+            - filename
+            - mimeType
+            - byteSize
+            - sha256
+            properties:
+              attachmentId: *id010
+              mediaId: *id010
+              filename:
+                type: string
+                minLength: 1
+                maxLength: 200
+                description: Original normalized filename, rendered as text only.
+              mimeType:
+                enum:
+                - application/octet-stream
+                - application/pdf
+                - image/png
+                - image/jpeg
+                - image/gif
+                - image/webp
+              byteSize:
+                type: integer
+                minimum: 1
+                maximum: 10485760
+              sha256:
+                type: string
+                pattern: ^[0-9a-f]{64}$
+      description: NOTE_ATTACHMENTS only; null for other and legacy rows. Original
+        complete ordered Content Note-to-Media relationships and sealed metadata,
+        original revision and independent attachment sourceVersion/body noteVersion.
+        Stable retained IDs; remove/re-add creates a new attachment ID. Retirement
+        clears relations and retains history; Media bytes remain owned by Media/MinIO.
+        No binary, storage key, signed URL, capability or current Media hydration.
+        Exact canonical current notes/{aggregateId}/attachments validates noteId and
+        strong a-version ETag; no paging. Existing content.note-attachments.v1 stays
+        frozen.
+    Claim:
+      type: object
+      additionalProperties: false
+      required:
+      - revisionId
+      - subjectConceptId
+      - predicateConceptId
+      - object
+      - verificationState
+      properties:
+        revisionId: &id011
+          type: string
+          format: uuid
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+        subjectConceptId: *id011
+        predicateConceptId: *id011
+        object:
+          $ref: ./personal-concept-claims.yaml#/components/schemas/ClaimObject
+        verificationState:
+          const: DRAFT
+      description: CLAIM only; null for other and legacy rows. Original immutable
+        Knowledge revision and typed target, exact numeric text. V1 Concept and V2
+        typed events share kind CLAIM. Current Concept names are never hydrated as
+        historical names. targetPath is exactly /api/spaces/{spaceId}/concepts/{subjectConceptId}/claims/{aggregateId};
+        explicit current lookup requires its cl-version ETag. Claim or referenced
+        Concept retirement preserves historical activities. Citations and qualifiers
+        do not create Claim activity.

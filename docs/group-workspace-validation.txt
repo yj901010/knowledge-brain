@@ -1,0 +1,73 @@
+Group task workspace validation — 2026-11-02 (Asia/Seoul)
+State: COMPLETE
+Cluster UID: ee84ca44-bb83-4712-a572-10169a6e2542
+Gateway image: knowledge-brain/gateway-service:local-45e46d45f08e1c0a
+
+Delivered
+- One role-scoped Group workboard shared by owned and participating entries.
+  Opening another entry closes prior selection and in-memory inputs. Parent and
+  participation selection/creation/acceptance controls coordinate busy state.
+- Ten categories plus full overview: own assignments, submissions/grades,
+  resubmission requests, feedback, OWNER review/grading, Studies/shared Roadmaps,
+  Courses/curriculum, opted-in notifications and OWNER members/invitations.
+- Sidebar, selector, task cards and Ctrl/Cmd+K use allowlisted category-only
+  fragments; no private Group/Space/Submission identifiers or content in URLs.
+- Fresh participation and membership checks on entry, task/history changes and
+  retry. Group/Space, active role, actor and membership versions must agree.
+  Role/version changes close context; late old-Group responses cannot reopen it.
+- Unseen panes defer mounting; visited hidden/inert panes retain in-scope drafts.
+  Checking hides private panes; a failed check drops drafts. Denial closes Group;
+  actual401 also clears authenticated page inputs and invitation state.
+- Successful retry normalizes URL to the recovered task before another Group is
+  selected. OWNER-only requests by MEMBER/VIEWER return to overview with guidance.
+- Responsive work cards/list presentation, role badge and expandable provenance.
+  Original explicit source controls, immutable submitted instruction versions,
+  fresh authority, CAS and private source-only answer/score/reason access remain.
+
+16 distinct exact-image HTTPS browser scenarios passed, using actual local Keycloak users
+and verified project CA, without TLS bypass or operator/reviewer grants:
+  graph-web-validation-1793624416336349000 / 93c4f6e9-888a-4520-821c-d8284b0ef925 : 16 passed
+  graph-web-validation-1793624883018276300 / 2d7b6ebd-75c0-42f1-afed-b27980780738 : 3 passed
+The final focused recheck repeats the three workboard scenarios after strengthening
+actual history-pane visibility and ready-state workboard captures:19 executions total.
+
+Three new scenarios cover focus/history draft retention, zero writes on navigation,
+unseen panes,503 recovery/URL consistency, owned-to-participating/other-Group
+selection, MEMBER/VIEWER menus, denied OWNER queue reads, role downgrade/removal,
+retained OWNER source reads,390px layout, no browser content storage, late-response
+isolation and actual session revocation clearing all authenticated page inputs.
+Existing13 scenarios cover Group creation and idempotent lost-response recovery,
+invitations/membership, four own-work queues, OWNER review and grading queues,
+rubric/direct grading, private submission files, opt-in notifications, Courses and
+actor-only private progress. Backend and earlier public/backup suites were not
+rerun or recounted as part of this static-client milestone.
+
+Pinned TypeScript/Next export, static CSP hashes and license notices passed.
+147 frontend and826 scoped runtime files match immutable source archives.
+Image SHA checks passed on imports to both existing nodes; owned ephemeral
+builders were cleaned only after source/image/import evidence capture.
+Two nodes,14 apps,7 monitoring,13 JVMs and10 CDC connector/tasks are healthy.
+Original14 app/7 monitoring Deployment identities,13 other app images and all13
+PVC UIDs unchanged; no firing alerts. Only Gateway was rolled.
+App/login/Headlamp/MinIO/Grafana host HTTPS200 with verified CA and anonymous
+Grafana dashboard denial401 passed. Gateway loopback forward was renewed after
+the rollout; no unrelated process, cluster, canonical data or PVC was removed.
+
+Visual checks: OWNER desktop,390px OWNER and390px VIEWER with actual work rows;
+no horizontal overflow. Initial retry/URL mismatch was fixed and the same
+cross-entry assertion passed; invitation test status was corrected to its
+existing200 contract. No assertion was removed to hide a runtime failure.
+
+Evidence
+.local/group-workspace-validation.json
+.local/group-workspace-deployment.json
+.local/group-workspace-baseline.json
+.local/group-workspace-builder-evidence/*.json, *.tar.gz, *.log
+.local/graph-ui-results/group-workspace-*.png
+.local/group-workspace-forward.json
+docs/group-workspace.md
+
+No new service, dependency, API/event contract, schema/migration, AI, data sharing,
+automatic grade/progress/publication or change to consent/self-grading policies.
+Further feature-specific workflows/accessibility/performance, substantive licensed
+public content and production delivery/HA/SLO/off-host/PITR remain separate.

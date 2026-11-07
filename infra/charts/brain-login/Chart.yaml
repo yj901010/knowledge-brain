@@ -1,0 +1,4 @@
+apiVersion: v2
+name: brain-login
+version: 0.1.0
+description: Restricted public HTTPS entry for the user Keycloak Realm

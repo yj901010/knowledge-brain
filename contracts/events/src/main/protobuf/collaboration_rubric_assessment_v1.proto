@@ -1,0 +1,19 @@
+syntax = "proto3";
+package knowledgebrain.collaboration.rubricassessment.v1;
+option java_package = "io.knowledgebrain.contracts.collaboration.rubricassessment.v1";
+option java_multiple_files = true;
+message RubricAssessmentEnvelopeV1 {
+ string event_id=1; string event_type=2; uint32 event_version=3; int64 occurred_at_epoch_millis=4; string producer=5;
+ string aggregate_type=6; string aggregate_id=7; string space_id=8; string actor_id=9; string trace_id=10; bytes payload=11;
+}
+message RubricCriterionV1 {string criterion_id=1;string title=2;string description=3;int32 max_points=4;}
+message RubricDefinitionV1 {
+ string rubric_id=1;string assignment_id=2;string study_id=3;string group_id=4;string space_id=5;string creator_id=6;string actor_id=7;
+ int64 version=8;int64 assignment_version=9;repeated RubricCriterionV1 criteria=10;string created_at=11;string updated_at=12;
+}
+message RubricScoreV1 {string criterion_id=1;int32 score=2;string comment=3;}
+message RubricAssessmentSnapshotV1 {
+ string assessment_id=1;int64 version=2;string grade_id=3;int64 grade_version=4;string submission_id=5;string assignment_id=6;
+ string study_id=7;string group_id=8;string space_id=9;string author_id=10;string grader_id=11;int64 submission_version=12;
+ int64 assignment_version=13;RubricDefinitionV1 rubric=14;repeated RubricScoreV1 criteria=15;int32 score=16;string reason=17;string audience=18;string created_at=19;
+}

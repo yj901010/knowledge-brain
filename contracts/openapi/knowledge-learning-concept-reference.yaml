@@ -1,0 +1,86 @@
+openapi: 3.1.0
+info:
+  title: Knowledge owner learning Concept reference read
+  version: 1.0.0
+servers:
+- url: https://knowledge-service.brain-apps.svc:8080
+security:
+- sessionCookie: []
+paths:
+  /api/spaces/{spaceId}/concept-references/{conceptId}/learning-reference:
+    parameters:
+    - name: spaceId
+      in: path
+      required: true
+      schema: &id001
+        type: string
+        format: uuid
+        pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+    - name: conceptId
+      in: path
+      required: true
+      schema: *id001
+    get:
+      operationId: checkLearningConceptReference
+      description: Owner-only narrow GET with the common session Cookie, no body/query,
+        HTTPS required. Gateway does not route this endpoint. First authorize CONCEPT_READ
+        in the private destination Space. One Knowledge SQL query selects ACTIVE own-private
+        or PUBLIC Concept metadata; no foreign PRIVATE/GROUP/ORGANIZATION match. PUBLIC
+        sources require public API feature enabled and fresh PUBLIC_CONCEPT_READ on
+        the source Space by the same principal. Returns no description/Claims/credentials.
+        Visibility is the source visibility; the Learning relationship always remains
+        PRIVATE. Counters use bounded visibility labels. No mutation.
+      responses:
+        '200':
+          description: Current owner-authorized Concept metadata
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                - spaceId
+                - conceptId
+                - conceptSpaceId
+                - principalId
+                - version
+                - title
+                - visibility
+                properties:
+                  spaceId: *id001
+                  conceptId: *id001
+                  conceptSpaceId: *id001
+                  principalId: *id001
+                  version:
+                    type: integer
+                    format: int64
+                    minimum: 1
+                  title:
+                    type: string
+                    minLength: 1
+                    maxLength: 200
+                  visibility:
+                    enum:
+                    - PRIVATE
+                    - PUBLIC
+        '400':
+          description: Malformed read/IDs
+        '401':
+          description: Common session unavailable
+        '403':
+          description: Current Space authority denied
+        '404':
+          description: Source unavailable, public feature disabled or foreign private
+            source
+        '503':
+          description: Authority changed/unavailable or database unavailable
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest

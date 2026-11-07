@@ -1,0 +1,402 @@
+openapi: 3.1.0
+info:
+  title: Credential-isolated opaque Media consumer files
+  version: 1.0.0
+  description: Internal HTTPS only. Dedicated Collaboration bearer credential and
+    NetworkPolicy; never Gateway routable. Context/owner are opaque IDs, no Group/Assignment
+    semantics. The consumer checks current Space authority before every operation.
+    No credentials in logs. Exact duplicate/trailing-free JSON <=4096 bytes, valid
+    singleton traceparent, no query; response no-store.
+security:
+- serviceCredential: []
+paths:
+  /internal/media/domain-files/create:
+    post:
+      operationId: scopedMediaCreate
+      description: Dedicated consumer scope match; no personal Media fallback.
+      parameters: []
+      responses:
+        '400':
+          description: Strict fields, input or path invalid
+        '401':
+          description: Missing session
+        '403':
+          description: Role or same-origin denied
+        '404':
+          description: Unavailable scope, attempt or file; privacy non-disclosure
+        '409':
+          description: Lifecycle/Media state or changed intent conflict
+        '412':
+          description: Stale submission/instructions
+        '413':
+          description: Bounded request exceeded
+        '415':
+          description: JSON required
+        '428':
+          description: If-Match required
+        '503':
+          description: Authority/Media unavailable; no automatic retry
+        '200':
+          description: Authorized no-store response
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Created'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCommand'
+  /internal/media/domain-files/get:
+    post:
+      operationId: scopedMediaGet
+      description: Dedicated consumer scope match; no personal Media fallback.
+      parameters: []
+      responses:
+        '400':
+          description: Strict fields, input or path invalid
+        '401':
+          description: Missing session
+        '403':
+          description: Role or same-origin denied
+        '404':
+          description: Unavailable scope, attempt or file; privacy non-disclosure
+        '409':
+          description: Lifecycle/Media state or changed intent conflict
+        '412':
+          description: Stale submission/instructions
+        '413':
+          description: Bounded request exceeded
+        '415':
+          description: JSON required
+        '428':
+          description: If-Match required
+        '503':
+          description: Authority/Media unavailable; no automatic retry
+        '200':
+          description: Authorized no-store response
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reference'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScopeCommand'
+  /internal/media/domain-files/upload:
+    post:
+      operationId: scopedMediaUpload
+      description: Dedicated consumer scope match; no personal Media fallback.
+      parameters: []
+      responses:
+        '400':
+          description: Strict fields, input or path invalid
+        '401':
+          description: Missing session
+        '403':
+          description: Role or same-origin denied
+        '404':
+          description: Unavailable scope, attempt or file; privacy non-disclosure
+        '409':
+          description: Lifecycle/Media state or changed intent conflict
+        '412':
+          description: Stale submission/instructions
+        '413':
+          description: Bounded request exceeded
+        '415':
+          description: JSON required
+        '428':
+          description: If-Match required
+        '503':
+          description: Authority/Media unavailable; no automatic retry
+        '200':
+          description: Authorized no-store response
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadForm'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScopeCommand'
+  /internal/media/domain-files/complete:
+    post:
+      operationId: scopedMediaComplete
+      description: Dedicated consumer scope match; no personal Media fallback.
+      parameters: []
+      responses:
+        '400':
+          description: Strict fields, input or path invalid
+        '401':
+          description: Missing session
+        '403':
+          description: Role or same-origin denied
+        '404':
+          description: Unavailable scope, attempt or file; privacy non-disclosure
+        '409':
+          description: Lifecycle/Media state or changed intent conflict
+        '412':
+          description: Stale submission/instructions
+        '413':
+          description: Bounded request exceeded
+        '415':
+          description: JSON required
+        '428':
+          description: If-Match required
+        '503':
+          description: Authority/Media unavailable; no automatic retry
+        '200':
+          description: Authorized no-store response
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reference'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScopeCommand'
+  /internal/media/domain-files/download:
+    post:
+      operationId: scopedMediaDownload
+      description: Dedicated consumer scope match; no personal Media fallback.
+      parameters: []
+      responses:
+        '400':
+          description: Strict fields, input or path invalid
+        '401':
+          description: Missing session
+        '403':
+          description: Role or same-origin denied
+        '404':
+          description: Unavailable scope, attempt or file; privacy non-disclosure
+        '409':
+          description: Lifecycle/Media state or changed intent conflict
+        '412':
+          description: Stale submission/instructions
+        '413':
+          description: Bounded request exceeded
+        '415':
+          description: JSON required
+        '428':
+          description: If-Match required
+        '503':
+          description: Authority/Media unavailable; no automatic retry
+        '200':
+          description: Authorized no-store response
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Download'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScopeCommand'
+components:
+  securitySchemes:
+    serviceCredential:
+      type: http
+      scheme: bearer
+  schemas:
+    Id:
+      type: string
+      format: uuid
+      pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+    Upload:
+      type: object
+      additionalProperties: false
+      required:
+      - filename
+      - mimeType
+      - byteSize
+      - sha256
+      properties:
+        filename: &id001
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: NFC/strip; no controls, traversal, NUL or invalid Unicode
+        mimeType: &id002
+          type: string
+          enum:
+          - application/octet-stream
+          - application/pdf
+          - image/png
+          - image/jpeg
+          - image/gif
+          - image/webp
+        byteSize: &id003
+          type: integer
+          minimum: 1
+          maximum: 10485760
+        sha256: &id004
+          type: string
+          pattern: ^[0-9a-f]{64}$
+    UploadForm:
+      type: object
+      additionalProperties: false
+      required:
+      - url
+      - fields
+      - expiresAt
+      properties:
+        url:
+          type: string
+          format: uri
+          description: HTTPS configured public MinIO origin; no cookies
+        fields:
+          type: object
+          minProperties: 1
+          maxProperties: 30
+          additionalProperties:
+            type: string
+        expiresAt:
+          type: string
+          format: date-time
+    Download:
+      type: object
+      additionalProperties: false
+      required:
+      - url
+      - expiresAt
+      properties:
+        url:
+          type: string
+          format: uri
+          description: 60-second bearer URL, pinned sealed object version, attachment/octet-stream
+        expiresAt:
+          type: string
+          format: date-time
+    Media:
+      type: object
+      additionalProperties: false
+      required:
+      - mediaId
+      - spaceId
+      - state
+      - version
+      - filename
+      - mimeType
+      - byteSize
+      - sha256
+      - createdAt
+      - completedAt
+      properties:
+        mediaId:
+          $ref: '#/components/schemas/Id'
+        spaceId:
+          $ref: '#/components/schemas/Id'
+        state:
+          enum:
+          - PENDING
+          - AVAILABLE
+        version:
+          type: integer
+          enum:
+          - 1
+          - 2
+        filename: *id001
+        mimeType: *id002
+        byteSize: *id003
+        sha256: *id004
+        createdAt:
+          type: string
+          format: date-time
+        completedAt:
+          type:
+          - string
+          - 'null'
+          format: date-time
+    Reference:
+      type: object
+      additionalProperties: false
+      required:
+      - contextId
+      - ownerId
+      - media
+      properties:
+        contextId:
+          $ref: '#/components/schemas/Id'
+        ownerId:
+          $ref: '#/components/schemas/Id'
+        media:
+          $ref: '#/components/schemas/Media'
+    Created:
+      type: object
+      additionalProperties: false
+      required:
+      - reference
+      - upload
+      properties:
+        reference:
+          $ref: '#/components/schemas/Reference'
+        upload:
+          anyOf:
+          - $ref: '#/components/schemas/UploadForm'
+          - type: 'null'
+    ScopeCommand:
+      type: object
+      additionalProperties: false
+      required:
+      - spaceId
+      - contextId
+      - ownerId
+      - mediaId
+      properties:
+        spaceId:
+          $ref: '#/components/schemas/Id'
+        contextId:
+          $ref: '#/components/schemas/Id'
+        ownerId:
+          $ref: '#/components/schemas/Id'
+        mediaId:
+          $ref: '#/components/schemas/Id'
+    CreateCommand:
+      type: object
+      additionalProperties: false
+      required:
+      - spaceId
+      - contextId
+      - ownerId
+      - key
+      - upload
+      properties:
+        spaceId:
+          $ref: '#/components/schemas/Id'
+        contextId:
+          $ref: '#/components/schemas/Id'
+        ownerId:
+          $ref: '#/components/schemas/Id'
+        key:
+          type: string
+          pattern: ^[0-9a-f]{32}$
+        upload:
+          $ref: '#/components/schemas/Upload'

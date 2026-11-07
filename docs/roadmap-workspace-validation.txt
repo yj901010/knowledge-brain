@@ -1,0 +1,88 @@
+Focused Roadmap workspace validation — 2026-11-02 (Asia/Seoul)
+State: COMPLETE
+Cluster UID: ee84ca44-bb83-4712-a572-10169a6e2542
+Gateway image: knowledge-brain/gateway-service:local-fc13be0ce21aa8d8
+
+Delivered
+- Browse-first reviewed public graphs, focused ranking and contribution/review
+  tasks, supported full overview and a link to original private learning focus.
+- Selector/cards/sidebar/Ctrl+K and category-only history URLs; no private or
+  public entity IDs, draft content or new browser persistence in navigation.
+- Independent browse selection/history and contribution editor/proposal/compare
+  state. Focused browsing another original graph retains the current editor,
+  nodes and preview. Explicit update starts from the inspected public version.
+  Full overview preserves original exclusive selection resets.
+- Rankings mount on first use and open automatically in their task. Filters are
+  retained in scope; derived results refresh on return. Original versioned rating,
+  adoption and optional private learning use one retained browse-detail instance.
+- Fresh identity/kind/public-domain permissions on entry/task/history/access
+  refresh/visibility return. Domain/actor/permission changes and failed checks
+  unmount retained inputs; checking hides/inerts source. Late reads cannot reopen
+  prior work; later real401 clears hidden drafts without creating another guest.
+- In-memory per-command tokens coordinate public proposal/review/merge, adoption
+  and rating writes with domain/task/source controls. Pending navigation explains
+  the wait and retains the task; released old tokens cannot unlock new commands.
+- Initial private-Space catalog404 keeps the empty adoption panel open with
+  preparation/reload guidance.401/403 and denied adoption writes still clear
+  access; no destination or write is authorized by the404 fallback.
+- Existing preview/consent, exact revisions/CAS, independent designated review,
+  no self-approval/rating, immutable histories, popularity/review separation and
+  once-per-Space/source-version private adoption remain authoritative. Public
+  updates never copy private progress or modify adopted graphs automatically.
+
+18 exact-image HTTPS browser scenarios passed, using verified project CA without
+TLS bypass and real local Keycloak accounts where registered rights are required:
+  graph-web-validation-1793630571574571200 / f9147408-3c37-4562-9306-e0791fef13a2 : 17 passed
+  graph-web-validation-1793630674285687900 / fe3c017c-0450-4558-9285-0a54c91916b8 : 1 passed
+
+Four new cases cover retained graph/editor/preview during actual source browsing,
+keyboard/history/ranking filters, domain clearing, deterministic private-catalog404
+recovery followed by a real guest adoption, pending adoption/publication locks,
+retained embedded private learning across tasks, inspected-graph update handoff,
+one explicit SUBMITTED proposal and unchanged original graph/private defaults.
+UI-only registered reviewer-flag metadata changes verify draft scope clearing;
+they grant no actual authority. Failed checks, late authority responses, recovered
+URL consistency, real401, no navigation writes and390px layouts also pass.
+
+Thirteen existing scenarios cover public catalog parameter/tenant boundaries and
+late-source failure clearing; real private graph contracts/editor/history/CAS;
+adoption provenance/idempotent recovery/private progress/retirement/stale target;
+rating aggregates, real registered rating UI412/failed draft retention/malformed
+and late-result clearing; directed/related graph semantics; and common themes,
+keyboard/mobile navigation, private Note editing and bounded graph interactions.
+The rating rendering fixture now uses a real registered identity instead of
+inconsistent guest permission flags; none of its failure assertions were removed.
+
+The separate real registered public regression verifies explicit public Concept
+and Roadmap creation/update/review/merge, self/stale rejection, versioned ratings,
+immutable adoption/progress independence, private Note/evidence isolation, guest
+claiming and actual reviewer revocation. Final read-only Space audit confirms all
+temporary reviewer/capability authority used by this package is inactive.
+
+Pinned TypeScript/Next export, static CSP hashes and license notices passed.
+151 frontend and839 scoped runtime files match immutable build archives.
+Both existing nodes imported the checked image; exact owned ephemeral builders
+were cleaned only after evidence capture. Two nodes,14 apps,7 monitoring,13 JVMs
+and10 CDC connectors/tasks are healthy. Original application/monitoring Deployment
+identities, all13 PVC UIDs and13 other app images remain unchanged; no firing alerts.
+Only Gateway rolled. App/login/Headlamp/MinIO/Grafana host HTTPS200 with verified CA
+and anonymous dashboard401 passed. Gateway loopback forwarding was renewed.
+
+Visual checks: desktop task controls and current public source,390px graph proposal
+editor and confirmed private adoption/learning entry. No horizontal overflow or
+unfinished authority-check capture. Earlier backend/CDC-byte/public rebuild/backup
+tests remain historical; this milestone adds no whole-cluster restore proof.
+
+Evidence
+.local/roadmap-workspace-validation.json
+.local/roadmap-workspace-baseline.json
+.local/roadmap-workspace-deployment.json
+.local/roadmap-workspace-builder-evidence/*.json, *.tar.gz, *.log
+.local/roadmap-workspace-forward.json
+.local/graph-ui-results/roadmap-workspace-*.png
+docs/roadmap-workspace.md
+
+No new service, dependency, domain API/schema/migration/event, dataset, cross-owner
+DB access, direct Kafka publisher, AI or automatic sharing/progress/publication.
+Substantive licensed content, broader workflow/accessibility/performance and
+production delivery/HA/SLO/off-host copies/PITR remain separate work.

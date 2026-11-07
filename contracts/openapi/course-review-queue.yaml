@@ -1,0 +1,212 @@
+openapi: 3.1.0
+info:
+  title: OWNER Course feedback and resubmission review queue
+  version: 1.0.0
+  description: Fresh current registered Group OWNER only; canonical current Course
+    curriculum submitted work, including permitted OWNER own feedback/request workflows.
+    Grading no-self rule remains unchanged in its separate queue/writer. Twenty metadata
+    fields exclude answer/comment/reason/score/files. Default NEEDS_FEEDBACK means
+    no safely current unwithdrawn feedback, including unavailable feedback. HAS_FEEDBACK
+    requires exact current-answer latest feedback without withdrawal. RETRACTED_FEEDBACK
+    includes exact latest withdrawn old-answer feedback. PENDING_RESUBMISSION requires
+    normalized current requested answer and no resolution. UNAVAILABLE covers unsafe
+    feedback or request metadata; uncertain requests never count as pending/resolved.
+    Atomic new-answer resolution is not grading/completion. Historical markers cannot
+    mark newer feedback. Current labels preserve pinned Course history. One local
+    joined statement with full source/tenancy tuples, filter before ascending Submission
+    UUIDv7 keyset/default20/max100. Fresh current curriculum and exact original Submission
+    navigation. No roster, enrollment, unread tracking, writes/events/migrations/dependencies,
+    notification or private progress change. Existing Assignment review API retains
+    exact five filters and default ALL.
+servers:
+- url: https://localhost:8443
+security:
+- browserSession: []
+paths:
+  /api/groups/{groupId}/courses/{courseId}/submissions/review-queue:
+    parameters:
+    - name: groupId
+      in: path
+      required: true
+      schema: &id001
+        $ref: assignment-submissions.yaml#/components/schemas/Id
+    - name: courseId
+      in: path
+      required: true
+      schema:
+        $ref: assignment-submissions.yaml#/components/schemas/Id
+    get:
+      operationId: getOwnerCourseReviewQueue
+      parameters:
+      - name: filter
+        in: query
+        schema:
+          type: string
+          enum:
+          - ALL
+          - NEEDS_FEEDBACK
+          - HAS_FEEDBACK
+          - RETRACTED_FEEDBACK
+          - PENDING_RESUBMISSION
+          - UNAVAILABLE
+          default: NEEDS_FEEDBACK
+      - name: after
+        in: query
+        schema: *id001
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      responses:
+        '400':
+          description: Malformed/singleton query, limit, cursor or nonempty GET body
+        '401':
+          description: Secure singleton browser session required
+        '403':
+          description: Current registered Group OWNER required, even for empty results
+        '404':
+          description: Missing current Group participation or exact parent scope
+        '503':
+          description: Space authority unavailable
+        '200':
+          description: Submitted feedback and request metadata in current canonical
+            Course curriculum
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Page'
+components:
+  securitySchemes:
+    browserSession:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest
+  schemas:
+    Row:
+      type: object
+      additionalProperties: false
+      required:
+      - submissionId
+      - authorId
+      - version
+      - assignmentVersion
+      - updatedAt
+      - feedbackStatus
+      - feedbackVersion
+      - feedbackSubmissionVersion
+      - retractionState
+      - retractionVersion
+      - assignmentId
+      - assignmentTitle
+      - assignmentState
+      - studyId
+      - studyTitle
+      - courseState
+      - needsFeedback
+      - requestVersion
+      - requestState
+      - requestedSubmissionVersion
+      properties:
+        submissionId: *id001
+        authorId: *id001
+        version: &id002
+          type: integer
+          format: int64
+          minimum: 1
+        assignmentVersion: *id002
+        updatedAt:
+          type: string
+          format: date-time
+        feedbackStatus:
+          type: string
+          enum:
+          - MISSING
+          - CURRENT
+          - OUTDATED
+          - RETRACTED
+          - UNAVAILABLE
+        feedbackVersion: &id003
+          type:
+          - integer
+          - 'null'
+          format: int64
+          minimum: 1
+        feedbackSubmissionVersion: *id003
+        retractionState:
+          type: string
+          enum:
+          - NONE
+          - RETRACTED
+          - RESTORED
+          - UNKNOWN
+        retractionVersion: *id003
+        assignmentId:
+          $ref: assignment-submissions.yaml#/components/schemas/Id
+        assignmentTitle:
+          type: string
+          minLength: 1
+          maxLength: 200
+        assignmentState:
+          type: string
+          enum:
+          - DRAFT
+          - OPEN
+          - CLOSED
+          - RETIRED
+        studyId:
+          $ref: assignment-submissions.yaml#/components/schemas/Id
+        studyTitle:
+          type: string
+          minLength: 1
+          maxLength: 200
+        courseState:
+          type: string
+          enum:
+          - DRAFT
+          - ACTIVE
+          - COMPLETED
+          - RETIRED
+        needsFeedback:
+          type: boolean
+        requestVersion:
+          type: &id004
+          - integer
+          - 'null'
+          format: int64
+          minimum: 1
+        requestState:
+          type: string
+          enum:
+          - NONE
+          - REQUESTED
+          - CANCELLED
+          - RESOLVED
+          - UNAVAILABLE
+        requestedSubmissionVersion:
+          type: *id004
+          format: int64
+          minimum: 1
+    Page:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - nextAfter
+      properties:
+        items:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/Row'
+        nextAfter:
+          anyOf:
+          - *id001
+          - type: 'null'

@@ -1,0 +1,48 @@
+2026-10-07 Live Note search projection validation
+Context: k3d-knowledge-brain
+Release: brain-query-service, brain-apps; Helm revision 3
+Final image: knowledge-brain/brain-query-service:local-049fe626133115b5
+Both local nodes imported the final image before deployment.
+Flyway V1 applied only to Brain Query's own brain_brainquery database.
+Kafka identity: brain-query-projector (Read/Describe content.note.v1 and own group prefix only)
+Consumer group: brain-query-note-search-v1; OpenSearch projector mTLS identity only.
+No user search HTTP/Gateway endpoint added.
+
+Full regression: backend-validation-1791377419, Complete/BUILD SUCCESS
+143 tests, 0 failures, 0 errors, 0 skips
+Actual PostgreSQL, Kafka, MinIO and OpenSearch used. This run preceded the final
+retention-bootstrap/idle-readiness refinements; those are verified below.
+
+Final-source focused validation: backend-validation-1791377693, Complete/BUILD SUCCESS
+19 tests, zero failures/errors/skips:
+4 actual PostgreSQL Inbox/queue transaction, duplicate, rollback and concurrency checks
+4 actual mTLS OpenSearch version, conflict, retirement and scoped search checks
+2 retention/truncation offset decision checks (no destructive seven-day retention test)
+6 existing projection decoding/query checks; 3 service boundary/virtual-thread checks
+
+End-to-end/restart Job: note-projection-validation-1791377285, Complete/all PASS
+Real HTTPS Note create/update -> Outbox -> Debezium -> Kafka -> durable Brain Query
+Inbox/queue -> OpenSearch confirmed. Same-note other-Space query had zero hits.
+Brain Query was scaled to zero and its old Pod deleted before a third revision was
+written. A different Ready Pod caught up after restoring one replica.
+Brain Query old/new UID: 7f145f67-5199-461e-a0a6-f43597811074 -> 8d5f3ac6-f870-43f2-8117-bcd9f168f480
+OpenSearch was scaled to zero and its old Pod deleted before a fourth revision was
+written. Projector readiness became 503; pending durable work succeeded after recovery.
+OpenSearch old/new UID: 39dc6e8f-842d-43c4-90a9-b87e242c8efa -> 32d357dc-88a2-4299-82be-17d513346c34
+Both workload replica counts restored to one; no PVC deleted. This failure test ran
+on the initial image before the retention/idle-readiness refinements.
+NoteRetired subsequently disappeared from scoped results.
+
+Final-image group/flow check: note-projection-validation-1791377876, Complete/all PASS
+Two final-image consumer Pods simultaneously Ready in the same one-partition group.
+Pod UIDs: ebe26868-cba1-4d40-954f-35ddbe64e3f5, 033b2d10-cd4f-4a0d-b670-0358d93be008
+Live create/update and NoteRetired flow remained successful with two replicas.
+Local deployment then restored to one replica; final rollout Ready.
+
+Payload-free event/trace acknowledgement logs; bounded outcome/failure counters;
+readiness fails on blocked processing. Compiled Protobuf contract unchanged.
+
+Pending: Content-owned canonical snapshot/rebuild (including retention gaps, lost
+indexes and projection-DB backup restoration reconciliation), authoritative Space
+permission checks for end-user search, REST/OpenAPI/Gateway search route, graph.
+No production HA, load benchmark, exactly-once or full-platform completion claimed.

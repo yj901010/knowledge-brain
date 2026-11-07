@@ -1,0 +1,110 @@
+Delivery foundation / actual local validation — 2026-11-06 (Asia/Seoul)
+
+Architecture
+  Read AGENTS.md and PROJECT.md first; existing delivery decision followed.
+  13 Java25 services and owner DBs, Kubernetes, Outbox/Connect-only publication unchanged.
+  No domain API, event contract, migration, source repository commit/push or public data publication.
+  GitHub Actions -> independent service CI/build -> scan -> GHCR -> reviewed GitOps -> Argo CD.
+
+Implemented
+  .github/workflows/ci.yml and release.yml; all Actions pinned to reviewed full SHAs.
+  Contents-read CI; manual default-branch release; image-job-only packages-write.
+  Exact source-commit frontend artifacts, notices, CSP and complete file hashes.
+  13 independent Jib archives, same-archive Trivy before push, hash-checked publish proof.
+  Complete same-source digest release lock; missing/duplicate/foreign/unscanned fragments rejected.
+  No publish proof/fragment survives a failed re-scan.
+  Immutable staged GitOps values; existing config-commit content check; pointer CAS/concurrent guard.
+  No automatic sync/prune/finalizers; production generation requires reviewed overlay.
+
+Local source/CI evidence
+  Cluster kube-system UID: ee84ca44-bb83-4712-a572-10169a6e2542
+  Ephemeral CI Job: delivery-ci-1793962550268390500
+  Maven/JDK: reviewed maven3.10.0-eclipse-temurin25 image; actual Java25.0.4.1.
+  PostgreSQL17.11 sidecar, emptyDir only; independent owner users/databases.
+  13 services + event-contracts module BUILD SUCCESS; total Maven time7m38s.
+  Executed1,873; skipped86; failures0; errors0.
+  Service                     executed skipped
+  gateway-service                  243       0
+  identity-service                  17       1
+  space-service                     79       6
+  knowledge-service                248      11
+  content-service                  168      10
+  learning-service                 160      14
+  planning-service                  81       6
+  collaboration-service            626      16
+  activity-service                  72       3
+  media-service                     17       2
+  integration-service               51       2
+  notification-service              45       4
+  brain-query-service               66      11
+  External Kafka/storage-dependent tests were not configured in this isolated hosted-CI counterpart.
+  This is not a live CDC/Registry compatibility rerun or all-feature browser rerun.
+  Actual tested source archive SHA256:
+    839761e69dab7a9122160f868456a0d2d035ef1808e87b405d002bc25175f312
+  Compared1,888 actual archived service/contract/pom files to current source: identical.
+  17 delivery tests passed, including all13 real local/service/telemetry Helm overlays.
+  Changed scan-retry/GitOps checks were rerun after final tightening:4/4 passed.
+  Pinned actionlint1.7.12: both final workflows passed.
+  Local backend source maps belong to the completed test Job for24-hour TTL cleanup.
+
+Frontend CI reproduction
+  Actual Node24.10.0 digest-pinned Linux image; isolated local Git fixture.
+  Fixture commit:13eea766f5300035236cea0fb5f417de1e758c11
+  This is not a commit in the user's source repository.
+  npm ci, Next16.4.0 static export, TypeScript, license notices and CSP succeeded.
+  All52 exported asset hashes and exact fixture-commit identity verified.
+  Original Gateway generated assets and Deployment were not replaced.
+
+Argo CD / GitOps drill
+  Argo CD3.6.1 namespace install and3 CRDs verified against upstream SHA256 locks.
+  Full server, repository server, application controller and ephemeral Redis Ready.
+  Optional upstream Dex/ApplicationSet/notifications locally replicas0.
+  Active Argo/Redis images digest-pinned; verified licenses recorded in delivery-tools.json.
+  Namespace:brain-delivery; allowed deployment target:brain-delivery-probe only.
+  Actual controller RBAC:
+    patch Deployment in brain-delivery-probe = yes
+    patch Deployment in brain-apps = no
+    delete PVC in brain-data = no
+  No cluster write role, static service-account JWT, public ingress or host Argo listener.
+  Read-only internal Git fixture, restricted to repo-server; no private source/credentials served.
+  Probe uses the real cached Gateway with API disabled; no domain DB/TLS secrets or telemetry.
+  OCI manifest:
+    docker.io/knowledge-brain/gateway-service@sha256:ba671628a576d36313e7d1fe3a0fa618e50f227768bace5cc8ad46ad94a9db23
+  Exact Git fixture commits:
+    A edd1d8dfc1cb98dec0c8959bc85a419787356e32
+    B 55faa23bb089e8162cf1e7a0f0368dbebeefce7e
+    C 929d936f3c45cb152979e787ea1236cf2ef80f3f (Git-revert treeA)
+  Passed: initialA sync/Healthy, external DRIFT -> OutOfSync, manual repairA,
+          upgradeB, Git-revertC -> generationA/Synced/Healthy.
+  Deployment UID retained:7be5c22d-f45c-437c-9e70-0ee42104843e
+  Existing13 application candidates render correctly but were not adopted/applied.
+
+Actual vulnerability gate
+  Trivy0.76.2 archive checksum verified; official vulnerability/Java DBs downloaded.
+  Scanned the current Gateway OCI archive without rebuilding or loading it into the host engine.
+  Exit1 as required:4 CRITICAL +12 HIGH package findings. Release is BLOCKED.
+  Scanner report SHA256:
+    24603f9e63f4ee03c09068ca6d93f0433eb32abbff471a6cf7946cb2ee75838a
+  Inventory:docs/delivery-scan-findings.json; full local report:.local/delivery/gateway-trivy.json.
+  Affected inventory includes Tomcat, Jackson and base-image OS/Go packages.
+  Installed/fixed versions are scanner assertions; exploitability was not validated.
+  No ignore/waiver, GHCR publication, all13-image release or production scan pass claimed.
+
+Existing runtime preserved
+  14/14 app Deployments Ready; all original UIDs/specs/images unchanged.
+  7/7 monitoring Deployments Ready; all original UIDs/specs/images unchanged.
+  13/13 PVC identities retained; no canonical data/CDC offsets deleted or reset.
+  13 JVM services observed;10 CDC connectors reported running by current Prometheus metrics.
+  Gateway stays knowledge-brain/gateway-service:local-fc13be0ce21aa8d8.
+  Reopened loopback-only existing access paths; trusted project-CA HTTPS200:
+    application8443, login8445, Headlamp8444, MinIO9443, Grafana8446.
+  Grafana dashboard API anonymous401 retained.
+  No Docker/WSL restart, cluster reset or data restore in this package.
+
+Remaining release prerequisites
+  Remediate dependency/base-image scan findings and re-scan before any release.
+  Select/connect GitHub repository; review initial source and configure branch/environment policy.
+  Run actual hosted Actions/GHCR; stage/review real digest release and config commits.
+  Provision repository/GHCR access outside Git; review destination RBAC and complete app diffs.
+  Explicit existing-app adoption and production overlay/SSO/HA remain separate work.
+  Local proof files:.local/delivery/{baseline,evidence,drill,frontend-proof,access,ci-job}.json

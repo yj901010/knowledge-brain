@@ -1,0 +1,36 @@
+image: postgres:17.11-bookworm
+adminSecret: brain-postgres-admin
+storage:
+  size: 20Gi
+  className: ''
+resources:
+  requests:
+    cpu: 500m
+    memory: 512Mi
+  limits:
+    cpu: '2'
+    memory: 2Gi
+owners:
+  identity: brain-identity-db
+  space: brain-space-db
+  knowledge: brain-knowledge-db
+  content: brain-content-db
+  learning: brain-learning-db
+  planning: brain-planning-db
+  collaboration: brain-collaboration-db
+  activity: brain-activity-db
+  media: brain-media-db
+  integration: brain-integration-db
+  notification: brain-notification-db
+  brainquery: brain-brainquery-db
+  keycloak: brain-keycloak-db
+probes:
+  startup:
+    timeoutSeconds: 1
+    failureThreshold: 60
+  readiness:
+    timeoutSeconds: 1
+    failureThreshold: 3
+  liveness:
+    timeoutSeconds: 1
+    failureThreshold: 3

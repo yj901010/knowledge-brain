@@ -1,0 +1,718 @@
+openapi: 3.1.0
+info:
+  title: Private public-GitHub repository connections
+  version: 1.1.0
+  description: Registered PERSONAL PRIVATE Space OWNER only. Exact singleton queries
+    and headers, empty GET/DELETE bodies. Explicit connect and sync; no background
+    polling. Browser URLs only https://github.com/owner/repo, no redirects. Each sync
+    observes at most20 commits on current default branch; possiblyMore is true at20.
+    Empty repository imports no commits. SHA dedup is immutable per connection. GitHub
+    authors are not platform actors or ownership evidence. Disconnect is logical RETIRED;
+    imported commits/history remain private. Strong ghrN CAS protects sync/disconnect;
+    replay fixes original actor/key/body/version and never repeats GitHub calls. Rate
+    limit errors do not write data. No Authorization forwarding to GitHub. Completed
+    sync receipts can be read privately, newest logical repository version first,
+    without new GitHub I/O or writes. Failed attempts have no receipt; zero-import
+    and empty successful observations remain recorded. Disconnect preserves receipts.
+servers:
+- url: https://localhost:8443
+security:
+- sessionCookie: []
+paths:
+  /api/spaces/{spaceId}/github/repositories:
+    get:
+      operationId: listPublicGitHubConnections
+      parameters:
+      - &id002
+        name: spaceId
+        in: path
+        required: true
+        schema: &id001
+          type: string
+          format: uuid
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+      - name: state
+        in: query
+        required: false
+        schema:
+          enum:
+          - ACTIVE
+          - RETIRED
+          default: ACTIVE
+      - &id007
+        name: after
+        in: query
+        required: false
+        schema: *id001
+      - &id008
+        name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      responses:
+        '200':
+          description: Private no-store response
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Repositories'
+        '400':
+          description: Malformed/duplicate/unknown input
+        '401':
+          description: Session unavailable
+        '403':
+          description: Registered account or same-origin authority required
+        '404':
+          description: Space or source unavailable
+        '409':
+          description: Active duplicate, disconnected source, changed source identity
+            or idempotency mismatch
+        '412':
+          description: Current repository version differs
+        '428':
+          description: Strong If-Match required
+        '502':
+          description: GitHub public source unavailable or malformed
+        '503':
+          description: GitHub throttled or authority unavailable
+    post:
+      operationId: connectPublicGitHubRepository
+      parameters:
+      - *id002
+      - &id005
+        name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^[0-9a-f]{32}$
+      - name: Origin
+        in: header
+        required: true
+        schema:
+          const: https://localhost:8443
+      responses:
+        '201':
+          description: Private no-store response
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"ghr[1-9][0-9]*"$
+          content:
+            application/json:
+              schema: &id003
+                $ref: '#/components/schemas/Repository'
+        '200':
+          description: Same actor/key/url replay, including after disconnect
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"ghr[1-9][0-9]*"$
+          content:
+            application/json:
+              schema: *id003
+        '400':
+          description: Malformed/duplicate/unknown input
+        '401':
+          description: Session unavailable
+        '403':
+          description: Registered account or same-origin authority required
+        '404':
+          description: Space or source unavailable
+        '409':
+          description: Active duplicate, disconnected source, changed source identity
+            or idempotency mismatch
+        '412':
+          description: Current repository version differs
+        '428':
+          description: Strong If-Match required
+        '502':
+          description: GitHub public source unavailable or malformed
+        '503':
+          description: GitHub throttled or authority unavailable
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - url
+              properties:
+                url:
+                  type: string
+                  format: uri
+                  maxLength: 256
+  /api/spaces/{spaceId}/github/repositories/{repositoryId}:
+    get:
+      operationId: readGitHubConnection
+      parameters:
+      - *id002
+      - &id004
+        name: repositoryId
+        in: path
+        required: true
+        schema: *id001
+      responses:
+        '200':
+          description: Private no-store response
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"ghr[1-9][0-9]*"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Repository'
+        '400':
+          description: Malformed/duplicate/unknown input
+        '401':
+          description: Session unavailable
+        '403':
+          description: Registered account or same-origin authority required
+        '404':
+          description: Space or source unavailable
+        '409':
+          description: Active duplicate, disconnected source, changed source identity
+            or idempotency mismatch
+        '412':
+          description: Current repository version differs
+        '428':
+          description: Strong If-Match required
+        '502':
+          description: GitHub public source unavailable or malformed
+        '503':
+          description: GitHub throttled or authority unavailable
+    delete:
+      operationId: disconnectGitHubConnection
+      parameters:
+      - *id002
+      - *id004
+      - &id006
+        name: If-Match
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^"ghr[1-9][0-9]{0,18}"$
+      - name: Origin
+        in: header
+        required: true
+        schema:
+          const: https://localhost:8443
+      responses:
+        '200':
+          description: Private no-store response
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"ghr[1-9][0-9]*"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Repository'
+        '400':
+          description: Malformed/duplicate/unknown input
+        '401':
+          description: Session unavailable
+        '403':
+          description: Registered account or same-origin authority required
+        '404':
+          description: Space or source unavailable
+        '409':
+          description: Active duplicate, disconnected source, changed source identity
+            or idempotency mismatch
+        '412':
+          description: Current repository version differs
+        '428':
+          description: Strong If-Match required
+        '502':
+          description: GitHub public source unavailable or malformed
+        '503':
+          description: GitHub throttled or authority unavailable
+  /api/spaces/{spaceId}/github/repositories/{repositoryId}/sync:
+    post:
+      operationId: observeRecentPublicGitHubCommits
+      parameters:
+      - *id002
+      - *id004
+      - *id005
+      - *id006
+      - name: Origin
+        in: header
+        required: true
+        schema:
+          const: https://localhost:8443
+      responses:
+        '200':
+          description: Private no-store response
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"ghr[1-9][0-9]*"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SyncResult'
+        '400':
+          description: Malformed/duplicate/unknown input
+        '401':
+          description: Session unavailable
+        '403':
+          description: Registered account or same-origin authority required
+        '404':
+          description: Space or source unavailable
+        '409':
+          description: Active duplicate, disconnected source, changed source identity
+            or idempotency mismatch
+        '412':
+          description: Current repository version differs
+        '428':
+          description: Strong If-Match required
+        '502':
+          description: GitHub public source unavailable or malformed
+        '503':
+          description: GitHub throttled or authority unavailable
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: []
+              properties: {}
+  /api/spaces/{spaceId}/github/repositories/{repositoryId}/commits:
+    get:
+      operationId: listImportedGitHubCommits
+      parameters:
+      - *id002
+      - *id004
+      - *id007
+      - *id008
+      responses:
+        '200':
+          description: Private no-store response
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Commits'
+        '400':
+          description: Malformed/duplicate/unknown input
+        '401':
+          description: Session unavailable
+        '403':
+          description: Registered account or same-origin authority required
+        '404':
+          description: Space or source unavailable
+        '409':
+          description: Active duplicate, disconnected source, changed source identity
+            or idempotency mismatch
+        '412':
+          description: Current repository version differs
+        '428':
+          description: Strong If-Match required
+        '502':
+          description: GitHub public source unavailable or malformed
+        '503':
+          description: GitHub throttled or authority unavailable
+  /api/spaces/{spaceId}/github/repositories/{repositoryId}/commits/{commitId}:
+    get:
+      operationId: readImmutableImportedGitHubCommit
+      parameters:
+      - *id002
+      - *id004
+      - name: commitId
+        in: path
+        required: true
+        schema: *id001
+      responses:
+        '200':
+          description: Private no-store response
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Commit'
+        '400':
+          description: Malformed/duplicate/unknown input
+        '401':
+          description: Session unavailable
+        '403':
+          description: Registered account or same-origin authority required
+        '404':
+          description: Space or source unavailable
+        '409':
+          description: Active duplicate, disconnected source, changed source identity
+            or idempotency mismatch
+        '412':
+          description: Current repository version differs
+        '428':
+          description: Strong If-Match required
+        '502':
+          description: GitHub public source unavailable or malformed
+        '503':
+          description: GitHub throttled or authority unavailable
+  /api/spaces/{spaceId}/github/repositories/{repositoryId}/revisions:
+    get:
+      operationId: readGitHubConnectionHistory
+      parameters:
+      - *id002
+      - *id004
+      - name: before
+        in: query
+        required: false
+        schema: &id010
+          type: integer
+          minimum: 1
+          maximum: 9223372036854775807
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 10
+      responses:
+        '200':
+          description: Private no-store response
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                type: array
+                maxItems: 100
+                items:
+                  $ref: '#/components/schemas/Revision'
+        '400':
+          description: Malformed/duplicate/unknown input
+        '401':
+          description: Session unavailable
+        '403':
+          description: Registered account or same-origin authority required
+        '404':
+          description: Space or source unavailable
+        '409':
+          description: Active duplicate, disconnected source, changed source identity
+            or idempotency mismatch
+        '412':
+          description: Current repository version differs
+        '428':
+          description: Strong If-Match required
+        '502':
+          description: GitHub public source unavailable or malformed
+        '503':
+          description: GitHub throttled or authority unavailable
+  /api/spaces/{spaceId}/github/repositories/{repositoryId}/syncs:
+    get:
+      operationId: readCompletedGitHubSyncHistory
+      description: Fresh registered PRIVATE PERSONAL OWNER authority. Empty GET body;
+        singleton before/limit only. Exclusive before is a receipt repositoryVersion,
+        not an opaque request key. Default20/max100, newest first by persisted expected_version.
+        nextBefore is the last returned repositoryVersion only when an older result
+        exists. Only eight immutable receipt fields are returned; actor/request-key/expected-version/internal
+        headers are omitted. Successful zero-import and empty runs included, no failed-attempt
+        history. Readable after disconnect; reads never contact GitHub or change domain
+        data/events.
+      parameters:
+      - name: spaceId
+        in: path
+        required: true
+        schema: &id009
+          type: string
+          format: uuid
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+      - name: repositoryId
+        in: path
+        required: true
+        schema: *id009
+      - name: before
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 9223372036854775807
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      responses:
+        '200':
+          description: Private completed observations, no-store; empty collection
+            before first success
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SyncHistoryPage'
+        '400':
+          description: Malformed/unknown/duplicate query or nonempty body
+        '401':
+          description: Session unavailable
+        '403':
+          description: Registered account required
+        '404':
+          description: Current private Space or repository unavailable
+        '503':
+          description: Current authority or own storage unavailable
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest
+  schemas:
+    Repository:
+      type: object
+      additionalProperties: false
+      required:
+      - repositoryId
+      - spaceId
+      - visibility
+      - externalId
+      - fullName
+      - url
+      - defaultBranch
+      - state
+      - version
+      - connectedBy
+      - createdAt
+      - updatedAt
+      - lastSyncedAt
+      properties:
+        repositoryId: *id001
+        spaceId: *id001
+        visibility:
+          const: PRIVATE
+        externalId: &id012
+          type: string
+          pattern: ^[1-9][0-9]{0,18}$
+        fullName: &id013
+          type: string
+        url:
+          type: string
+          format: uri
+        defaultBranch:
+          type: string
+          minLength: 1
+          maxLength: 200
+        state:
+          enum:
+          - ACTIVE
+          - RETIRED
+        version: *id010
+        connectedBy: *id001
+        createdAt: &id011
+          type: string
+          format: date-time
+        updatedAt: *id011
+        lastSyncedAt:
+          type:
+          - string
+          - 'null'
+          format: date-time
+    Commit:
+      type: object
+      additionalProperties: false
+      required:
+      - commitId
+      - repositoryId
+      - spaceId
+      - visibility
+      - sourceVisibility
+      - repositoryExternalId
+      - repositoryFullName
+      - sha
+      - subject
+      - authorLogin
+      - committedAt
+      - importedAt
+      - importedBy
+      - url
+      properties:
+        commitId: *id001
+        repositoryId: *id001
+        spaceId: *id001
+        visibility:
+          const: PRIVATE
+        sourceVisibility:
+          const: PUBLIC
+        repositoryExternalId: *id012
+        repositoryFullName: *id013
+        sha:
+          type: string
+          pattern: ^([0-9a-f]{40}|[0-9a-f]{64})$
+        subject:
+          type: string
+          maxLength: 500
+        authorLogin:
+          type:
+          - string
+          - 'null'
+        committedAt: *id011
+        importedAt: *id011
+        importedBy: *id001
+        url:
+          type: string
+          format: uri
+    Sync:
+      type: object
+      additionalProperties: false
+      required:
+      - syncId
+      - repositoryId
+      - repositoryVersion
+      - observedAt
+      - scannedCount
+      - importedCount
+      - headSha
+      - possiblyMore
+      properties:
+        syncId: *id001
+        repositoryId: *id001
+        repositoryVersion: *id010
+        observedAt: *id011
+        scannedCount:
+          type: integer
+          minimum: 0
+          maximum: 20
+        importedCount:
+          type: integer
+          minimum: 0
+          maximum: 20
+        headSha:
+          type:
+          - string
+          - 'null'
+        possiblyMore:
+          type: boolean
+    SyncResult:
+      type: object
+      additionalProperties: false
+      required:
+      - repository
+      - sync
+      - replay
+      properties:
+        repository:
+          $ref: '#/components/schemas/Repository'
+        sync:
+          $ref: '#/components/schemas/Sync'
+        replay:
+          type: boolean
+    Revision:
+      type: object
+      additionalProperties: false
+      required:
+      - revisionId
+      - version
+      - actorId
+      - occurredAt
+      - snapshot
+      properties:
+        revisionId: *id001
+        version: *id010
+        actorId: *id001
+        occurredAt: *id011
+        snapshot:
+          $ref: '#/components/schemas/Repository'
+    Repositories:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - nextAfter
+      properties:
+        items:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/Repository'
+        nextAfter:
+          type:
+          - string
+          - 'null'
+          format: uuid
+    Commits:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - nextAfter
+      properties:
+        items:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/Commit'
+        nextAfter:
+          type:
+          - string
+          - 'null'
+          format: uuid
+    SyncHistoryPage:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - nextBefore
+      properties:
+        items:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/Sync'
+        nextBefore:
+          type:
+          - integer
+          - 'null'
+          minimum: 2
+          maximum: 9223372036854775807

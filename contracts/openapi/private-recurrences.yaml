@@ -1,0 +1,790 @@
+openapi: 3.1.0
+info:
+  title: Private finite recurring schedules
+  version: 1.0.0
+  description: Planning-owned finite DAILY/WEEKLY wall-clock recurrence. Same private
+    Schedule read/write authority, fresh on every request. Preview is read-only and
+    returns 200 with explicit issues; gaps never shift and overlaps require an explicit
+    policy. Successful preview hash binds Space/input/all UTC/local/offset pins; no
+    creation with issues. Create commits parent, immutable revisions, 2..100 canonical
+    child Schedules and all Outbox events atomically. Original idempotent v1 replay
+    precedes Task/zone plan recalculation, preserving exact retries after edits, retirement
+    and account claim. Original series rule/pins are immutable; children remain independently
+    editable. Cancellation preview lists current ACTIVE children by original ordinal;
+    cancel locks and compares the exact current list/versions before retiring selected
+    children and parent atomically. fromOrdinal is explicit, not a current-time cutoff;
+    earlier children remain unchanged. Retired known Series GET/history remain readable.
+    Same cancel intent/hash after retirement is an idempotent result; changed intent
+    fails 412. Empty GET body, strict singleton queries/JSON, TLS, no-store and same-origin
+    POSTs. No recurrence update/delete/browser export or automatic reminder endpoint.
+servers:
+- url: https://localhost:8443
+security:
+- sessionCookie: []
+paths:
+  /api/spaces/{spaceId}/recurrences:
+    get:
+      operationId: listPrivateRecurrences
+      parameters:
+      - &id002
+        name: spaceId
+        in: path
+        required: true
+        schema: &id003
+          type: string
+          format: uuid
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+      - name: state
+        in: query
+        required: false
+        schema:
+          enum: &id010
+          - ACTIVE
+          - RETIRED
+          default: ACTIVE
+      - name: after
+        in: query
+        required: false
+        schema:
+          type: string
+          pattern: ^[A-Za-z0-9_-]{1,256}$
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      responses:
+        '400':
+          description: Malformed fields, JSON, bounds, singleton query or nonempty
+            GET body
+          headers: &id001
+            Cache-Control:
+              schema:
+                const: no-store
+        '401':
+          description: Invalid or ambiguous guest/registered session
+          headers: *id001
+        '403':
+          description: Same-origin or role denied
+          headers: *id001
+        '404':
+          description: Unavailable private Space, recurrence or new Task link
+          headers: *id001
+        '409':
+          description: Creation key represents another intent
+          headers: *id001
+        '412':
+          description: Preview or selected child versions changed; confirm again
+          headers: *id001
+        '413':
+          description: Body exceeds 262144 bytes
+          headers: *id001
+        '415':
+          description: JSON required
+          headers: *id001
+        '503':
+          description: Owner or authorization unavailable
+          headers: *id001
+        '200':
+          description: Authorized private result; no-store
+          headers: *id001
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Page'
+    post:
+      operationId: createPrivateRecurrence
+      parameters:
+      - *id002
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^[0-9a-f]{32}$
+      responses:
+        '400':
+          description: Malformed fields, JSON, bounds, singleton query or nonempty
+            GET body
+          headers: *id001
+        '401':
+          description: Invalid or ambiguous guest/registered session
+          headers: *id001
+        '403':
+          description: Same-origin or role denied
+          headers: *id001
+        '404':
+          description: Unavailable private Space, recurrence or new Task link
+          headers: *id001
+        '409':
+          description: Creation key represents another intent
+          headers: *id001
+        '412':
+          description: Preview or selected child versions changed; confirm again
+          headers: *id001
+        '413':
+          description: Body exceeds 262144 bytes
+          headers: *id001
+        '415':
+          description: JSON required
+          headers: *id001
+        '503':
+          description: Owner or authorization unavailable
+          headers: *id001
+        '200':
+          description: Authorized private result; no-store
+          headers: *id001
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Series'
+        '201':
+          description: Authorized private result; no-store
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Series'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - input
+              - previewHash
+              properties:
+                input:
+                  $ref: '#/components/schemas/Input'
+                previewHash: &id005
+                  type: string
+                  pattern: ^[0-9a-f]{64}$
+  /api/spaces/{spaceId}/recurrences/preview:
+    post:
+      operationId: previewPrivateRecurrence
+      parameters:
+      - *id002
+      responses:
+        '400':
+          description: Malformed fields, JSON, bounds, singleton query or nonempty
+            GET body
+          headers: *id001
+        '401':
+          description: Invalid or ambiguous guest/registered session
+          headers: *id001
+        '403':
+          description: Same-origin or role denied
+          headers: *id001
+        '404':
+          description: Unavailable private Space, recurrence or new Task link
+          headers: *id001
+        '409':
+          description: Creation key represents another intent
+          headers: *id001
+        '412':
+          description: Preview or selected child versions changed; confirm again
+          headers: *id001
+        '413':
+          description: Body exceeds 262144 bytes
+          headers: *id001
+        '415':
+          description: JSON required
+          headers: *id001
+        '503':
+          description: Owner or authorization unavailable
+          headers: *id001
+        '200':
+          description: Authorized private result; no-store
+          headers: *id001
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Preview'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Input'
+  /api/spaces/{spaceId}/recurrences/{recurrenceId}:
+    get:
+      operationId: readPrivateRecurrence
+      parameters:
+      - *id002
+      - &id004
+        name: recurrenceId
+        in: path
+        required: true
+        schema: *id003
+      responses:
+        '400':
+          description: Malformed fields, JSON, bounds, singleton query or nonempty
+            GET body
+          headers: *id001
+        '401':
+          description: Invalid or ambiguous guest/registered session
+          headers: *id001
+        '403':
+          description: Same-origin or role denied
+          headers: *id001
+        '404':
+          description: Unavailable private Space, recurrence or new Task link
+          headers: *id001
+        '409':
+          description: Creation key represents another intent
+          headers: *id001
+        '412':
+          description: Preview or selected child versions changed; confirm again
+          headers: *id001
+        '413':
+          description: Body exceeds 262144 bytes
+          headers: *id001
+        '415':
+          description: JSON required
+          headers: *id001
+        '503':
+          description: Owner or authorization unavailable
+          headers: *id001
+        '200':
+          description: Authorized private result; no-store
+          headers: *id001
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Series'
+  /api/spaces/{spaceId}/recurrences/{recurrenceId}/revisions:
+    get:
+      operationId: readPrivateRecurrenceHistory
+      parameters:
+      - *id002
+      - *id004
+      - name: before
+        in: query
+        required: false
+        schema: &id011
+          type: integer
+          minimum: 1
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 5
+      responses:
+        '400':
+          description: Malformed fields, JSON, bounds, singleton query or nonempty
+            GET body
+          headers: *id001
+        '401':
+          description: Invalid or ambiguous guest/registered session
+          headers: *id001
+        '403':
+          description: Same-origin or role denied
+          headers: *id001
+        '404':
+          description: Unavailable private Space, recurrence or new Task link
+          headers: *id001
+        '409':
+          description: Creation key represents another intent
+          headers: *id001
+        '412':
+          description: Preview or selected child versions changed; confirm again
+          headers: *id001
+        '413':
+          description: Body exceeds 262144 bytes
+          headers: *id001
+        '415':
+          description: JSON required
+          headers: *id001
+        '503':
+          description: Owner or authorization unavailable
+          headers: *id001
+        '200':
+          description: Authorized private result; no-store
+          headers: *id001
+          content:
+            application/json:
+              schema:
+                type: array
+                maxItems: 10
+                items:
+                  $ref: '#/components/schemas/Revision'
+  /api/spaces/{spaceId}/recurrences/{recurrenceId}/cancellation:
+    get:
+      operationId: previewPrivateRecurrenceCancellation
+      parameters:
+      - *id002
+      - *id004
+      - name: fromOrdinal
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 1
+      responses:
+        '400':
+          description: Malformed fields, JSON, bounds, singleton query or nonempty
+            GET body
+          headers: *id001
+        '401':
+          description: Invalid or ambiguous guest/registered session
+          headers: *id001
+        '403':
+          description: Same-origin or role denied
+          headers: *id001
+        '404':
+          description: Unavailable private Space, recurrence or new Task link
+          headers: *id001
+        '409':
+          description: Creation key represents another intent
+          headers: *id001
+        '412':
+          description: Preview or selected child versions changed; confirm again
+          headers: *id001
+        '413':
+          description: Body exceeds 262144 bytes
+          headers: *id001
+        '415':
+          description: JSON required
+          headers: *id001
+        '503':
+          description: Owner or authorization unavailable
+          headers: *id001
+        '200':
+          description: Authorized private result; no-store
+          headers: *id001
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cancellation'
+  /api/spaces/{spaceId}/recurrences/{recurrenceId}/cancel:
+    post:
+      operationId: retirePrivateRecurrenceFromOccurrence
+      parameters:
+      - *id002
+      - *id004
+      - name: If-Match
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^"rc[1-9][0-9]{0,18}"$
+      responses:
+        '400':
+          description: Malformed fields, JSON, bounds, singleton query or nonempty
+            GET body
+          headers: *id001
+        '401':
+          description: Invalid or ambiguous guest/registered session
+          headers: *id001
+        '403':
+          description: Same-origin or role denied
+          headers: *id001
+        '404':
+          description: Unavailable private Space, recurrence or new Task link
+          headers: *id001
+        '409':
+          description: Creation key represents another intent
+          headers: *id001
+        '412':
+          description: Preview or selected child versions changed; confirm again
+          headers: *id001
+        '413':
+          description: Body exceeds 262144 bytes
+          headers: *id001
+        '415':
+          description: JSON required
+          headers: *id001
+        '503':
+          description: Owner or authorization unavailable
+          headers: *id001
+        '200':
+          description: Authorized private result; no-store
+          headers: *id001
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Series'
+        '428':
+          description: Independent rcN If-Match required
+          headers: *id001
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - fromOrdinal
+              - cancellationHash
+              properties:
+                fromOrdinal:
+                  type: integer
+                  minimum: 1
+                  maximum: 100
+                cancellationHash: *id005
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest
+  schemas:
+    Input:
+      type: object
+      additionalProperties: false
+      required:
+      - title
+      - description
+      - startsLocal
+      - endsLocal
+      - timeZone
+      - taskId
+      - frequency
+      - interval
+      - count
+      - startsOverlap
+      - endsOverlap
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: At most 200 codepoints/800 UTF-8 bytes; no control characters.
+        description:
+          type: string
+          maxLength: 32768
+          description: At most 32768 UTF-8 bytes, plain text.
+        startsLocal: &id006
+          type: string
+          pattern: ^(?!0000)[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}$
+        endsLocal: *id006
+        timeZone:
+          type: string
+          maxLength: 64
+          description: Exact available IANA zone, including UTC; no fixed-offset zone
+            IDs.
+        taskId:
+          oneOf:
+          - type: string
+            format: uuid
+            pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+          - type: 'null'
+        frequency:
+          enum:
+          - DAILY
+          - WEEKLY
+        interval:
+          type: integer
+          minimum: 1
+          maximum: 365
+          description: WEEKLY maximum 52; DAILY maximum 365.
+        count:
+          type: integer
+          minimum: 2
+          maximum: 100
+        startsOverlap:
+          enum:
+          - REJECT
+          - EARLIER
+          - LATER
+        endsOverlap:
+          enum:
+          - REJECT
+          - EARLIER
+          - LATER
+    Occurrence:
+      type: object
+      additionalProperties: false
+      required:
+      - ordinal
+      - startsAt
+      - endsAt
+      - startsLocal
+      - endsLocal
+      - startsOffset
+      - endsOffset
+      properties:
+        ordinal: &id009
+          type: integer
+          minimum: 1
+          maximum: 100
+        startsAt: &id007
+          type: string
+          format: date-time
+        endsAt: *id007
+        startsLocal: *id006
+        endsLocal: *id006
+        startsOffset: &id008
+          type: string
+        endsOffset: *id008
+    LinkedOccurrence:
+      type: object
+      additionalProperties: false
+      required:
+      - ordinal
+      - startsAt
+      - endsAt
+      - startsLocal
+      - endsLocal
+      - startsOffset
+      - endsOffset
+      - scheduleId
+      properties:
+        ordinal: *id009
+        startsAt: *id007
+        endsAt: *id007
+        startsLocal: *id006
+        endsLocal: *id006
+        startsOffset: *id008
+        endsOffset: *id008
+        scheduleId: *id003
+    Issue:
+      type: object
+      additionalProperties: false
+      required:
+      - ordinal
+      - field
+      - local
+      - reason
+      - options
+      properties:
+        ordinal:
+          type: integer
+          minimum: 1
+          maximum: 100
+        field:
+          enum:
+          - startsLocal
+          - endsLocal
+          - interval
+        local: *id008
+        reason:
+          enum:
+          - GAP
+          - OVERLAP
+          - NONPOSITIVE_INTERVAL
+          - OUT_OF_RANGE
+        options:
+          type: array
+          maxItems: 2
+          items:
+            type: object
+            additionalProperties: false
+            required:
+            - instant
+            - offset
+            properties:
+              instant: *id007
+              offset: *id008
+    Preview:
+      type: object
+      additionalProperties: false
+      required:
+      - spaceId
+      - input
+      - occurrences
+      - issues
+      - previewHash
+      properties:
+        spaceId: *id003
+        input:
+          $ref: '#/components/schemas/Input'
+        occurrences:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/Occurrence'
+        issues:
+          type: array
+          maxItems: 200
+          items:
+            $ref: '#/components/schemas/Issue'
+        previewHash:
+          oneOf:
+          - type: string
+            pattern: ^[0-9a-f]{64}$
+          - type: 'null'
+    Series:
+      type: object
+      additionalProperties: false
+      required:
+      - recurrenceId
+      - spaceId
+      - visibility
+      - state
+      - version
+      - input
+      - previewHash
+      - occurrences
+      - retiredFromOrdinal
+      - cancellationHash
+      - createdAt
+      - updatedAt
+      properties:
+        recurrenceId: *id003
+        spaceId: *id003
+        visibility:
+          const: PRIVATE
+        state: &id012
+          enum: *id010
+        version: *id011
+        input:
+          $ref: '#/components/schemas/Input'
+        previewHash: *id005
+        occurrences:
+          type: array
+          minItems: 2
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/LinkedOccurrence'
+        retiredFromOrdinal:
+          type: integer
+          minimum: 0
+          maximum: 100
+        cancellationHash:
+          oneOf:
+          - type: string
+            pattern: ^[0-9a-f]{64}$
+          - type: 'null'
+        createdAt: *id007
+        updatedAt: *id007
+    Summary:
+      type: object
+      additionalProperties: false
+      required:
+      - recurrenceId
+      - title
+      - frequency
+      - interval
+      - count
+      - timeZone
+      - state
+      - version
+      - updatedAt
+      properties:
+        recurrenceId: *id003
+        title: *id008
+        frequency:
+          enum:
+          - DAILY
+          - WEEKLY
+        interval: *id011
+        count:
+          type: integer
+          minimum: 2
+          maximum: 100
+        timeZone: *id008
+        state: *id012
+        version: *id011
+        updatedAt: *id007
+    Page:
+      type: object
+      additionalProperties: false
+      required:
+      - spaceId
+      - state
+      - items
+      - nextAfter
+      properties:
+        spaceId: *id003
+        state: *id012
+        items:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/Summary'
+        nextAfter:
+          oneOf:
+          - type: string
+            pattern: ^[A-Za-z0-9_-]{1,256}$
+          - type: 'null'
+    Revision:
+      type: object
+      additionalProperties: false
+      required:
+      - revisionId
+      - recurrenceId
+      - version
+      - actorId
+      - occurredAt
+      - snapshot
+      properties:
+        revisionId: *id003
+        recurrenceId: *id003
+        version: *id011
+        actorId: *id003
+        occurredAt: *id007
+        snapshot:
+          $ref: '#/components/schemas/Series'
+    Candidate:
+      type: object
+      additionalProperties: false
+      required:
+      - ordinal
+      - startsAt
+      - endsAt
+      - startsLocal
+      - endsLocal
+      - startsOffset
+      - endsOffset
+      - scheduleId
+      - version
+      - title
+      - timeZone
+      - taskId
+      properties:
+        ordinal: *id009
+        startsAt: *id007
+        endsAt: *id007
+        startsLocal: *id006
+        endsLocal: *id006
+        startsOffset: *id008
+        endsOffset: *id008
+        scheduleId: *id003
+        version: *id011
+        title: *id008
+        timeZone: *id008
+        taskId:
+          oneOf:
+          - type: string
+            format: uuid
+            pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+          - type: 'null'
+    Cancellation:
+      type: object
+      additionalProperties: false
+      required:
+      - spaceId
+      - recurrenceId
+      - version
+      - fromOrdinal
+      - items
+      - cancellationHash
+      properties:
+        spaceId: *id003
+        recurrenceId: *id003
+        version: *id011
+        fromOrdinal:
+          type: integer
+          minimum: 1
+          maximum: 100
+        items:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/Candidate'
+        cancellationHash: *id005

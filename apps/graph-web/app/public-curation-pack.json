@@ -1,0 +1,1273 @@
+{
+  "format": "knowledge-brain-public-curation-drafts",
+  "version": 1,
+  "packSlug": "foundations-ko-2026-11-07",
+  "createdAt": "2026-11-07",
+  "language": "ko",
+  "draftState": "DRAFT",
+  "published": false,
+  "independentReview": "NOT_REVIEWED",
+  "canonicalResolution": "UNRESOLVED",
+  "explicitProposalRequired": true,
+  "projectLicenseAssigned": false,
+  "descriptionKo": "다섯 의료 주제와 백엔드·컴퓨터 과학의 기초 사실을 검토하기 위한 로컬 작성 초안이다. 출처를 확인했지만 독립 검토·전문가 검증·공개 병합을 뜻하지 않는다.",
+  "limits": {
+    "maxStatements": 32,
+    "maxTerms": 64,
+    "maxSources": 16,
+    "maxDerivedWordsPerSource": 180,
+    "quotedSourceWords": 0,
+    "includesImages": false,
+    "includesCodeExcerpts": false,
+    "includesTreatmentRecommendations": false,
+    "includesDoses": false
+  },
+  "requiredReviewKo": [
+    "각 주장과 범위·한정 메모가 최신 원문의 해당 부분을 정확히 반영하는지 독립 검토한다.",
+    "현재 공개 Space에서 동일 의미의 개념·술어를 찾아 재사용하고 실제 ID·버전은 사용자가 직접 선택한다.",
+    "출처별 권리 메모·NCI 비보증 문구를 공개 제안 화면과 제안 내용에 어떻게 유지할지 검토한다.",
+    "공개 제안은 별도의 명시적 사용자 동의로 작성하고 지정된 독립 검토·병합 절차를 거친다."
+  ],
+  "rightsPolicies": [
+    {
+      "slug": "nci-text",
+      "title": "Reuse of NCI Information",
+      "url": "https://www.cancer.gov/policies/copyright-reuse",
+      "checkedAt": "2026-11-07",
+      "basis": "UNMARKED_NCI_TEXT_WITH_ATTRIBUTION",
+      "noteKo": "별도 저작권 표시 없는 NCI 본문에 대한 재사용 안내를 확인했다. NCI 명칭·원문 제목·링크를 표시하며 한국어 재서술에도 아래 비보증 문구를 유지한다. 저작권 표시 자료, 이미지·도해·로고·상표 표시는 가져오지 않는다.",
+      "restrictionKo": "개별 페이지의 예외 표시가 우선한다. 이 초안을 NCI 또는 PDQ의 공식 번역·전체 요약문으로 표시하지 않는다.",
+      "nonendorsement": "The National Cancer Institute (NCI) does not endorse this translation and no endorsement by NCI should be inferred."
+    },
+    {
+      "slug": "postgresql-documentation",
+      "title": "PostgreSQL License",
+      "url": "https://www.postgresql.org/about/licence/",
+      "checkedAt": "2026-11-07",
+      "basis": "OWN_FACT_PARAPHRASE_WITH_SOURCE_LINK",
+      "noteKo": "공식 라이선스가 소프트웨어와 문서의 사용·수정·배포를 허용하면서 저작권·허가·면책 문구 보존을 요구함을 확인했다. 이 팩은 은행 예제·문장·코드 대신 동작 사실을 짧은 한국어로 다시 작성한다.",
+      "restrictionKo": "문서나 코드 자체를 나중에 재현하면 해당 저작권·허가·면책 문구를 함께 보존해야 한다. 이 메모는 프로젝트 전체에 라이선스를 부여하지 않는다.",
+      "nonendorsement": null
+    },
+    {
+      "slug": "ietf-rfc-facts",
+      "title": "Corrected Legal Provisions Relating to IETF Documents",
+      "url": "https://trustee.ietf.org/documents/trust-legal-provisions/tlp-5/",
+      "checkedAt": "2026-11-07",
+      "basis": "OWN_FACT_PARAPHRASE_WITH_SOURCE_LINK",
+      "noteKo": "RFC 9110의 저작권 고지와 TLP 5.0의 외부 사용·출처 표시·수정 제한을 확인했다. 원문·번역 발췌나 코드 구성요소를 배포하지 않고 프로토콜의 사실만 자체 한국어 문장으로 설명한다.",
+      "restrictionKo": "RFC의 pre-5378 자료에 대한 수정 제한을 전체 문서 재라이선스 허가로 해석하지 않는다. 이후 원문·번역·코드를 재현할 때에는 적용 고지와 권리를 별도로 검토한다.",
+      "nonendorsement": null
+    }
+  ],
+  "sources": [
+    {
+      "slug": "nci-liver-definition",
+      "title": "What Is Liver Cancer?",
+      "url": "https://www.cancer.gov/types/liver/what-is-liver-cancer",
+      "publisher": "National Cancer Institute",
+      "rightsPolicySlug": "nci-text",
+      "retrievedAt": "2026-11-07",
+      "sourceUpdatedAt": "2024-05-15",
+      "inspectedSections": "서두의 정의 및 Types of liver cancer 본문",
+      "rightsNoteKo": "사진·도해의 설명과 출처는 사용하지 않았다.",
+      "draftState": "DRAFT",
+      "published": false,
+      "independentReview": "NOT_REVIEWED"
+    },
+    {
+      "slug": "nci-breast-definition",
+      "title": "What Is Breast Cancer?",
+      "url": "https://www.cancer.gov/types/breast/what-is-breast-cancer",
+      "publisher": "National Cancer Institute",
+      "rightsPolicySlug": "nci-text",
+      "retrievedAt": "2026-11-07",
+      "sourceUpdatedAt": "2025-12-02",
+      "inspectedSections": "그림 다음의 Breast cancer can form in 본문 목록",
+      "rightsNoteKo": "© Terese Winslow로 표시된 해부 그림과 그 설명은 제외했다. 유관·소엽 설명은 그 아래 NCI 본문에서 확인했다.",
+      "draftState": "DRAFT",
+      "published": false,
+      "independentReview": "NOT_REVIEWED"
+    },
+    {
+      "slug": "nci-lung-overview",
+      "title": "Lung Cancer—Patient Version",
+      "url": "https://www.cancer.gov/types/lung",
+      "publisher": "National Cancer Institute",
+      "rightsPolicySlug": "nci-text",
+      "retrievedAt": "2026-11-07",
+      "sourceUpdatedAt": null,
+      "inspectedSections": "제목 다음 첫 개요 문단",
+      "rightsNoteKo": "개요의 두 주요 유형과 흡연 관련 문장만 근거로 삼았다.",
+      "draftState": "DRAFT",
+      "published": false,
+      "independentReview": "NOT_REVIEWED"
+    },
+    {
+      "slug": "nci-colorectal-overview",
+      "title": "Colorectal Cancer—Patient Version",
+      "url": "https://www.cancer.gov/types/colorectal",
+      "publisher": "National Cancer Institute",
+      "rightsPolicySlug": "nci-text",
+      "retrievedAt": "2026-11-07",
+      "sourceUpdatedAt": null,
+      "inspectedSections": "제목 다음 첫 개요 문단",
+      "rightsNoteKo": "용종 관련 발생 설명만 사용하며 검진·제거 권고는 작성하지 않았다.",
+      "draftState": "DRAFT",
+      "published": false,
+      "independentReview": "NOT_REVIEWED"
+    },
+    {
+      "slug": "nci-colon-general",
+      "title": "Colon Cancer Treatment (PDQ®)–Patient Version",
+      "url": "https://www.cancer.gov/types/colorectal/patient/colon-treatment-pdq",
+      "publisher": "National Cancer Institute",
+      "rightsPolicySlug": "nci-text",
+      "retrievedAt": "2026-11-07",
+      "sourceUpdatedAt": null,
+      "inspectedSections": "General Information About Colon Cancer; Stages of Colon Cancer / Stage IV",
+      "rightsNoteKo": "질환 정의와 전이암 명칭의 본문만 확인했다. PDQ의 Permission to Use This Summary 조건과 이미지 제외를 함께 적용하며 공식 PDQ 요약문으로 표시하지 않는다.",
+      "draftState": "DRAFT",
+      "published": false,
+      "independentReview": "NOT_REVIEWED"
+    },
+    {
+      "slug": "nci-cml-general",
+      "title": "Chronic Myeloid Leukemia Treatment (PDQ®)–Patient Version",
+      "url": "https://www.cancer.gov/types/leukemia/patient/cml-treatment-pdq",
+      "publisher": "National Cancer Institute",
+      "rightsPolicySlug": "nci-text",
+      "retrievedAt": "2026-11-07",
+      "sourceUpdatedAt": "2025-04-09",
+      "inspectedSections": "General Information About Chronic Myeloid Leukemia",
+      "rightsNoteKo": "질환 특성·질환군·무증상 가능성의 본문만 확인했다. 치료 부분·그림·그림 설명은 사용하지 않았고 공식 PDQ 요약문으로 표시하지 않는다.",
+      "draftState": "DRAFT",
+      "published": false,
+      "independentReview": "NOT_REVIEWED"
+    },
+    {
+      "slug": "postgresql18-transactions",
+      "title": "PostgreSQL 18 Documentation: 3.4. Transactions",
+      "url": "https://www.postgresql.org/docs/18/tutorial-transactions.html",
+      "publisher": "PostgreSQL Global Development Group",
+      "rightsPolicySlug": "postgresql-documentation",
+      "retrievedAt": "2026-11-07",
+      "sourceUpdatedAt": null,
+      "inspectedSections": "3.4. Transactions",
+      "rightsNoteKo": "버전 18 URL을 고정했다. 실습 SQL 예제·표·은행 서사는 가져오지 않았다.",
+      "draftState": "DRAFT",
+      "published": false,
+      "independentReview": "NOT_REVIEWED"
+    },
+    {
+      "slug": "rfc9110-method-properties",
+      "title": "RFC 9110: HTTP Semantics",
+      "url": "https://www.rfc-editor.org/rfc/rfc9110.html",
+      "publisher": "IETF; R. Fielding, M. Nottingham, J. Reschke",
+      "rightsPolicySlug": "ietf-rfc-facts",
+      "retrievedAt": "2026-11-07",
+      "sourceUpdatedAt": "2022-06",
+      "inspectedSections": "9.2.1 Safe Methods; 9.2.2 Idempotent Methods",
+      "rightsNoteKo": "표준에 정의된 의미를 자체 문장으로 요약한다. 원문 발췌·코드·수정된 RFC는 포함하지 않는다.",
+      "draftState": "DRAFT",
+      "published": false,
+      "independentReview": "NOT_REVIEWED"
+    }
+  ],
+  "terms": [
+    {
+      "slug": "liver-cancer",
+      "titleKo": "간암",
+      "titleEn": "liver cancer",
+      "domain": "MEDICINE",
+      "role": "TOPIC",
+      "draftState": "DRAFT",
+      "published": false,
+      "canonicalResolution": "UNRESOLVED",
+      "reuseHint": {
+        "catalog": "data/public-starter/wikidata-metadata-v1.json",
+        "existingEnglishLabel": "liver cancer",
+        "instructionKo": "기존 이름은 조회 힌트다. 현재 공개 카탈로그의 개념과 의미·버전을 직접 확인한 뒤 재사용한다."
+      }
+    },
+    {
+      "slug": "breast-cancer",
+      "titleKo": "유방암",
+      "titleEn": "breast cancer",
+      "domain": "MEDICINE",
+      "role": "TOPIC",
+      "draftState": "DRAFT",
+      "published": false,
+      "canonicalResolution": "UNRESOLVED",
+      "reuseHint": {
+        "catalog": "data/public-starter/wikidata-metadata-v1.json",
+        "existingEnglishLabel": "breast cancer",
+        "instructionKo": "기존 이름은 조회 힌트다. 현재 공개 카탈로그의 개념과 의미·버전을 직접 확인한 뒤 재사용한다."
+      }
+    },
+    {
+      "slug": "lung-cancer",
+      "titleKo": "폐암",
+      "titleEn": "lung cancer",
+      "domain": "MEDICINE",
+      "role": "TOPIC",
+      "draftState": "DRAFT",
+      "published": false,
+      "canonicalResolution": "UNRESOLVED",
+      "reuseHint": {
+        "catalog": "data/public-starter/wikidata-metadata-v1.json",
+        "existingEnglishLabel": "lung cancer",
+        "instructionKo": "기존 이름은 조회 힌트다. 현재 공개 카탈로그의 개념과 의미·버전을 직접 확인한 뒤 재사용한다."
+      }
+    },
+    {
+      "slug": "colorectal-cancer",
+      "titleKo": "대장암",
+      "titleEn": "colorectal cancer",
+      "domain": "MEDICINE",
+      "role": "TOPIC",
+      "draftState": "DRAFT",
+      "published": false,
+      "canonicalResolution": "UNRESOLVED",
+      "reuseHint": {
+        "catalog": "data/public-starter/wikidata-metadata-v1.json",
+        "existingEnglishLabel": "colorectal cancer",
+        "instructionKo": "기존 이름은 조회 힌트다. 현재 공개 카탈로그의 개념과 의미·버전을 직접 확인한 뒤 재사용한다."
+      }
+    },
+    {
+      "slug": "cml",
+      "titleKo": "만성 골수성 백혈병",
+      "titleEn": "chronic myeloid leukemia",
+      "domain": "MEDICINE",
+      "role": "TOPIC",
+      "draftState": "DRAFT",
+      "published": false,
+      "canonicalResolution": "UNRESOLVED",
+      "reuseHint": {
+        "catalog": "data/public-starter/wikidata-metadata-v1.json",
+        "existingEnglishLabel": "chronic myeloid leukemia",
+        "instructionKo": "기존 이름은 조회 힌트다. 현재 공개 카탈로그의 개념과 의미·버전을 직접 확인한 뒤 재사용한다."
+      }
+    },
+    {
+      "slug": "backend",
+      "titleKo": "백엔드 개발",
+      "titleEn": "backend development",
+      "domain": "DEVELOPMENT",
+      "role": "TOPIC",
+      "draftState": "DRAFT",
+      "published": false,
+      "canonicalResolution": "UNRESOLVED",
+      "reuseHint": {
+        "catalog": null,
+        "existingEnglishLabel": null,
+        "instructionKo": "로컬 작성용 용어다. 새 제안 전에 현재 공개 카탈로그에서 같은 의미의 용어를 먼저 찾는다."
+      }
+    },
+    {
+      "slug": "computer-science",
+      "titleKo": "컴퓨터 과학",
+      "titleEn": "computer science",
+      "domain": "DEVELOPMENT",
+      "role": "TOPIC",
+      "draftState": "DRAFT",
+      "published": false,
+      "canonicalResolution": "UNRESOLVED",
+      "reuseHint": {
+        "catalog": "data/public-starter/wikidata-metadata-v1.json",
+        "existingEnglishLabel": "computer science",
+        "instructionKo": "기존 이름은 조회 힌트다. 현재 공개 카탈로그의 개념과 의미·버전을 직접 확인한 뒤 재사용한다."
+      }
+    },
+    {
+      "slug": "primary-liver-cancer",
+      "titleKo": "원발성 간암",
+      "titleEn": "primary liver cancer",
+      "domain": "MEDICINE",
+      "role": "SUBJECT",
+      "draftState": "DRAFT",
+      "published": false,
+      "canonicalResolution": "UNRESOLVED",
+      "reuseHint": {
+        "catalog": null,
+        "existingEnglishLabel": null,
+        "instructionKo": "로컬 작성용 용어다. 새 제안 전에 현재 공개 카탈로그에서 같은 의미의 용어를 먼저 찾는다."
+      }
+    },
+    {
+      "slug": "ductal-breast-cancer",
+      "titleKo": "유관암",
+      "titleEn": "ductal breast cancer",
+      "domain": "MEDICINE",
+      "role": "SUBJECT",
+      "draftState": "DRAFT",
+      "published": false,
+      "canonicalResolution": "UNRESOLVED",
+      "reuseHint": {
+        "catalog": null,
+        "existingEnglishLabel": null,
+        "instructionKo": "로컬 작성용 용어다. 새 제안 전에 현재 공개 카탈로그에서 같은 의미의 용어를 먼저 찾는다."
+      }
+    },
+    {
+      "slug": "lobular-breast-cancer",
+      "titleKo": "소엽암",
+      "titleEn": "lobular breast cancer",
+      "domain": "MEDICINE",
+      "role": "SUBJECT",
+      "draftState": "DRAFT",
+      "published": false,
+      "canonicalResolution": "UNRESOLVED",
+      "reuseHint": {
+        "catalog": null,
+        "existingEnglishLabel": null,
+        "instructionKo": "로컬 작성용 용어다. 새 제안 전에 현재 공개 카탈로그에서 같은 의미의 용어를 먼저 찾는다."
+      }
+    },
+    {
+      "slug": "colon-cancer",
+      "titleKo": "결장암",
+      "titleEn": "colon cancer",
+      "domain": "MEDICINE",
+      "role": "SUBJECT",
+      "draftState": "DRAFT",
+      "published": false,
+      "canonicalResolution": "UNRESOLVED",
+      "reuseHint": {
+        "catalog": null,
+        "existingEnglishLabel": null,
+        "instructionKo": "로컬 작성용 용어다. 새 제안 전에 현재 공개 카탈로그에서 같은 의미의 용어를 먼저 찾는다."
+      }
+    },
+    {
+      "slug": "colon-cancer-liver-metastasis",
+      "titleKo": "결장암의 간 전이",
+      "titleEn": "colon cancer metastatic to liver",
+      "domain": "MEDICINE",
+      "role": "SUBJECT",
+      "draftState": "DRAFT",
+      "published": false,
+      "canonicalResolution": "UNRESOLVED",
+      "reuseHint": {
+        "catalog": null,
+        "existingEnglishLabel": null,
+        "instructionKo": "로컬 작성용 용어다. 새 제안 전에 현재 공개 카탈로그에서 같은 의미의 용어를 먼저 찾는다."
+      }
+    },
+    {
+      "slug": "postgresql-transaction",
+      "titleKo": "PostgreSQL 트랜잭션",
+      "titleEn": "PostgreSQL transaction",
+      "domain": "DEVELOPMENT",
+      "role": "SUBJECT",
+      "draftState": "DRAFT",
+      "published": false,
+      "canonicalResolution": "UNRESOLVED",
+      "reuseHint": {
+        "catalog": null,
+        "existingEnglishLabel": null,
+        "instructionKo": "로컬 작성용 용어다. 새 제안 전에 현재 공개 카탈로그에서 같은 의미의 용어를 먼저 찾는다."
+      }
+    },
+    {
+      "slug": "postgresql-transaction-block",
+      "titleKo": "PostgreSQL 트랜잭션 블록",
+      "titleEn": "PostgreSQL transaction block",
+      "domain": "DEVELOPMENT",
+      "role": "SUBJECT",
+      "draftState": "DRAFT",
+      "published": false,
+      "canonicalResolution": "UNRESOLVED",
+      "reuseHint": {
+        "catalog": null,
+        "existingEnglishLabel": null,
+        "instructionKo": "로컬 작성용 용어다. 새 제안 전에 현재 공개 카탈로그에서 같은 의미의 용어를 먼저 찾는다."
+      }
+    },
+    {
+      "slug": "postgresql-rollback",
+      "titleKo": "PostgreSQL ROLLBACK",
+      "titleEn": "PostgreSQL ROLLBACK",
+      "domain": "DEVELOPMENT",
+      "role": "SUBJECT",
+      "draftState": "DRAFT",
+      "published": false,
+      "canonicalResolution": "UNRESOLVED",
+      "reuseHint": {
+        "catalog": null,
+        "existingEnglishLabel": null,
+        "instructionKo": "로컬 작성용 용어다. 새 제안 전에 현재 공개 카탈로그에서 같은 의미의 용어를 먼저 찾는다."
+      }
+    },
+    {
+      "slug": "http-safe-method",
+      "titleKo": "HTTP 안전 메서드",
+      "titleEn": "HTTP safe method",
+      "domain": "DEVELOPMENT",
+      "role": "SUBJECT",
+      "draftState": "DRAFT",
+      "published": false,
+      "canonicalResolution": "UNRESOLVED",
+      "reuseHint": {
+        "catalog": null,
+        "existingEnglishLabel": null,
+        "instructionKo": "로컬 작성용 용어다. 새 제안 전에 현재 공개 카탈로그에서 같은 의미의 용어를 먼저 찾는다."
+      }
+    },
+    {
+      "slug": "http-idempotent-method",
+      "titleKo": "HTTP 멱등 메서드",
+      "titleEn": "HTTP idempotent method",
+      "domain": "DEVELOPMENT",
+      "role": "SUBJECT",
+      "draftState": "DRAFT",
+      "published": false,
+      "canonicalResolution": "UNRESOLVED",
+      "reuseHint": {
+        "catalog": null,
+        "existingEnglishLabel": null,
+        "instructionKo": "로컬 작성용 용어다. 새 제안 전에 현재 공개 카탈로그에서 같은 의미의 용어를 먼저 찾는다."
+      }
+    },
+    {
+      "slug": "originates-in",
+      "titleKo": "발생 조직",
+      "titleEn": "originates in",
+      "domain": "MEDICINE",
+      "role": "PREDICATE",
+      "draftState": "DRAFT",
+      "published": false,
+      "canonicalResolution": "UNRESOLVED",
+      "reuseHint": {
+        "catalog": null,
+        "existingEnglishLabel": null,
+        "instructionKo": "로컬 작성용 용어다. 새 제안 전에 현재 공개 카탈로그에서 같은 의미의 용어를 먼저 찾는다."
+      }
+    },
+    {
+      "slug": "distinguished-from",
+      "titleKo": "구별되는 대상",
+      "titleEn": "distinguished from",
+      "domain": "MEDICINE",
+      "role": "PREDICATE",
+      "draftState": "DRAFT",
+      "published": false,
+      "canonicalResolution": "UNRESOLVED",
+      "reuseHint": {
+        "catalog": null,
+        "existingEnglishLabel": null,
+        "instructionKo": "로컬 작성용 용어다. 새 제안 전에 현재 공개 카탈로그에서 같은 의미의 용어를 먼저 찾는다."
+      }
+    },
+    {
+      "slug": "most-common-type",
+      "titleKo": "가장 흔한 유형",
+      "titleEn": "most common type",
+      "domain": "MEDICINE",
+      "role": "PREDICATE",
+      "draftState": "DRAFT",
+      "published": false,
+      "canonicalResolution": "UNRESOLVED",
+      "reuseHint": {
+        "catalog": null,
+        "existingEnglishLabel": null,
+        "instructionKo": "로컬 작성용 용어다. 새 제안 전에 현재 공개 카탈로그에서 같은 의미의 용어를 먼저 찾는다."
+      }
+    },
+    {
+      "slug": "main-classification",
+      "titleKo": "주요 분류",
+      "titleEn": "main classification",
+      "domain": "MEDICINE",
+      "role": "PREDICATE",
+      "draftState": "DRAFT",
+      "published": false,
+      "canonicalResolution": "UNRESOLVED",
+      "reuseHint": {
+        "catalog": null,
+        "existingEnglishLabel": null,
+        "instructionKo": "로컬 작성용 용어다. 새 제안 전에 현재 공개 카탈로그에서 같은 의미의 용어를 먼저 찾는다."
+      }
+    },
+    {
+      "slug": "may-occur-in",
+      "titleKo": "발생 가능한 집단",
+      "titleEn": "may occur in",
+      "domain": "MEDICINE",
+      "role": "PREDICATE",
+      "draftState": "DRAFT",
+      "published": false,
+      "canonicalResolution": "UNRESOLVED",
+      "reuseHint": {
+        "catalog": null,
+        "existingEnglishLabel": null,
+        "instructionKo": "로컬 작성용 용어다. 새 제안 전에 현재 공개 카탈로그에서 같은 의미의 용어를 먼저 찾는다."
+      }
+    },
+    {
+      "slug": "major-cause",
+      "titleKo": "주요 원인",
+      "titleEn": "major cause",
+      "domain": "MEDICINE",
+      "role": "PREDICATE",
+      "draftState": "DRAFT",
+      "published": false,
+      "canonicalResolution": "UNRESOLVED",
+      "reuseHint": {
+        "catalog": null,
+        "existingEnglishLabel": null,
+        "instructionKo": "로컬 작성용 용어다. 새 제안 전에 현재 공개 카탈로그에서 같은 의미의 용어를 먼저 찾는다."
+      }
+    },
+    {
+      "slug": "often-originates-as",
+      "titleKo": "흔한 발생 전단계",
+      "titleEn": "often originates as",
+      "domain": "MEDICINE",
+      "role": "PREDICATE",
+      "draftState": "DRAFT",
+      "published": false,
+      "canonicalResolution": "UNRESOLVED",
+      "reuseHint": {
+        "catalog": null,
+        "existingEnglishLabel": null,
+        "instructionKo": "로컬 작성용 용어다. 새 제안 전에 현재 공개 카탈로그에서 같은 의미의 용어를 먼저 찾는다."
+      }
+    },
+    {
+      "slug": "disease-group",
+      "titleKo": "질환 분류",
+      "titleEn": "disease group",
+      "domain": "MEDICINE",
+      "role": "PREDICATE",
+      "draftState": "DRAFT",
+      "published": false,
+      "canonicalResolution": "UNRESOLVED",
+      "reuseHint": {
+        "catalog": null,
+        "existingEnglishLabel": null,
+        "instructionKo": "로컬 작성용 용어다. 새 제안 전에 현재 공개 카탈로그에서 같은 의미의 용어를 먼저 찾는다."
+      }
+    },
+    {
+      "slug": "disease-feature",
+      "titleKo": "질환 특성",
+      "titleEn": "disease feature",
+      "domain": "MEDICINE",
+      "role": "PREDICATE",
+      "draftState": "DRAFT",
+      "published": false,
+      "canonicalResolution": "UNRESOLVED",
+      "reuseHint": {
+        "catalog": null,
+        "existingEnglishLabel": null,
+        "instructionKo": "로컬 작성용 용어다. 새 제안 전에 현재 공개 카탈로그에서 같은 의미의 용어를 먼저 찾는다."
+      }
+    },
+    {
+      "slug": "possible-presentation",
+      "titleKo": "가능한 발현 양상",
+      "titleEn": "possible presentation",
+      "domain": "MEDICINE",
+      "role": "PREDICATE",
+      "draftState": "DRAFT",
+      "published": false,
+      "canonicalResolution": "UNRESOLVED",
+      "reuseHint": {
+        "catalog": null,
+        "existingEnglishLabel": null,
+        "instructionKo": "로컬 작성용 용어다. 새 제안 전에 현재 공개 카탈로그에서 같은 의미의 용어를 먼저 찾는다."
+      }
+    },
+    {
+      "slug": "atomicity",
+      "titleKo": "원자성",
+      "titleEn": "atomicity",
+      "domain": "DEVELOPMENT",
+      "role": "PREDICATE",
+      "draftState": "DRAFT",
+      "published": false,
+      "canonicalResolution": "UNRESOLVED",
+      "reuseHint": {
+        "catalog": null,
+        "existingEnglishLabel": null,
+        "instructionKo": "로컬 작성용 용어다. 새 제안 전에 현재 공개 카탈로그에서 같은 의미의 용어를 먼저 찾는다."
+      }
+    },
+    {
+      "slug": "block-delimiters",
+      "titleKo": "블록 경계 명령",
+      "titleEn": "block delimiters",
+      "domain": "DEVELOPMENT",
+      "role": "PREDICATE",
+      "draftState": "DRAFT",
+      "published": false,
+      "canonicalResolution": "UNRESOLVED",
+      "reuseHint": {
+        "catalog": null,
+        "existingEnglishLabel": null,
+        "instructionKo": "로컬 작성용 용어다. 새 제안 전에 현재 공개 카탈로그에서 같은 의미의 용어를 먼저 찾는다."
+      }
+    },
+    {
+      "slug": "cancels",
+      "titleKo": "취소하는 변경",
+      "titleEn": "cancels",
+      "domain": "DEVELOPMENT",
+      "role": "PREDICATE",
+      "draftState": "DRAFT",
+      "published": false,
+      "canonicalResolution": "UNRESOLVED",
+      "reuseHint": {
+        "catalog": null,
+        "existingEnglishLabel": null,
+        "instructionKo": "로컬 작성용 용어다. 새 제안 전에 현재 공개 카탈로그에서 같은 의미의 용어를 먼저 찾는다."
+      }
+    },
+    {
+      "slug": "request-semantics",
+      "titleKo": "요청 의미",
+      "titleEn": "request semantics",
+      "domain": "DEVELOPMENT",
+      "role": "PREDICATE",
+      "draftState": "DRAFT",
+      "published": false,
+      "canonicalResolution": "UNRESOLVED",
+      "reuseHint": {
+        "catalog": null,
+        "existingEnglishLabel": null,
+        "instructionKo": "로컬 작성용 용어다. 새 제안 전에 현재 공개 카탈로그에서 같은 의미의 용어를 먼저 찾는다."
+      }
+    },
+    {
+      "slug": "intended-effect",
+      "titleKo": "의도된 효과",
+      "titleEn": "intended effect",
+      "domain": "DEVELOPMENT",
+      "role": "PREDICATE",
+      "draftState": "DRAFT",
+      "published": false,
+      "canonicalResolution": "UNRESOLVED",
+      "reuseHint": {
+        "catalog": null,
+        "existingEnglishLabel": null,
+        "instructionKo": "로컬 작성용 용어다. 새 제안 전에 현재 공개 카탈로그에서 같은 의미의 용어를 먼저 찾는다."
+      }
+    },
+    {
+      "slug": "defined-methods",
+      "titleKo": "해당 메서드",
+      "titleEn": "defined methods",
+      "domain": "DEVELOPMENT",
+      "role": "PREDICATE",
+      "draftState": "DRAFT",
+      "published": false,
+      "canonicalResolution": "UNRESOLVED",
+      "reuseHint": {
+        "catalog": null,
+        "existingEnglishLabel": null,
+        "instructionKo": "로컬 작성용 용어다. 새 제안 전에 현재 공개 카탈로그에서 같은 의미의 용어를 먼저 찾는다."
+      }
+    }
+  ],
+  "topics": [
+    "liver-cancer",
+    "breast-cancer",
+    "lung-cancer",
+    "colorectal-cancer",
+    "cml",
+    "backend",
+    "computer-science"
+  ],
+  "statements": [
+    {
+      "slug": "liver-primary-origin",
+      "topicSlug": "liver-cancer",
+      "subjectSlug": "primary-liver-cancer",
+      "predicateSlug": "originates-in",
+      "object": {
+        "type": "STRING",
+        "value": "간 조직"
+      },
+      "statementKo": "원발성 간암은 간 조직에서 시작하는 암이다.",
+      "scopeNotesKo": "원발성 간암의 정의에 한정한다.",
+      "qualifierNotesKo": [
+        "간에 있는 모든 암을 원발성 간암으로 분류하지 않는다."
+      ],
+      "draftState": "DRAFT",
+      "published": false,
+      "independentReview": "NOT_REVIEWED",
+      "evidence": {
+        "sourceSlug": "nci-liver-definition",
+        "sourceUrl": "https://www.cancer.gov/types/liver/what-is-liver-cancer",
+        "sourceTitle": "What Is Liver Cancer?",
+        "section": "서두의 정의 문단",
+        "retrievedAt": "2026-11-07",
+        "evidenceNoteKo": "간 조직에서 악성 세포가 형성된다는 서두의 정의를 재서술했다.",
+        "rightsPolicySlug": "nci-text",
+        "rightsNoteKo": "NCI 본문을 자체 한국어로 재서술했다. NCI 출처·링크와 팩의 비보증 문구를 함께 유지한다."
+      }
+    },
+    {
+      "slug": "liver-metastasis-distinction",
+      "topicSlug": "liver-cancer",
+      "subjectSlug": "primary-liver-cancer",
+      "predicateSlug": "distinguished-from",
+      "object": {
+        "type": "STRING",
+        "value": "다른 장기에서 시작해 간으로 전이한 암"
+      },
+      "statementKo": "다른 장기에서 시작해 간으로 퍼진 암은 원발성 간암과 구별된다.",
+      "scopeNotesKo": "원발 부위와 전이 부위의 명칭을 구분하는 설명이다.",
+      "qualifierNotesKo": [
+        "개별 환자의 원발 부위를 판정하는 문장이 아니다."
+      ],
+      "draftState": "DRAFT",
+      "published": false,
+      "independentReview": "NOT_REVIEWED",
+      "evidence": {
+        "sourceSlug": "nci-liver-definition",
+        "sourceUrl": "https://www.cancer.gov/types/liver/what-is-liver-cancer",
+        "sourceTitle": "What Is Liver Cancer?",
+        "section": "서두의 정의 문단",
+        "retrievedAt": "2026-11-07",
+        "evidenceNoteKo": "간 밖에서 시작해 간으로 퍼진 암을 원발성 간암과 구별하는 본문을 확인했다.",
+        "rightsPolicySlug": "nci-text",
+        "rightsNoteKo": "NCI 본문을 자체 한국어로 재서술했다. NCI 출처·링크와 팩의 비보증 문구를 함께 유지한다."
+      }
+    },
+    {
+      "slug": "liver-adult-common-type",
+      "topicSlug": "liver-cancer",
+      "subjectSlug": "primary-liver-cancer",
+      "predicateSlug": "most-common-type",
+      "object": {
+        "type": "STRING",
+        "value": "간세포암"
+      },
+      "statementKo": "성인의 원발성 간암에서 가장 흔한 유형은 간세포암이다.",
+      "scopeNotesKo": "성인의 원발성 간암에 한정한다.",
+      "qualifierNotesKo": [
+        "소아 간암이나 간 전이암의 분포로 일반화하지 않는다."
+      ],
+      "draftState": "DRAFT",
+      "published": false,
+      "independentReview": "NOT_REVIEWED",
+      "evidence": {
+        "sourceSlug": "nci-liver-definition",
+        "sourceUrl": "https://www.cancer.gov/types/liver/what-is-liver-cancer",
+        "sourceTitle": "What Is Liver Cancer?",
+        "section": "Types of liver cancer",
+        "retrievedAt": "2026-11-07",
+        "evidenceNoteKo": "대부분의 성인 원발성 간암이 간세포암이라는 본문을 근거로 삼았다.",
+        "rightsPolicySlug": "nci-text",
+        "rightsNoteKo": "NCI 본문을 자체 한국어로 재서술했다. NCI 출처·링크와 팩의 비보증 문구를 함께 유지한다."
+      }
+    },
+    {
+      "slug": "breast-organ-origin",
+      "topicSlug": "breast-cancer",
+      "subjectSlug": "breast-cancer",
+      "predicateSlug": "originates-in",
+      "object": {
+        "type": "STRING",
+        "value": "유방"
+      },
+      "statementKo": "유방암은 유방에서 시작하는 암이다.",
+      "scopeNotesKo": "발생 부위에 관한 정의다.",
+      "qualifierNotesKo": [
+        "발생 부위와 이후 전이 부위를 구분한다."
+      ],
+      "draftState": "DRAFT",
+      "published": false,
+      "independentReview": "NOT_REVIEWED",
+      "evidence": {
+        "sourceSlug": "nci-breast-definition",
+        "sourceUrl": "https://www.cancer.gov/types/breast/what-is-breast-cancer",
+        "sourceTitle": "What Is Breast Cancer?",
+        "section": "그림 아래 첫 정의 문단",
+        "retrievedAt": "2026-11-07",
+        "evidenceNoteKo": "유방에서 시작한다는 본문 정의를 재서술했다.",
+        "rightsPolicySlug": "nci-text",
+        "rightsNoteKo": "NCI 본문을 자체 한국어로 재서술했다. NCI 출처·링크와 팩의 비보증 문구를 함께 유지한다."
+      }
+    },
+    {
+      "slug": "breast-ductal-origin",
+      "topicSlug": "breast-cancer",
+      "subjectSlug": "ductal-breast-cancer",
+      "predicateSlug": "originates-in",
+      "object": {
+        "type": "STRING",
+        "value": "유관"
+      },
+      "statementKo": "유관암은 유관에서 시작하는 유방암이다.",
+      "scopeNotesKo": "발생 구조에 따른 명칭이다.",
+      "qualifierNotesKo": [
+        "이 명칭만으로 침윤 여부나 병기를 정하지 않는다."
+      ],
+      "draftState": "DRAFT",
+      "published": false,
+      "independentReview": "NOT_REVIEWED",
+      "evidence": {
+        "sourceSlug": "nci-breast-definition",
+        "sourceUrl": "https://www.cancer.gov/types/breast/what-is-breast-cancer",
+        "sourceTitle": "What Is Breast Cancer?",
+        "section": "Breast cancer can form in / Glandular tissue",
+        "retrievedAt": "2026-11-07",
+        "evidenceNoteKo": "유관에서 시작하는 암을 ductal cancers로 부르는 본문을 확인했다.",
+        "rightsPolicySlug": "nci-text",
+        "rightsNoteKo": "NCI 본문을 자체 한국어로 재서술했다. NCI 출처·링크와 팩의 비보증 문구를 함께 유지한다."
+      }
+    },
+    {
+      "slug": "breast-lobular-origin",
+      "topicSlug": "breast-cancer",
+      "subjectSlug": "lobular-breast-cancer",
+      "predicateSlug": "originates-in",
+      "object": {
+        "type": "STRING",
+        "value": "소엽"
+      },
+      "statementKo": "소엽암은 소엽에서 시작하는 유방암이다.",
+      "scopeNotesKo": "발생 구조에 따른 명칭이다.",
+      "qualifierNotesKo": [
+        "이 명칭만으로 침윤 여부나 병기를 정하지 않는다."
+      ],
+      "draftState": "DRAFT",
+      "published": false,
+      "independentReview": "NOT_REVIEWED",
+      "evidence": {
+        "sourceSlug": "nci-breast-definition",
+        "sourceUrl": "https://www.cancer.gov/types/breast/what-is-breast-cancer",
+        "sourceTitle": "What Is Breast Cancer?",
+        "section": "Breast cancer can form in / Glandular tissue",
+        "retrievedAt": "2026-11-07",
+        "evidenceNoteKo": "소엽에서 시작하는 암을 lobular cancers로 부르는 본문을 확인했다.",
+        "rightsPolicySlug": "nci-text",
+        "rightsNoteKo": "NCI 본문을 자체 한국어로 재서술했다. NCI 출처·링크와 팩의 비보증 문구를 함께 유지한다."
+      }
+    },
+    {
+      "slug": "lung-main-types",
+      "topicSlug": "lung-cancer",
+      "subjectSlug": "lung-cancer",
+      "predicateSlug": "main-classification",
+      "object": {
+        "type": "STRING",
+        "value": "비소세포폐암과 소세포폐암"
+      },
+      "statementKo": "폐암의 두 주요 유형은 비소세포폐암과 소세포폐암이다.",
+      "scopeNotesKo": "개요의 주요 분류를 소개한다.",
+      "qualifierNotesKo": [
+        "드문 모든 폐 종양을 망라하는 목록은 아니다."
+      ],
+      "draftState": "DRAFT",
+      "published": false,
+      "independentReview": "NOT_REVIEWED",
+      "evidence": {
+        "sourceSlug": "nci-lung-overview",
+        "sourceUrl": "https://www.cancer.gov/types/lung",
+        "sourceTitle": "Lung Cancer—Patient Version",
+        "section": "첫 개요 문단",
+        "retrievedAt": "2026-11-07",
+        "evidenceNoteKo": "개요에서 두 주요 유형을 함께 열거한다.",
+        "rightsPolicySlug": "nci-text",
+        "rightsNoteKo": "NCI 본문을 자체 한국어로 재서술했다. NCI 출처·링크와 팩의 비보증 문구를 함께 유지한다."
+      }
+    },
+    {
+      "slug": "lung-nonsmoker-occurrence",
+      "topicSlug": "lung-cancer",
+      "subjectSlug": "lung-cancer",
+      "predicateSlug": "may-occur-in",
+      "object": {
+        "type": "STRING",
+        "value": "비흡연자"
+      },
+      "statementKo": "비흡연자에게도 폐암이 발생할 수 있다.",
+      "scopeNotesKo": "발생 가능성에 관한 설명이다.",
+      "qualifierNotesKo": [
+        "이 사실만으로 개인의 위험도를 계산하지 않는다."
+      ],
+      "draftState": "DRAFT",
+      "published": false,
+      "independentReview": "NOT_REVIEWED",
+      "evidence": {
+        "sourceSlug": "nci-lung-overview",
+        "sourceUrl": "https://www.cancer.gov/types/lung",
+        "sourceTitle": "Lung Cancer—Patient Version",
+        "section": "첫 개요 문단",
+        "retrievedAt": "2026-11-07",
+        "evidenceNoteKo": "비흡연자도 폐암이 생길 수 있다는 개요를 확인했다.",
+        "rightsPolicySlug": "nci-text",
+        "rightsNoteKo": "NCI 본문을 자체 한국어로 재서술했다. NCI 출처·링크와 팩의 비보증 문구를 함께 유지한다."
+      }
+    },
+    {
+      "slug": "lung-smoking-major-cause",
+      "topicSlug": "lung-cancer",
+      "subjectSlug": "lung-cancer",
+      "predicateSlug": "major-cause",
+      "object": {
+        "type": "STRING",
+        "value": "흡연"
+      },
+      "statementKo": "흡연은 대부분의 폐암을 일으키는 원인이다.",
+      "scopeNotesKo": "NCI 개요의 정성적인 대부분 표현을 유지한다.",
+      "qualifierNotesKo": [
+        "모든 폐암의 원인이 흡연이라는 뜻은 아니다."
+      ],
+      "draftState": "DRAFT",
+      "published": false,
+      "independentReview": "NOT_REVIEWED",
+      "evidence": {
+        "sourceSlug": "nci-lung-overview",
+        "sourceUrl": "https://www.cancer.gov/types/lung",
+        "sourceTitle": "Lung Cancer—Patient Version",
+        "section": "첫 개요 문단",
+        "retrievedAt": "2026-11-07",
+        "evidenceNoteKo": "흡연이 대부분의 폐암을 유발한다는 개요 문장에 한정했다.",
+        "rightsPolicySlug": "nci-text",
+        "rightsNoteKo": "NCI 본문을 자체 한국어로 재서술했다. NCI 출처·링크와 팩의 비보증 문구를 함께 유지한다."
+      }
+    },
+    {
+      "slug": "colorectal-polyp-origin",
+      "topicSlug": "colorectal-cancer",
+      "subjectSlug": "colorectal-cancer",
+      "predicateSlug": "often-originates-as",
+      "object": {
+        "type": "STRING",
+        "value": "결장 또는 직장 안의 용종"
+      },
+      "statementKo": "대장암은 결장이나 직장 안의 용종에서 시작하는 경우가 흔하다.",
+      "scopeNotesKo": "NCI 개요의 흔히라는 범위 표현을 유지한다.",
+      "qualifierNotesKo": [
+        "모든 용종이 암으로 진행한다는 뜻은 아니다."
+      ],
+      "draftState": "DRAFT",
+      "published": false,
+      "independentReview": "NOT_REVIEWED",
+      "evidence": {
+        "sourceSlug": "nci-colorectal-overview",
+        "sourceUrl": "https://www.cancer.gov/types/colorectal",
+        "sourceTitle": "Colorectal Cancer—Patient Version",
+        "section": "첫 개요 문단",
+        "retrievedAt": "2026-11-07",
+        "evidenceNoteKo": "결장이나 직장의 용종에서 흔히 시작한다는 개요를 재서술했다.",
+        "rightsPolicySlug": "nci-text",
+        "rightsNoteKo": "NCI 본문을 자체 한국어로 재서술했다. NCI 출처·링크와 팩의 비보증 문구를 함께 유지한다."
+      }
+    },
+    {
+      "slug": "colon-tissue-origin",
+      "topicSlug": "colorectal-cancer",
+      "subjectSlug": "colon-cancer",
+      "predicateSlug": "originates-in",
+      "object": {
+        "type": "STRING",
+        "value": "결장 조직"
+      },
+      "statementKo": "결장암은 결장 조직에서 발생하는 암이다.",
+      "scopeNotesKo": "대장암 중 결장암의 발생 부위를 설명한다.",
+      "qualifierNotesKo": [
+        "직장암까지 결장암으로 부르지 않는다."
+      ],
+      "draftState": "DRAFT",
+      "published": false,
+      "independentReview": "NOT_REVIEWED",
+      "evidence": {
+        "sourceSlug": "nci-colon-general",
+        "sourceUrl": "https://www.cancer.gov/types/colorectal/patient/colon-treatment-pdq",
+        "sourceTitle": "Colon Cancer Treatment (PDQ®)–Patient Version",
+        "section": "General Information About Colon Cancer / 첫 질환 정의",
+        "retrievedAt": "2026-11-07",
+        "evidenceNoteKo": "결장 조직에서 형성된다는 본문 정의를 확인했다.",
+        "rightsPolicySlug": "nci-text",
+        "rightsNoteKo": "NCI 본문을 자체 한국어로 재서술했다. NCI 출처·링크와 팩의 비보증 문구를 함께 유지한다."
+      }
+    },
+    {
+      "slug": "colon-liver-metastasis-name",
+      "topicSlug": "colorectal-cancer",
+      "subjectSlug": "colon-cancer-liver-metastasis",
+      "predicateSlug": "disease-group",
+      "object": {
+        "type": "STRING",
+        "value": "전이성 결장암"
+      },
+      "statementKo": "결장암이 간으로 전이한 경우에도 암의 종류는 전이성 결장암이다.",
+      "scopeNotesKo": "NCI가 제시한 결장암의 간 전이 예시에 한정한다.",
+      "qualifierNotesKo": [
+        "간에 생겼다는 이유만으로 원발성 간암으로 이름을 바꾸지 않는다."
+      ],
+      "draftState": "DRAFT",
+      "published": false,
+      "independentReview": "NOT_REVIEWED",
+      "evidence": {
+        "sourceSlug": "nci-colon-general",
+        "sourceUrl": "https://www.cancer.gov/types/colorectal/patient/colon-treatment-pdq",
+        "sourceTitle": "Colon Cancer Treatment (PDQ®)–Patient Version",
+        "section": "Stages of Colon Cancer / Stage IV colon cancer / metastatic tumor 설명",
+        "retrievedAt": "2026-11-07",
+        "evidenceNoteKo": "간으로 전이한 종양도 결장암 세포라는 본문 예시를 확인했다.",
+        "rightsPolicySlug": "nci-text",
+        "rightsNoteKo": "NCI 본문을 자체 한국어로 재서술했다. NCI 출처·링크와 팩의 비보증 문구를 함께 유지한다."
+      }
+    },
+    {
+      "slug": "cml-marrow-white-cells",
+      "topicSlug": "cml",
+      "subjectSlug": "cml",
+      "predicateSlug": "disease-feature",
+      "object": {
+        "type": "STRING",
+        "value": "골수의 과도한 백혈구 생성"
+      },
+      "statementKo": "만성 골수성 백혈병에서는 골수가 백혈구를 지나치게 많이 만든다.",
+      "scopeNotesKo": "NCI의 일반 질환 설명이다.",
+      "qualifierNotesKo": [
+        "백혈구 수치 하나만으로 질환을 진단하는 문장이 아니다."
+      ],
+      "draftState": "DRAFT",
+      "published": false,
+      "independentReview": "NOT_REVIEWED",
+      "evidence": {
+        "sourceSlug": "nci-cml-general",
+        "sourceUrl": "https://www.cancer.gov/types/leukemia/patient/cml-treatment-pdq",
+        "sourceTitle": "Chronic Myeloid Leukemia Treatment (PDQ®)–Patient Version",
+        "section": "General Information / 첫 질환 정의",
+        "retrievedAt": "2026-11-07",
+        "evidenceNoteKo": "골수가 너무 많은 백혈구를 만든다는 본문 정의를 재서술했다.",
+        "rightsPolicySlug": "nci-text",
+        "rightsNoteKo": "NCI 본문을 자체 한국어로 재서술했다. NCI 출처·링크와 팩의 비보증 문구를 함께 유지한다."
+      }
+    },
+    {
+      "slug": "cml-mpn-group",
+      "topicSlug": "cml",
+      "subjectSlug": "cml",
+      "predicateSlug": "disease-group",
+      "object": {
+        "type": "STRING",
+        "value": "골수증식종양"
+      },
+      "statementKo": "만성 골수성 백혈병은 골수증식종양에 속한다.",
+      "scopeNotesKo": "질환군 분류에 관한 설명이다.",
+      "qualifierNotesKo": [
+        "이 분류는 개인의 질환 단계나 예후를 뜻하지 않는다."
+      ],
+      "draftState": "DRAFT",
+      "published": false,
+      "independentReview": "NOT_REVIEWED",
+      "evidence": {
+        "sourceSlug": "nci-cml-general",
+        "sourceUrl": "https://www.cancer.gov/types/leukemia/patient/cml-treatment-pdq",
+        "sourceTitle": "Chronic Myeloid Leukemia Treatment (PDQ®)–Patient Version",
+        "section": "General Information / Leukemia may affect red blood cells, white blood cells, and platelets",
+        "retrievedAt": "2026-11-07",
+        "evidenceNoteKo": "CML을 myeloproliferative neoplasms의 하나로 분류하는 본문을 확인했다.",
+        "rightsPolicySlug": "nci-text",
+        "rightsNoteKo": "NCI 본문을 자체 한국어로 재서술했다. NCI 출처·링크와 팩의 비보증 문구를 함께 유지한다."
+      }
+    },
+    {
+      "slug": "cml-asymptomatic-possible",
+      "topicSlug": "cml",
+      "subjectSlug": "cml",
+      "predicateSlug": "possible-presentation",
+      "object": {
+        "type": "STRING",
+        "value": "무증상"
+      },
+      "statementKo": "만성 골수성 백혈병은 증상이 없는 경우도 있다.",
+      "scopeNotesKo": "일부 사례에서 가능한 발현 양상이다.",
+      "qualifierNotesKo": [
+        "증상이 없다는 이유로 질환 유무를 확정하지 않는다."
+      ],
+      "draftState": "DRAFT",
+      "published": false,
+      "independentReview": "NOT_REVIEWED",
+      "evidence": {
+        "sourceSlug": "nci-cml-general",
+        "sourceUrl": "https://www.cancer.gov/types/leukemia/patient/cml-treatment-pdq",
+        "sourceTitle": "Chronic Myeloid Leukemia Treatment (PDQ®)–Patient Version",
+        "section": "Signs and symptoms of chronic myeloid leukemia include weight loss and tiredness / 마지막 문단",
+        "retrievedAt": "2026-11-07",
+        "evidenceNoteKo": "증상이 전혀 없을 때도 있다는 본문을 확인했다.",
+        "rightsPolicySlug": "nci-text",
+        "rightsNoteKo": "NCI 본문을 자체 한국어로 재서술했다. NCI 출처·링크와 팩의 비보증 문구를 함께 유지한다."
+      }
+    },
+    {
+      "slug": "postgresql-transaction-atomicity",
+      "topicSlug": "backend",
+      "subjectSlug": "postgresql-transaction",
+      "predicateSlug": "atomicity",
+      "object": {
+        "type": "STRING",
+        "value": "트랜잭션에 포함된 테이블 변경의 전체 수행 또는 전체 취소"
+      },
+      "statementKo": "PostgreSQL 트랜잭션은 포함된 테이블 변경들을 전부 수행 또는 전부 취소 단위로 묶는다.",
+      "scopeNotesKo": "PostgreSQL 18의 트랜잭션에 포함된 테이블 변경에 한정한다.",
+      "qualifierNotesKo": [
+        "외부 HTTP 호출이나 다른 서비스의 데이터베이스까지 묶는다는 뜻은 아니다."
+      ],
+      "draftState": "DRAFT",
+      "published": false,
+      "independentReview": "NOT_REVIEWED",
+      "evidence": {
+        "sourceSlug": "postgresql18-transactions",
+        "sourceUrl": "https://www.postgresql.org/docs/18/tutorial-transactions.html",
+        "sourceTitle": "PostgreSQL 18 Documentation: 3.4. Transactions",
+        "section": "3.4. Transactions / 첫 문단과 atomic 설명",
+        "retrievedAt": "2026-11-07",
+        "evidenceNoteKo": "여러 단계를 하나의 all-or-nothing 동작으로 묶는다는 설명을 재서술했다.",
+        "rightsPolicySlug": "postgresql-documentation",
+        "rightsNoteKo": "문서·예제 코드를 복제하지 않은 사실 재서술이다. 원문 재현 시 공식 라이선스 고지를 별도로 보존한다."
+      }
+    },
+    {
+      "slug": "postgresql-transaction-block-boundary",
+      "topicSlug": "backend",
+      "subjectSlug": "postgresql-transaction-block",
+      "predicateSlug": "block-delimiters",
+      "object": {
+        "type": "STRING",
+        "value": "BEGIN과 COMMIT"
+      },
+      "statementKo": "PostgreSQL의 명시적 트랜잭션 블록은 BEGIN과 COMMIT으로 경계를 지정한다.",
+      "scopeNotesKo": "명시적으로 성공 종료하는 SQL 트랜잭션 블록의 설명이다.",
+      "qualifierNotesKo": [
+        "클라이언트 라이브러리가 이 명령을 대신 발행하는 경우도 있다."
+      ],
+      "draftState": "DRAFT",
+      "published": false,
+      "independentReview": "NOT_REVIEWED",
+      "evidence": {
+        "sourceSlug": "postgresql18-transactions",
+        "sourceUrl": "https://www.postgresql.org/docs/18/tutorial-transactions.html",
+        "sourceTitle": "PostgreSQL 18 Documentation: 3.4. Transactions",
+        "section": "3.4. Transactions / BEGIN·COMMIT 설명과 Note",
+        "retrievedAt": "2026-11-07",
+        "evidenceNoteKo": "문서의 트랜잭션 블록 정의와 클라이언트 자동 명령 주석을 함께 확인했다.",
+        "rightsPolicySlug": "postgresql-documentation",
+        "rightsNoteKo": "문서·예제 코드를 복제하지 않은 사실 재서술이다. 원문 재현 시 공식 라이선스 고지를 별도로 보존한다."
+      }
+    },
+    {
+      "slug": "postgresql-rollback-cancels",
+      "topicSlug": "backend",
+      "subjectSlug": "postgresql-rollback",
+      "predicateSlug": "cancels",
+      "object": {
+        "type": "STRING",
+        "value": "현재 트랜잭션에 포함된 테이블 변경"
+      },
+      "statementKo": "COMMIT 대신 ROLLBACK으로 끝내면 현재 트랜잭션에 포함된 테이블 변경을 취소한다.",
+      "scopeNotesKo": "전체 ROLLBACK과 트랜잭션에 포함된 테이블 변경에 한정한다.",
+      "qualifierNotesKo": [
+        "일부 변경만 되돌리는 ROLLBACK TO SAVEPOINT와 구별한다."
+      ],
+      "draftState": "DRAFT",
+      "published": false,
+      "independentReview": "NOT_REVIEWED",
+      "evidence": {
+        "sourceSlug": "postgresql18-transactions",
+        "sourceUrl": "https://www.postgresql.org/docs/18/tutorial-transactions.html",
+        "sourceTitle": "PostgreSQL 18 Documentation: 3.4. Transactions",
+        "section": "3.4. Transactions / ROLLBACK 설명",
+        "retrievedAt": "2026-11-07",
+        "evidenceNoteKo": "트랜잭션 도중 ROLLBACK을 발행하면 지금까지의 갱신이 취소된다는 설명을 확인했다.",
+        "rightsPolicySlug": "postgresql-documentation",
+        "rightsNoteKo": "문서·예제 코드를 복제하지 않은 사실 재서술이다. 원문 재현 시 공식 라이선스 고지를 별도로 보존한다."
+      }
+    },
+    {
+      "slug": "http-safe-request-meaning",
+      "topicSlug": "computer-science",
+      "subjectSlug": "http-safe-method",
+      "predicateSlug": "request-semantics",
+      "object": {
+        "type": "STRING",
+        "value": "클라이언트가 원 서버의 상태 변경을 요구하지 않는 의미"
+      },
+      "statementKo": "HTTP 안전 메서드에서는 클라이언트가 원 서버의 상태 변경을 요구하지 않는다.",
+      "scopeNotesKo": "RFC 9110 §9.2.1의 요청 의미에 관한 정의다.",
+      "qualifierNotesKo": [
+        "서버의 접근 로그 같은 부수 효과까지 없어야 한다는 뜻은 아니다."
+      ],
+      "draftState": "DRAFT",
+      "published": false,
+      "independentReview": "NOT_REVIEWED",
+      "evidence": {
+        "sourceSlug": "rfc9110-method-properties",
+        "sourceUrl": "https://www.rfc-editor.org/rfc/rfc9110.html",
+        "sourceTitle": "RFC 9110: HTTP Semantics",
+        "section": "9.2.1 Safe Methods / 정의와 부수 효과 문단",
+        "retrievedAt": "2026-11-07",
+        "evidenceNoteKo": "safe가 요청의 의미에 관한 성질이며 부수 효과를 완전히 금지하지 않는다는 설명을 확인했다.",
+        "rightsPolicySlug": "ietf-rfc-facts",
+        "rightsNoteKo": "RFC 문장·번역·코드 발췌 없이 사실을 자체 문장으로 설명한다. RFC의 저작권·TLP 제한을 전체 재사용 허가로 확대하지 않는다."
+      }
+    },
+    {
+      "slug": "http-idempotent-effect",
+      "topicSlug": "computer-science",
+      "subjectSlug": "http-idempotent-method",
+      "predicateSlug": "intended-effect",
+      "object": {
+        "type": "STRING",
+        "value": "동일 요청을 반복해도 한 번 요청과 같은 의도된 서버 효과"
+      },
+      "statementKo": "HTTP 멱등 메서드는 같은 요청을 여러 번 보내도 한 번 보냈을 때와 의도된 서버 효과가 같다.",
+      "scopeNotesKo": "RFC 9110 §9.2.2의 의도된 효과에 한정한다.",
+      "qualifierNotesKo": [
+        "각 응답 내용이나 로그·감사 기록까지 동일해야 한다는 뜻은 아니다."
+      ],
+      "draftState": "DRAFT",
+      "published": false,
+      "independentReview": "NOT_REVIEWED",
+      "evidence": {
+        "sourceSlug": "rfc9110-method-properties",
+        "sourceUrl": "https://www.rfc-editor.org/rfc/rfc9110.html",
+        "sourceTitle": "RFC 9110: HTTP Semantics",
+        "section": "9.2.2 Idempotent Methods / 첫 두 문단",
+        "retrievedAt": "2026-11-07",
+        "evidenceNoteKo": "반복된 동일 요청의 의도된 효과와 개별 부수 효과를 구분하는 정의를 재서술했다.",
+        "rightsPolicySlug": "ietf-rfc-facts",
+        "rightsNoteKo": "RFC 문장·번역·코드 발췌 없이 사실을 자체 문장으로 설명한다. RFC의 저작권·TLP 제한을 전체 재사용 허가로 확대하지 않는다."
+      }
+    },
+    {
+      "slug": "http-defined-idempotent-methods",
+      "topicSlug": "computer-science",
+      "subjectSlug": "http-idempotent-method",
+      "predicateSlug": "defined-methods",
+      "object": {
+        "type": "STRING",
+        "value": "PUT, DELETE 및 안전 메서드"
+      },
+      "statementKo": "RFC 9110은 PUT, DELETE와 안전 메서드를 멱등으로 정의한다.",
+      "scopeNotesKo": "RFC 9110이 정의하는 표준 메서드 의미다.",
+      "qualifierNotesKo": [
+        "잘못 구현된 서버까지 멱등 동작을 보장한다는 뜻은 아니다."
+      ],
+      "draftState": "DRAFT",
+      "published": false,
+      "independentReview": "NOT_REVIEWED",
+      "evidence": {
+        "sourceSlug": "rfc9110-method-properties",
+        "sourceUrl": "https://www.rfc-editor.org/rfc/rfc9110.html",
+        "sourceTitle": "RFC 9110: HTTP Semantics",
+        "section": "9.2.2 Idempotent Methods / 첫 문단",
+        "retrievedAt": "2026-11-07",
+        "evidenceNoteKo": "표준이 PUT·DELETE·안전 메서드에 부여한 멱등 분류를 확인했다.",
+        "rightsPolicySlug": "ietf-rfc-facts",
+        "rightsNoteKo": "RFC 문장·번역·코드 발췌 없이 사실을 자체 문장으로 설명한다. RFC의 저작권·TLP 제한을 전체 재사용 허가로 확대하지 않는다."
+      }
+    }
+  ]
+}

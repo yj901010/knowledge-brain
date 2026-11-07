@@ -1,0 +1,94 @@
+apiVersion: v1
+kind: Service
+metadata: {name: brain-opensearch}
+spec:
+  type: ClusterIP
+  publishNotReadyAddresses: true
+  selector: {app: brain-opensearch}
+  ports: [{name: https, port: 9200, targetPort: https}]
+---
+apiVersion: v1
+kind: Service
+metadata: {name: brain-opensearch-nodes}
+spec:
+  clusterIP: None
+  selector: {app: brain-opensearch}
+  ports: [{name: transport, port: 9300, targetPort: transport}]
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata: {name: brain-opensearch}
+spec:
+  serviceName: brain-opensearch-nodes
+  replicas: {{ .Values.replicas }}
+  selector: {matchLabels: {app: brain-opensearch}}
+  template:
+    metadata:
+      labels: {app: brain-opensearch}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/config.yaml") . | sha256sum }}
+    spec:
+      automountServiceAccountToken: false
+      securityContext: {runAsNonRoot: true, runAsUser: 1000, runAsGroup: 1000, fsGroup: 1000, seccompProfile: {type: RuntimeDefault}}
+      initContainers:
+      - name: prepare-config
+        image: {{ .Values.image | quote }}
+        command: [bash, -ec, 'cp -R /usr/share/opensearch/config/. /work-config/; cp /source/opensearch.yml /work-config/opensearch.yml']
+        securityContext: {allowPrivilegeEscalation: false, readOnlyRootFilesystem: true, capabilities: {drop: [ALL]}}
+        resources: {requests: {cpu: 50m, memory: 64Mi}, limits: {cpu: 250m, memory: 128Mi}}
+        volumeMounts:
+        - {name: writable-config, mountPath: /work-config}
+        - {name: config, mountPath: /source, readOnly: true}
+      containers:
+      - name: opensearch
+        image: {{ .Values.image | quote }}
+        command: [/usr/share/opensearch/bin/opensearch]
+        securityContext: {allowPrivilegeEscalation: false, readOnlyRootFilesystem: true, capabilities: {drop: [ALL]}}
+        env:
+        - {name: OPENSEARCH_JAVA_OPTS, value: "-Xms{{ .Values.heap }} -Xmx{{ .Values.heap }}"}
+        ports: [{name: https, containerPort: 9200}, {name: transport, containerPort: 9300}]
+        resources:
+{{ toYaml .Values.resources | indent 10 }}
+        startupProbe: {tcpSocket: {port: https}, periodSeconds: 5, failureThreshold: 60}
+        readinessProbe:
+          exec:
+            command: [curl, --silent, --fail, --max-time, '3', --cacert, /usr/share/opensearch/config/tls/ca.crt, --cert, /usr/share/opensearch/config/tls/tls.crt, --key, /usr/share/opensearch/config/tls/tls.key, 'https://localhost:9200/_cluster/health']
+          periodSeconds: 10
+          timeoutSeconds: 5
+        livenessProbe: {tcpSocket: {port: https}, periodSeconds: 10, failureThreshold: 6}
+        volumeMounts:
+        - {name: data, mountPath: /usr/share/opensearch/data}
+        - {name: logs, mountPath: /usr/share/opensearch/logs}
+        - {name: temp, mountPath: /tmp}
+        - {name: writable-config, mountPath: /usr/share/opensearch/config}
+        - {name: tls, mountPath: /usr/share/opensearch/config/tls, readOnly: true}
+      volumes:
+      - {name: writable-config, emptyDir: {sizeLimit: 64Mi}}
+      - {name: config, configMap: {name: brain-opensearch-config}}
+      - {name: tls, secret: {secretName: brain-opensearch-node-tls, defaultMode: 0440}}
+      - {name: logs, emptyDir: {sizeLimit: 64Mi}}
+      - {name: temp, emptyDir: {sizeLimit: 256Mi}}
+  volumeClaimTemplates:
+  - metadata: {name: data}
+    spec:
+      accessModes: [ReadWriteOnce]
+      resources: {requests: {storage: {{ .Values.storageSize }}}}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: {name: brain-opensearch-private}
+spec:
+  podSelector: {matchLabels: {app: brain-opensearch}}
+  policyTypes: [Ingress]
+  ingress:
+  - from:
+    - namespaceSelector: {matchLabels: {kubernetes.io/metadata.name: brain-apps}}
+      podSelector: {matchLabels: {app.kubernetes.io/name: brain-query-service}}
+    - namespaceSelector: {matchLabels: {kubernetes.io/metadata.name: brain-apps}}
+      podSelector: {matchLabels: {brain-note-rebuild: 'true'}}
+    - podSelector: {matchLabels: {brain-search-client: 'true'}}
+    - podSelector: {matchLabels: {brain-search-operator: 'true'}}
+    ports: [{protocol: TCP, port: 9200}]
+  - from:
+    - podSelector: {matchLabels: {app: brain-opensearch}}
+    ports: [{protocol: TCP, port: 9300}]

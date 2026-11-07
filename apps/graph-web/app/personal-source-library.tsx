@@ -1,0 +1,110 @@
+"use client";
+import {javaStrip} from "./unicode-text";
+import {SourceRevisionComparison,type SourceRevision as Revision} from "./knowledge-revision-comparison";
+import {useEffect,useRef,useState} from "react";
+import SourceCitations from "./source-citations";
+import RetiredSources from "./retired-sources";
+
+type Fields={title:string;url:string|null;citation:string;licenseNote:string};
+type Source=Fields&{sourceId:string;spaceId:string;visibility:"PRIVATE";state:"ACTIVE"|"RETIRED";version:number;createdAt:string;updatedAt:string};
+type Page={items:Source[];nextAfter:string|null};
+type Current={source:Source;etag:string};
+type Draft={title:string;url:string;citation:string;licenseNote:string};
+type Kind="catalog"|"create"|"detail";
+type Operation={epoch:number;scope:string;controller:AbortController;timer:ReturnType<typeof setTimeout>};
+const empty:Draft={title:"",url:"",citation:"",licenseNote:""};
+function validId(value:unknown):value is string{return typeof value==="string"&&/^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(value)}
+function validVersion(value:unknown):value is number{return typeof value==="number"&&Number.isSafeInteger(value)&&value>0}
+function validDate(value:unknown){return typeof value==="string"&&Number.isFinite(Date.parse(value))}
+function validText(value:unknown,max:number):value is string{return typeof value==="string"&&Array.from(value).length<=max&&!/[\u0000\ud800-\udfff]/u.test(value)}
+function validUrl(value:unknown):value is string|null{
+ if(value===null)return true;
+ if(typeof value!=="string"||!value||value!==javaStrip(value)||value.length>2048||/[^\x21-\x7e]|\\/.test(value)||!/^https?:\/\//i.test(value))return false;
+ try{const parsed=new URL(value),authority=value.match(/^https?:\/\/([^/?#]+)/i)?.[1];if(!authority||parsed.username||parsed.password||/[@%]/.test(authority)||!parsed.hostname||!/^https?:$/.test(parsed.protocol))return false;
+  const host=parsed.hostname;if(!(host.startsWith("[")&&host.endsWith("]"))&&!/^[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?\.?$/i.test(host))return false;
+  const port=authority.startsWith("[")?authority.slice(authority.indexOf("]")+1):authority.includes(":")?authority.slice(authority.lastIndexOf(":")):"";
+  return !port||/^:[0-9]+$/.test(port)&&Number(port.slice(1))>=1&&Number(port.slice(1))<=65535;
+ }catch{return false}
+}
+function fields(draft:Draft):Fields{return {title:javaStrip(draft.title),url:javaStrip(draft.url)||null,citation:draft.citation,licenseNote:draft.licenseNote}}
+function validFields(value:Fields){return validText(value.title,200)&&!!javaStrip(value.title)&&validUrl(value.url)&&validText(value.citation,4000)&&validText(value.licenseNote,1000)&&(value.url!==null||!!javaStrip(value.citation))}
+function draftOf(value:Fields):Draft{return {...value,url:value.url??""}}
+function readSource(value:unknown,spaceId:string):Source{
+ const row=value as Source;if(!row||!validId(row.sourceId)||row.spaceId!==spaceId||row.visibility!=="PRIVATE"||!["ACTIVE","RETIRED"].includes(row.state)||!validVersion(row.version)||!validFields(row)||row.title!==javaStrip(row.title)||!validDate(row.createdAt)||!validDate(row.updatedAt))throw new Error();return row;
+}
+async function readCurrent(response:Response,spaceId:string,sourceId?:string):Promise<Current>{
+ const source=readSource(await response.json(),spaceId),etag=response.headers.get("ETag");if(source.state!=="ACTIVE"||(sourceId&&source.sourceId!==sourceId)||etag!==`"src${source.version}"`)throw new Error();return {source,etag};
+}
+function readPage(value:unknown,spaceId:string,cursor:string|null):Page{
+ const page=value as Page;if(!page||!Array.isArray(page.items)||page.items.length>20)throw new Error();const items=page.items.map(row=>readSource(row,spaceId));
+ if(items.some((row,index)=>row.state!=="ACTIVE"||(cursor!==null&&row.sourceId<=cursor)||(index>0&&row.sourceId<=items[index-1].sourceId)))throw new Error();
+ if(page.nextAfter!==null&&(!validId(page.nextAfter)||items.length!==20||page.nextAfter!==items[items.length-1]?.sourceId||(cursor!==null&&page.nextAfter<=cursor)))throw new Error();return {items,nextAfter:page.nextAfter};
+}
+async function api(path:string,signal:AbortSignal,options:RequestInit={}){return fetch(path,{...options,credentials:"same-origin",cache:"no-store",redirect:"error",signal,headers:{...(options.body?{"Content-Type":"application/json"}:{}),...options.headers}})}
+function SourceFields({draft,setDraft,disabled,prefix}:{draft:Draft;setDraft:(value:Draft)=>void;disabled:boolean;prefix:string}){
+ return <><label>{prefix} 제목<input aria-label={`${prefix} 제목`} value={draft.title} disabled={disabled} onChange={event=>setDraft({...draft,title:event.target.value})}/></label><label>{prefix} URL<input aria-label={`${prefix} URL`} type="text" value={draft.url} disabled={disabled} onChange={event=>setDraft({...draft,url:event.target.value})} placeholder="https://…"/></label><label>{prefix} 인용 정보<textarea aria-label={`${prefix} 인용 정보`} rows={4} value={draft.citation} disabled={disabled} onChange={event=>setDraft({...draft,citation:event.target.value})}/></label><label>{prefix} 라이선스 메모<textarea aria-label={`${prefix} 라이선스 메모`} rows={3} value={draft.licenseNote} disabled={disabled} onChange={event=>setDraft({...draft,licenseNote:event.target.value})}/></label></>;
+}
+function SourceContent({source}:{source:Fields}){return <><h4>{source.title}</h4>{source.url&&validUrl(source.url)&&<p><a href={source.url} target="_blank" rel="noopener noreferrer">출처 URL 열기</a><small>{source.url}</small></p>}<h5>인용 정보</h5><p className="source-text">{source.citation||"입력한 인용 정보가 없습니다."}</p><h5>라이선스 메모</h5><p className="source-text">{source.licenseNote||"입력한 라이선스 메모가 없습니다."}</p></>}
+
+export default function PersonalSourceLibrary({spaceId,onDenied}:{spaceId:string;onDenied:()=>void}){
+ const path=`/api/spaces/${spaceId}/sources`,scope=path;
+ const [open,setOpen]=useState(false),[page,setPage]=useState<Page|null>(null),[catalogBusy,setCatalogBusy]=useState(false),[catalogNotice,setCatalogNotice]=useState("");
+ const [creating,setCreating]=useState(false),[newDraft,setNewDraft]=useState<Draft>(empty),[createBusy,setCreateBusy]=useState(false),[createNotice,setCreateNotice]=useState("");
+ const [selected,setSelected]=useState<string|null>(null),[value,setValue]=useState<Current|null>(null),[mode,setMode]=useState<"read"|"edit"|"retire"|"history">("read");
+ const [draft,setDraft]=useState<Draft>(empty),[base,setBase]=useState(""),[busy,setBusy]=useState(false),[notice,setNotice]=useState(""),[conflict,setConflict]=useState(false),[latest,setLatest]=useState<Current|null>(null),[acknowledged,setAcknowledged]=useState(false);
+ const [revisions,setRevisions]=useState<Revision[]>([]),[revision,setRevision]=useState<Revision|null>(null),[before,setBefore]=useState<number|null>(null);
+ const alive=useRef(true),opened=useRef(false),currentScope=useRef(scope),selectedId=useRef<string|null>(selected),epochs=useRef<Record<Kind,number>>({catalog:0,create:0,detail:0}),requests=useRef<Record<Kind,Operation|null>>({catalog:null,create:null,detail:null});
+ currentScope.current=scope;selectedId.current=selected;
+ function stop(kind:Kind){const operation=requests.current[kind];epochs.current[kind]++;if(operation){clearTimeout(operation.timer);operation.controller.abort()}requests.current[kind]=null}
+ function start(kind:Kind):Operation{stop(kind);const controller=new AbortController(),operation={epoch:epochs.current[kind],scope,controller,timer:setTimeout(()=>controller.abort(),8000)};requests.current[kind]=operation;if(kind==="catalog")setCatalogBusy(true);else if(kind==="create")setCreateBusy(true);else setBusy(true);return operation}
+ function current(operation:Operation,kind:Kind){return alive.current&&opened.current&&currentScope.current===operation.scope&&operation.epoch===epochs.current[kind]}
+ function active(operation:Operation,kind:Kind){return current(operation,kind)&&!operation.controller.signal.aborted}
+ function finish(operation:Operation,kind:Kind){clearTimeout(operation.timer);if(current(operation,kind)){requests.current[kind]=null;if(kind==="catalog")setCatalogBusy(false);else if(kind==="create")setCreateBusy(false);else setBusy(false)}}
+ function clearDetail(){setValue(null);setMode("read");setDraft(empty);setBase("");setNotice("");setConflict(false);setLatest(null);setAcknowledged(false);setRevisions([]);setRevision(null);setBefore(null)}
+ function clearPrivate(){for(const kind of ["catalog","create","detail"] as Kind[])stop(kind);setPage(null);setSelected(null);selectedId.current=null;clearDetail();setCreating(false);setNewDraft(empty);setCreateNotice("");setCatalogNotice("");setCatalogBusy(false);setCreateBusy(false);setBusy(false)}
+ function denied(response:Response){if(![401,403,404].includes(response.status))return false;opened.current=false;setOpen(false);clearPrivate();onDenied();return true}
+ async function load(append=false){
+  if(!opened.current)return;const cursor=append?page?.nextAfter??null:null;if(append&&!cursor)return;const operation=start("catalog");setCatalogNotice("");if(!append)setPage(null);
+  try{const query=new URLSearchParams({limit:"20"});if(cursor)query.set("after",cursor);const response=await api(`${path}?${query}`,operation.controller.signal);if(!active(operation,"catalog")||denied(response))return;if(!response.ok)throw new Error();const data=readPage(await response.json(),spaceId,cursor);if(!active(operation,"catalog"))return;setPage(previous=>({nextAfter:data.nextAfter,items:[...new Map([...(append?previous?.items??[]:[]),...data.items].map(row=>[row.sourceId,row])).values()]}))}
+  catch{if(current(operation,"catalog")){setPage(null);setCatalogNotice("출처를 불러오지 못했습니다. 다시 조회해 주세요.")}}finally{finish(operation,"catalog")}
+ }
+ useEffect(()=>{alive.current=true;opened.current=false;setOpen(false);clearPrivate();return()=>{alive.current=false;opened.current=false;for(const kind of ["catalog","create","detail"] as Kind[])stop(kind)}},[path]);
+ function toggle(){if(opened.current){opened.current=false;setOpen(false);clearPrivate()}else{opened.current=true;setOpen(true);void load()}}
+ async function select(id:string){stop("detail");clearDetail();selectedId.current=id;setSelected(id);const operation=start("detail");try{const response=await api(`${path}/${id}`,operation.controller.signal);if(!active(operation,"detail")||selectedId.current!==id||denied(response))return;if(!response.ok)throw new Error();const data=await readCurrent(response,spaceId,id);if(active(operation,"detail")&&selectedId.current===id)setValue(data)}catch{if(current(operation,"detail"))setNotice("출처를 불러오지 못했습니다. 다시 선택해 주세요.")}finally{finish(operation,"detail")}}
+ function close(){stop("detail");selectedId.current=null;setSelected(null);clearDetail();setBusy(false)}
+ function invalid(draft:Draft){return !validFields(fields(draft))||new TextEncoder().encode(JSON.stringify(fields(draft))).length>32768}
+ const inputNotice="제목은 1~200자, 인용 정보는 4,000자, 라이선스 메모는 1,000자까지 입력해 주세요. URL은 http(s) 주소로 입력하고, URL 또는 인용 정보가 필요합니다.";
+ async function create(event:React.FormEvent){
+  event.preventDefault();if(requests.current.create||!opened.current)return;if(invalid(newDraft)){setCreateNotice(inputNotice);return}const operation=start("create");setCreateNotice("");
+  try{const response=await api(path,operation.controller.signal,{method:"POST",body:JSON.stringify(fields(newDraft))});if(!active(operation,"create")||denied(response))return;if(response.status===400||response.status===413){setCreateNotice(inputNotice+" 입력은 유지했습니다.");return}if(response.status!==201)throw new Error();await readCurrent(response,spaceId);if(!active(operation,"create"))return;setNewDraft(empty);setCreating(false);setCreateNotice("개인 출처를 추가했습니다.");void load()}
+  catch{if(current(operation,"create"))setCreateNotice("출처 추가 결과를 확인하지 못했습니다. 입력은 유지했습니다. 다시 추가하기 전 목록을 확인해 주세요.")}finally{finish(operation,"create")}
+ }
+ function edit(data:Current){setValue(data);setMode("edit");setDraft(draftOf(data.source));setBase(data.etag);setConflict(false);setLatest(null);setAcknowledged(false);setNotice("")}
+ function leave(){setMode("read");setDraft(empty);setBase("");setLatest(null);setConflict(false);setAcknowledged(false);setNotice("");setRevisions([]);setRevision(null);setBefore(null)}
+ async function save(event:React.FormEvent){
+  event.preventDefault();if(requests.current.detail||conflict||!value||mode!=="edit"||!base)return;if(invalid(draft)){setNotice(inputNotice);return}const id=value.source.sourceId,operation=start("detail");setNotice("");
+  try{const response=await api(`${path}/${id}`,operation.controller.signal,{method:"PUT",headers:{"If-Match":base},body:JSON.stringify(fields(draft))});if(!active(operation,"detail")||selectedId.current!==id||denied(response))return;if(response.status===412){setConflict(true);setLatest(null);setNotice("다른 출처 수정이 있습니다. 입력은 유지했습니다. 최신 출처를 확인해 주세요.");return}if(response.status===400||response.status===413){setNotice(inputNotice+" 입력은 유지했습니다.");return}if(!response.ok)throw new Error();const data=await readCurrent(response,spaceId,id);if(!active(operation,"detail")||selectedId.current!==id)return;setValue(data);leave();setNotice("개인 출처를 수정했습니다.");void load()}
+  catch{if(current(operation,"detail"))setNotice("출처 저장 결과를 확인하지 못했습니다. 입력은 유지했습니다. 다시 저장할 때 출처 버전을 확인합니다.")}finally{finish(operation,"detail")}
+ }
+ function confirmRetirement(data:Current){setValue(data);setMode("retire");setBase(data.etag);setLatest(null);setConflict(false);setAcknowledged(false);setNotice("")}
+ async function retireSource(){
+  if(requests.current.detail||conflict||!acknowledged||!base||mode!=="retire"||!value)return;const previous=value,id=previous.source.sourceId,operation=start("detail");setNotice("");
+  try{const response=await api(`${path}/${id}`,operation.controller.signal,{method:"DELETE",headers:{"If-Match":base}});if(!active(operation,"detail")||selectedId.current!==id||denied(response))return;if(response.status===412){setConflict(true);setLatest(null);setAcknowledged(false);setNotice("다른 출처 수정이 있습니다. 최신 출처를 확인한 뒤 폐기를 다시 확인해 주세요.");return}const version=previous.source.version+1,etag=response.headers.get("ETag");if(response.status!==204||!validVersion(version)||etag!==`"src${version}"`)throw new Error();setValue({source:{...previous.source,state:"RETIRED",version},etag});leave();setNotice("개인 출처를 폐기했습니다. 수정 이력은 유지됩니다.");void load()}
+  catch{if(current(operation,"detail")){setAcknowledged(false);setNotice("출처 폐기 결과를 확인하지 못했습니다. 목록과 이력을 확인한 뒤 다시 시도해 주세요.")}}finally{finish(operation,"detail")}
+ }
+ async function inspectLatest(){if(requests.current.detail||!selected)return;const id=selected,operation=start("detail");setLatest(null);setNotice("");try{const response=await api(`${path}/${id}`,operation.controller.signal);if(!active(operation,"detail")||selectedId.current!==id||denied(response))return;if(!response.ok)throw new Error();const data=await readCurrent(response,spaceId,id);if(active(operation,"detail")&&selectedId.current===id)setLatest(data)}catch{if(current(operation,"detail"))setNotice("최신 출처를 불러오지 못했습니다. 입력은 유지했습니다.")}finally{finish(operation,"detail")}}
+ async function history(append=false){
+  if(requests.current.detail||!selected)return;const id=selected,cursor=append?before:null;if(append&&!cursor)return;const operation=start("detail");setMode("history");setNotice("");if(!append){setRevisions([]);setRevision(null);setBefore(null)}
+  try{const response=await api(`${path}/${id}/revisions?limit=5${cursor?`&before=${cursor}`:""}`,operation.controller.signal);if(!active(operation,"detail")||selectedId.current!==id||denied(response))return;if(!response.ok)throw new Error();const rows:Revision[]=await response.json();if(!active(operation,"detail")||selectedId.current!==id)return;
+   if(!Array.isArray(rows)||rows.length>5||rows.some((row,index)=>!row||!validId(row.revisionId)||row.sourceId!==id||!validVersion(row.version)||!["ACTIVE","RETIRED"].includes(row.state)||!validFields(row)||!validId(row.actorId)||!validDate(row.occurredAt)||(cursor!==null&&row.version>=cursor)||(index>0&&row.version>=rows[index-1].version)))throw new Error();if(new Set(rows.map(row=>row.revisionId)).size!==rows.length||append&&rows.some(row=>revisions.some(prior=>prior.revisionId===row.revisionId||prior.version===row.version)))throw new Error();setRevisions(previous=>append?[...previous,...rows]:rows);if(!append)setRevision(rows[0]??null);setBefore(rows.length===5?rows[rows.length-1].version:null);
+  }catch{if(current(operation,"detail")){setRevisions([]);setRevision(null);setBefore(null);setNotice("출처 수정 이력을 불러오지 못했습니다. 다시 시도해 주세요.")}}finally{finish(operation,"detail")}
+ }
+ return <section className="personal-source-library" aria-label="개인 출처 보관함"><div className="source-heading"><div><h2>개인 출처 보관함</h2><p className="muted">읽은 자료의 URL, 인용 정보와 라이선스 메모를 비공개로 보관합니다.</p></div><button type="button" onClick={toggle}>{open?"개인 출처 보관함 닫기":"개인 출처 보관함 열기"}</button></div>
+ {open&&<><p className="muted">URL은 주소로 저장됩니다. 자료 내용은 아래 링크를 눌러 확인할 수 있습니다.</p><div className="actions"><button type="button" disabled={catalogBusy} onClick={()=>void load()}>개인 출처 새로고침</button><button type="button" onClick={()=>{setCreating(true);setCreateNotice("")}}>새 출처 작성</button></div>
+  {catalogBusy&&<p className="muted">개인 출처 확인 중…</p>}{catalogNotice&&<p role="status">{catalogNotice}</p>}{page&&<><p className="muted">불러온 활성 출처 {page.items.length}개 · 생성 순서</p>{!page.items.length&&<p>저장된 활성 출처가 없습니다.</p>}<div className="source-results">{page.items.map(row=><button type="button" key={row.sourceId} aria-label={`출처 열기: ${row.title} · ${row.sourceId}`} onClick={()=>void select(row.sourceId)}>{row.title}<small>{row.sourceId}</small></button>)}</div>{page.nextAfter&&<button type="button" disabled={catalogBusy} onClick={()=>void load(true)}>개인 출처 더 보기</button>}</>}
+  <RetiredSources key={`retired-sources:${spaceId}`} spaceId={spaceId} onDenied={()=>{opened.current=false;setOpen(false);clearPrivate();onDenied()}}/>
+  {creating&&<form className="source-create" onSubmit={create} aria-label="새 개인 출처"><h3>새 출처</h3><SourceFields draft={newDraft} setDraft={setNewDraft} disabled={createBusy} prefix="새 출처"/><p className="muted">URL 또는 인용 정보를 입력해 주세요. 저장하면 이 개인 공간에만 보입니다.</p><div className="actions"><button type="button" disabled={createBusy} onClick={()=>{setCreating(false);setNewDraft(empty);setCreateNotice("")}}>출처 작성 취소</button><button type="submit" disabled={createBusy||!javaStrip(newDraft.title)}>출처 추가</button></div></form>}{createNotice&&<p role="status">{createNotice}</p>}
+  {selected&&<section className="source-detail" aria-label="선택한 개인 출처"><button type="button" onClick={close}>출처 상세 닫기</button>{notice&&<p role="status">{notice}</p>}{!value?<p className="muted">{busy?"출처 불러오는 중…":"출처를 다시 선택해 주세요."}</p>:mode==="read"?<><SourceContent source={value.source}/><small>{value.source.sourceId}</small><p className="muted">출처 Revision v{value.source.version} · {value.source.state}</p><div className="actions">{value.source.state==="ACTIVE"&&<button type="button" disabled={busy} onClick={()=>edit(value)}>출처 편집</button>}<button type="button" disabled={busy} onClick={()=>void history()}>출처 수정 이력</button>{value.source.state==="ACTIVE"&&<button type="button" disabled={busy} onClick={()=>confirmRetirement(value)}>출처 폐기</button>}</div></>:mode==="edit"?<form onSubmit={save}><SourceFields draft={draft} setDraft={setDraft} disabled={busy} prefix="편집할 출처"/><p className="muted">저장 전에는 반영되지 않습니다. 출처를 바꾸거나 상세·보관함을 닫으면 저장하지 않은 출처 입력은 사라집니다.</p><div className="actions"><button type="button" disabled={busy} onClick={leave}>출처 편집 취소</button><button type="submit" disabled={busy||conflict||!javaStrip(draft.title)}>출처 수정 저장</button></div>{conflict&&<><button type="button" disabled={busy} onClick={()=>void inspectLatest()}>최신 출처 확인</button>{latest&&<div className="source-conflict"><h4>최신 출처 v{latest.source.version}</h4><SourceContent source={latest.source}/><p>아래 버튼을 누르면 현재 입력을 최신 출처로 바꿉니다.</p><button type="button" disabled={busy} onClick={()=>edit(latest)}>최신 출처 버전으로 다시 시작</button></div>}</>}</form>:mode==="retire"?<section aria-label="개인 출처 폐기 확인"><h4>이 출처를 폐기할까요?</h4><p>{value.source.title} · 출처 Revision v{value.source.version}</p><p>활성 출처 목록에서 제외합니다. 수정 이력은 유지됩니다.</p><label className="source-retire-ack"><input type="checkbox" checked={acknowledged} disabled={busy||conflict} onChange={event=>setAcknowledged(event.target.checked)}/>출처 폐기에 동의합니다</label><div className="actions"><button type="button" disabled={busy} onClick={leave}>출처 폐기 취소</button><button type="button" disabled={busy||conflict||!acknowledged} onClick={()=>void retireSource()}>출처 폐기 확정</button></div>{conflict&&<><button type="button" disabled={busy} onClick={()=>void inspectLatest()}>최신 출처 확인</button>{latest&&<div className="source-conflict"><h4>최신 출처 v{latest.source.version}</h4><SourceContent source={latest.source}/><button type="button" disabled={busy} onClick={()=>confirmRetirement(latest)}>최신 출처 버전으로 폐기 다시 확인</button></div>}</>}</section>:<><button type="button" disabled={busy} onClick={leave}>현재 출처로 돌아가기</button><h4>출처 수정 이력</h4>{revisions.length>0&&<SourceRevisionComparison key={selected+revisions[0].revisionId} revisions={revisions} busy={busy}/>}<div className="source-revisions">{revisions.map(row=><button type="button" key={row.revisionId} aria-pressed={revision?.revisionId===row.revisionId} disabled={busy} onClick={()=>setRevision(row)}>v{row.version} · {row.title}</button>)}</div>{before&&<button type="button" disabled={busy} onClick={()=>void history(true)}>이전 출처 수정 더 보기</button>}{revision&&<><p className="muted">v{revision.version} · {revision.state} · {new Date(revision.occurredAt).toLocaleString()}</p><SourceContent source={revision}/></>}{!busy&&!revisions.length&&!notice&&<p className="muted">불러온 출처 수정 이력이 없습니다.</p>}<button type="button" disabled={busy} onClick={()=>void history()}>출처 이력 새로고침</button></>}<SourceCitations key={`${spaceId}:${selected}`} spaceId={spaceId} sourceId={selected} onDenied={onDenied}/></section>}
+ </>}
+ </section>;
+}

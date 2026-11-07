@@ -1,0 +1,27 @@
+replicaCount: 2
+image:
+  repository: ""
+  tag: ""
+  digest: ""
+  pullPolicy: IfNotPresent
+resources:
+  requests:
+    cpu: 250m
+    memory: 384Mi
+  limits:
+    cpu: "1"
+    memory: 768Mi
+env: []
+podAnnotations: {}
+resourceAnnotations: {}
+imagePullSecrets: []
+
+extraVolumes: []
+extraVolumeMounts: []
+
+observability:
+  enabled: false
+  agentImage: ghcr.io/open-telemetry/opentelemetry-operator/autoinstrumentation-java:2.33.1@sha256:6886169e41415eedcaa04d67485592022026eab5b33e2c83ce86561a72f15452
+  endpoint: https://brain-otel-collector.brain-observability.svc:4318
+  sampleRatio: "0.10"
+  environmentName: production

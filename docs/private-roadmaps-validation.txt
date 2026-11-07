@@ -1,0 +1,42 @@
+2026-10-14 PRIVATE PERSONAL Roadmap validation
+AGENTS.md / PROJECT.md: existing Learning, Space, UUIDv7, ACID/Outbox and Kubernetes decisions preserved.
+Full reactor: backend-validation-1791988586, tests=413, failures=0, errors=0, skipped=25 (environment-gated storage/Kafka suites).
+Final Learning after HTTP error handler fix: backend-validation-1791988750, 20 tests, failures=0, errors=0, skipped=0.
+8 actual PostgreSQL graph/lifecycle/history/concurrency/combined-size rollback tests, 3 graph invariant tests, 5 controller/HTTP tests, 3 service/runtime boundaries, 1 real Debezium/Kafka exact wire bytes+headers test.
+The full reactor snapshot precedes the final Learning HTTP advice change; the complete Learning suite including live Kafka was rerun on that final change.
+Focused deployed HTTPS browser: graph-web-validation-1791988973, 3 passed.
+Full deployed HTTPS browser: graph-web-validation-1791989038 --public, 28 passed.
+Two guest Roadmaps survive Keycloak registration/Space claiming with unchanged IDs/history; registered metadata writes pass.
+Browser: 22 Roadmaps 20+2 keyset pages, duplicate titles distinct IDs, all six edge kinds, mixed and hierarchy cycles, symmetric duplicates, strict shapes, borrowed/retired IDs, no-op stable version, metadata preserves graph, stale graph=412, 5+3 history pages, root/node/edge retirement.
+UI: create, graph edits explicit save, invalid cyclic save keeps draft, sibling Note draft/canonical snapshot unchanged, conflict inspection and explicit restart, removal acknowledgement, read-only historical graph, retirement/history, held old detail response cannot overwrite newer selection, 503 catalog clears rows, real revoked session clears private content.
+Screenshots inspected: roadmaps.png, roadmaps-mobile.png; 390px viewport has no horizontal overflow.
+Host verified CA HTTPS Graph returns 200; owned Gateway forward refreshed after rollout.
+Registry: learning-contract-validation-1791987333 learning/roadmap-events v1 SHA256=a2c1db67ceded3c5c965b92797b2caa0e7224aeb71386e71899d2edd4db5e1a9.
+Registry VALIDITY FULL, COMPATIBILITY FULL_TRANSITIVE.
+CDC least privilege: learning-cdc-bootstrap-1791987809 own Outbox SELECT allowed, canonical table SELECT denied and 12 other service DB connections denied.
+Connector: learning-connector-config-1791987922 connector/task RUNNING.
+All 9 brain-apps Deployments are 1/1 Ready; existing services retain their owners and data.
+Existing BrainProjectionIntegrationTest now uses a temporary schema in its own DB and drops only that generated schema, preventing live projector fixture races.
+Reviewed existing dependency versions reused; no new UI library, medical dataset or AI.
+Learning Micrometer counters, Hikari metrics, own-DB readiness and HTTP->Outbox->Kafka trace identifiers present; platform central OpenTelemetry exporter/telemetry collection remains pending.
+Public Roadmap review/ranking, Concept links, learning progress/session/evidence and final force-layout design remain later scopes.
+
+Final Learning module summaries:
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.132 s -- in io.knowledgebrain.learning.RoadmapGraphTest
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.435 s -- in io.knowledgebrain.learning.RoadmapStoreIntegrationTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.593 s -- in io.knowledgebrain.learning.RoadmapKafkaIntegrationTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.721 s -- in io.knowledgebrain.learning.ServiceBoundaryTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.919 s -- in io.knowledgebrain.learning.RoadmapApiTest
+[INFO] Tests run: 20, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+
+Contract/CDC/connector proof:
+PASS token issued: registry-publisher
+PASS token issued: registry-reader
+PASS VALIDITY=FULL
+PASS COMPATIBILITY=FULL_TRANSITIVE
+PASS learning/roadmap-events version 1 SHA256=a2c1db67ceded3c5c965b92797b2caa0e7224aeb71386e71899d2edd4db5e1a9
+PASS CDC outbox SELECT, Learning note SELECT denial, 12 other owner DB connection denials, publication restricted to one outbox
+PASS learning-outbox connector and task RUNNING
+
+Owned build cleanup: exact verified Pod UID, labels, Service selectors, NetworkPolicy selectors and source ConfigMap owner references; all 4 builder Pods/Services/policies/source maps absent. Application Deployments, databases, volumes and stored content retained.

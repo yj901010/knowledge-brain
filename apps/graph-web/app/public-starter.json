@@ -1,0 +1,124 @@
+{
+  "version": 1,
+  "retrievedAt": "2026-11-01",
+  "license": "CC0-1.0",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "licenseEvidence": "https://www.wikidata.org/wiki/Wikidata:Copyright",
+  "fields": [
+    "id",
+    "labels.en",
+    "labels.ko",
+    "lastrevid",
+    "modified"
+  ],
+  "items": [
+    {
+      "id": "Q623031",
+      "revision": 2560161362,
+      "en": "liver cancer",
+      "ko": "간암",
+      "modified": "2026-10-24T00:01:24Z",
+      "domain": "MEDICINE",
+      "source": "https://www.wikidata.org/w/index.php?title=Q623031&oldid=2560161362"
+    },
+    {
+      "id": "Q128581",
+      "revision": 2560155837,
+      "en": "breast cancer",
+      "ko": "유방암",
+      "modified": "2026-10-23T23:32:39Z",
+      "domain": "MEDICINE",
+      "source": "https://www.wikidata.org/w/index.php?title=Q128581&oldid=2560155837"
+    },
+    {
+      "id": "Q47912",
+      "revision": 2562371450,
+      "en": "lung cancer",
+      "ko": "폐암",
+      "modified": "2026-10-30T00:28:32Z",
+      "domain": "MEDICINE",
+      "source": "https://www.wikidata.org/w/index.php?title=Q47912&oldid=2562371450"
+    },
+    {
+      "id": "Q188874",
+      "revision": 2562371689,
+      "en": "colorectal cancer",
+      "ko": "대장암",
+      "modified": "2026-10-30T00:29:10Z",
+      "domain": "MEDICINE",
+      "source": "https://www.wikidata.org/w/index.php?title=Q188874&oldid=2562371689"
+    },
+    {
+      "id": "Q729735",
+      "revision": 2560165646,
+      "en": "chronic myeloid leukemia",
+      "ko": "만성 골수성 백혈병",
+      "modified": "2026-10-24T00:25:15Z",
+      "domain": "MEDICINE",
+      "source": "https://www.wikidata.org/w/index.php?title=Q729735&oldid=2560165646"
+    },
+    {
+      "id": "Q251",
+      "revision": 2555992522,
+      "en": "Java",
+      "ko": "자바",
+      "modified": "2026-10-11T20:41:37Z",
+      "domain": "DEVELOPMENT",
+      "source": "https://www.wikidata.org/w/index.php?title=Q251&oldid=2555992522"
+    },
+    {
+      "id": "Q720314",
+      "revision": 2548360958,
+      "en": "Spring Framework",
+      "ko": "스프링 프레임워크",
+      "modified": "2026-09-22T09:30:48Z",
+      "domain": "DEVELOPMENT",
+      "source": "https://www.wikidata.org/w/index.php?title=Q720314&oldid=2548360958"
+    },
+    {
+      "id": "Q192490",
+      "revision": 2557308451,
+      "en": "PostgreSQL",
+      "ko": "PostgreSQL",
+      "modified": "2026-10-15T13:27:37Z",
+      "domain": "DEVELOPMENT",
+      "source": "https://www.wikidata.org/w/index.php?title=Q192490&oldid=2557308451"
+    },
+    {
+      "id": "Q16235208",
+      "revision": 2559951496,
+      "en": "Apache Kafka",
+      "ko": "아파치 카프카",
+      "modified": "2026-10-23T10:59:27Z",
+      "domain": "DEVELOPMENT",
+      "source": "https://www.wikidata.org/w/index.php?title=Q16235208&oldid=2559951496"
+    },
+    {
+      "id": "Q21198",
+      "revision": 2562585287,
+      "en": "computer science",
+      "ko": "컴퓨터 과학",
+      "modified": "2026-10-30T14:54:26Z",
+      "domain": "DEVELOPMENT",
+      "source": "https://www.wikidata.org/w/index.php?title=Q21198&oldid=2562585287"
+    },
+    {
+      "id": "Q9135",
+      "revision": 2558856138,
+      "en": "operating system",
+      "ko": "운영체제",
+      "modified": "2026-10-19T17:02:08Z",
+      "domain": "DEVELOPMENT",
+      "source": "https://www.wikidata.org/w/index.php?title=Q9135&oldid=2558856138"
+    },
+    {
+      "id": "Q8366",
+      "revision": 2560305097,
+      "en": "algorithm",
+      "ko": "알고리즘",
+      "modified": "2026-10-24T13:46:00Z",
+      "domain": "DEVELOPMENT",
+      "source": "https://www.wikidata.org/w/index.php?title=Q8366&oldid=2560305097"
+    }
+  ]
+}

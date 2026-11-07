@@ -1,0 +1,32 @@
+{{- range $topic := list "knowledge.public-record.v1" "space.public-capability.v1" "knowledge.public-knowledge.v1" }}
+---
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaTopic
+metadata:
+  name: {{ $topic }}
+  labels: {strimzi.io/cluster: {{ $.Values.kafka.clusterName }}}
+spec:
+  topicName: {{ $topic }}
+  partitions: 1
+  replicas: {{ $.Values.kafka.replicationFactor }}
+  config:
+    min.insync.replicas: {{ $.Values.kafka.minInSyncReplicas }}
+    cleanup.policy: delete
+    retention.ms: 604800000
+{{- end }}
+
+---
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaUser
+metadata:
+  name: brain-public-kafka
+  labels: {strimzi.io/cluster: {{ .Values.kafka.clusterName }}}
+spec:
+  authentication: {type: tls}
+  authorization:
+    type: simple
+    acls:
+      - resource: {type: topic, name: knowledge.public-knowledge.v1, patternType: literal}
+        operations: [Read, Describe]
+      - resource: {type: group, name: brain-query-public-v1, patternType: literal}
+        operations: [Read, Describe]

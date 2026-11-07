@@ -1,0 +1,81 @@
+Public knowledge and discovery validation —2026-11-01
+State: COMPLETE
+Source kube-system UID: ee84ca44-bb83-4712-a572-10169a6e2542
+
+Delivered
+- Public QUALIFIER CREATE/UPDATE/RETIRE proposals, independent review/CAS merge,
+  exact same-public-Space Claim/Concept pins, typed values and immutable history.
+- Verification pins all qualifier identities/versions including retirements.
+  Changes and stale qualifier Concept references invalidate the effective level;
+  changed scopes must be re-sourced before higher review stages. No old scope revival.
+- New immutable knowledge/public-knowledge-events v1 and one read-only public
+  consumer identity. Existing published contracts/content remain byte-preserved.
+- Brain Query-owned durable inbox/source/work/control with at-least-once staging,
+  JSON-order/integer normalization, stale/conflict guards and partial-write retry.
+- Real fixed OpenSearch public index and separate JanusGraph pub* namespace;
+  eight public kinds, bounded full-text search and depth1..3 typed graph traversal.
+- Fresh Space/Identity and canonical public-context checks; private/foreign/pending,
+  retired/stale endpoints and invalid expert/official context fail closed or omit.
+- SVG focus/pan/zoom, typed literal inspection, search filters/paging and390px reads.
+- Twelve pinned Wikidata CC0 name/identifier metadata entries. Preview and explicit
+  registered Concept proposals only; no auto-publication/clinical/expert/official promotion.
+
+Backend:649 executed, zero failures/errors.
+  Knowledge259/259 including actual legacy and normalized Outbox→Connect→Kafka bytes.
+  Space79 executed of85; six unrelated optional Kafka checks skipped.
+  Brain Query66 executed of77; eleven optional storage cases skipped in this run.
+  Public storage2/2 separately executed against actual OpenSearch/JanusGraph.
+  Gateway243/243. Skips are not included in649.
+  Real PG migrations, private/key/HTTPS boundaries, scope invalidation, atomic rollback,
+  durable retry, poisoned search results, literal UUID edges and max32KB escaped text passed.
+
+Browser:3 relevant passing scenarios with real HTTPS/Keycloak, no TLS bypass.
+  Final layout + full discovery job: graph-web-validation-1793532072069967500 (2 passed).
+  Existing expert/official capability and live-revocation regression:
+    graph-web-validation-1793529433983891600 (1 passed).
+  Public-only reset/rebuild kept private search available; after the canonical scan
+  a newly reviewed Concept was published and recovered through the captured tail.
+  Rebuild: brain-public-rebuild-1793532162; replayed events: 1.
+  All 8 current-bundle reviewer fixtures and their capabilities inactive.
+
+Runtime
+  Two Ready nodes,14 Ready applications,7 Ready monitoring workloads,13 JVM services.
+  Registry79 exact contract bytes with FULL/FULL_TRANSITIVE;10 RUNNING CDC connector/tasks.
+  Public projection available, pending work0, all8 kinds represented.
+  All13 PVC UIDs and original domain Deployment UIDs unchanged.
+  Four changed service builds/imports have preserved source/image/cleanup evidence;
+  1147 current scoped runtime source files match captured build archives.
+  Local app/login/Headlamp/MinIO/Grafana HTTPS200 verified; anonymous dashboard denied401.
+  No firing alerts at final check. No canonical/private reset, new dependency or AI.
+
+Corrections retained as evidence
+  Wrong test button name corrected; a real duplicate React sibling-key rendering
+  bug fixed with distinct panel keys and repeated refresh/domain-switch regression.
+  A transient cluster DNS lookup failure during a drill left public discovery
+  paused; the documented public-only canonical retry restored763 records without
+  canonical/private data reset. The browser coordinator now tolerates pending
+  container logs instead of aborting during ContainerCreating.
+  UUID-looking STRING values retain their literal display and never gain Concept edges.
+  Existing canonical text limits were preserved with256KiB wire/200KB escaped-content
+  bounds and smaller live canonical hydration batches. Recovery replay count is logged.
+  Grafana hit its500m CPU cap at499m with355Mi near384Mi and liveness timeouts.
+  Local-only1 CPU/768Mi overlay restored readiness; measured16m/512Mi after warmup,
+  zero restarts on the replacement Pod, same image/Deployment/PVC and credentials.
+
+Evidence
+.local/public-discovery-validation.json
+.local/public-discovery-backend-validation.json
+.local/public-discovery-browser-validation.json
+.local/public-discovery-workbench-regression.log
+.local/public-discovery-rebuild-validation.log
+.local/public-discovery-final-health.json
+.local/public-discovery-deployment.json
+.local/public-discovery-builder-evidence/*.json
+.local/public-discovery-grafana-recovery.json
+.local/public-discovery-registry-manifest.json
+.local/graph-ui-results/public-discovery-mobile.png
+
+Actual clinical/development claim curation, the full Obsidian-style design phase,
+production CI/GHCR/Argo CD, Valkey and wider HA/load/SLO/off-host/PITR work remain separate.
+The existing cold-backup restore proof remains historical; this is a public-derived-model
+rebuild drill, not a new whole-cluster or pre-reset-data restore claim.

@@ -1,0 +1,19 @@
+Course Enrollment validation — 2026-10-23
+
+collaboration: 125 passed, no failures/errors/skips; backend-validation-1792766449213787400-e0b65477
+gateway: 104 passed, no failures/errors/skips; backend-validation-1792766291439934900-cacd1b0f
+Browser: ten actual-account Group scenarios passed; graph-web-validation-1792766779388594100
+New Course enrollment scenario used actual OWNER, two MEMBER accounts, VIEWER and guest. Explicit consent gated joining. A committed response was lost; explicit self-state refresh recovered one enrollment without replay. Old ce0 failed412 and history contained one revision.
+Owner roster showed voluntary enrollment metadata, never implicit owner enrollment. Peers could not list/read another participant or their history. Owner could read records/history and could not write for another principal.
+Stale UI withdrawal failed412; refresh and new consent rejoined with the same UUID. After MEMBER demotion, VIEWER could withdraw but not rejoin. Restoring MEMBER reenabled explicit enrollment. Seven changes paginated5/2; oversized history11 rejected, limit10 accepted.
+Completed Course still permitted own withdrawal, blocked rejoin. Retired Course permitted the other participant to opt out. Course/Study versions were unchanged by enrollment. Group removal immediately denied self reads, cleared UI, and preserved owner audit history. Wrong Course references failed404.
+Personal Note remained unchanged and private to its owner; no Learning progress/evidence/Submission/graph data copied. Guest denial, mobile overflow, page errors and empty persistent browser storage checks passed. All nine previous Group/Course/Discussion/Submission/Assignment/Study/roadmap/membership flows passed together.
+Backend integration coverage: nonpersistent ce0 sentinel, current-version no-ops, immutable Course revision provenance, enrollment/revision/Outbox byte consistency, stable identity across withdrawal/rejoin, scoped participant/owner reads, keysets/history, concurrent first enrollment/withdrawal and Course-completion race, full rollback on Outbox failure.
+Actual Debezium/Connect delivery of three enrollment snapshots matched canonical bytes, stable event IDs, aggregate key and trace/schema headers. Unacknowledged replay matched again. Consumers must preserve PARTICIPANT_AND_OWNER audience and increasing versions.
+Collaboration V8 adds own Enrollment/revision tables and local Course/Group/Space/participant uniqueness and Course revision provenance constraints. Space remains the live Group-role authority; Learning still owns personal progress. Group -> Course -> Enrollment locks serialize writes with parent lifecycle and make no network calls while locked.
+Immutable Registry collaboration/course-enrollment-events/1 SHA256 b8053fcb7271eb195ad306b2ce2f2303b6fbb2c9949ed92f4f7997d38175fd17, FULL validity/FULL_TRANSITIVE compatibility. Only Connect literal topic writer and Group validator reader. CDC cannot SELECT Enrollment/revision or Course/revision tables; Outbox stays readable.
+Nine existing connector/tasks RUNNING after browser writes; no offsets, slots or publications reset. No new app producer or read projector.
+OpenAPI: 66 documents/1812 references resolve; enrollment path parameters match. Pinned Next/TypeScript static export passed.
+Exact Collaboration/Gateway images imported on both nodes, deployed and matched current module/shared-contract source archives. Both owned temporary builder sets removed; unrelated service image tags unchanged.
+All 13 application Deployments Ready. Trusted HTTPS /graph and /graph/groups200/no-store/CSP; Collaboration schemaV8.
+No old migration or published Protobuf rewrite, new dependency/dataset, AI or automatic private sharing. Individual Course learning progress and configurable Group progress visibility remain subsequent slices.

@@ -1,0 +1,21 @@
+syntax = "proto3";
+package knowledgebrain.collaboration.assignmentrubric.v1;
+option java_package = "io.knowledgebrain.contracts.collaboration.assignmentrubric.v1";
+option java_multiple_files = true;
+message AssignmentRubricEnvelopeV1 {
+ string event_id = 1; string event_type = 2; uint32 event_version = 3;
+ int64 occurred_at_epoch_millis = 4; string producer = 5; string aggregate_type = 6;
+ string aggregate_id = 7; string space_id = 8; string actor_id = 9; string trace_id = 10; bytes payload = 11;
+}
+message AssignmentRubricCriterionV1 {
+ string criterion_id = 1; string title = 2; string description = 3; uint32 max_points = 4;
+}
+// Optional Group-shared guidance.0 criteria explicitly disables; otherwise sum is100.
+// Editable only in DRAFT.Grade/private progress unchanged. Deduplicate event_id,
+// apply increasing rubric versions and authorize against current Space membership.
+message AssignmentRubricSnapshotV1 {
+ string rubric_id = 1; string assignment_id = 2; string study_id = 3; string group_id = 4;
+ string space_id = 5; string creator_id = 6; string actor_id = 7; int64 version = 8;
+ int64 assignment_version = 9; repeated AssignmentRubricCriterionV1 criteria = 10;
+ string created_at = 11; string updated_at = 12;
+}

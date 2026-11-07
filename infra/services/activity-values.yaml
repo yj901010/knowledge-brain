@@ -1,0 +1,121 @@
+replicaCount: 2
+image:
+  repository: knowledge-brain/activity-service
+  tag: ''
+  pullPolicy: IfNotPresent
+resources:
+  requests:
+    cpu: 250m
+    memory: 384Mi
+  limits:
+    cpu: '1'
+    memory: 768Mi
+env:
+- name: BRAIN_ACTIVITY_PERSISTENCE_ENABLED
+  value: 'true'
+- name: BRAIN_ACTIVITY_API_ENABLED
+  value: 'true'
+- name: BRAIN_ACTIVITY_CONSUMER_ENABLED
+  value: 'true'
+- name: BRAIN_ACTIVITY_DATABASE_URL
+  value: jdbc:postgresql://brain-postgres.brain-data.svc:5432/brain_activity
+- name: BRAIN_ACTIVITY_CLICKHOUSE_ORIGIN
+  value: https://brain-clickhouse.brain-data.svc:8443
+- name: BRAIN_ACTIVITY_TRUST_FILE
+  value: /space-trust/ca.crt
+- name: BRAIN_ACTIVITY_SPACE_ORIGIN
+  value: https://space-service.brain-apps.svc:8080
+- name: BRAIN_ACTIVITY_LEARNING_ORIGIN
+  value: https://learning-service.brain-apps.svc:8080
+- name: BRAIN_ACTIVITY_KAFKA_BOOTSTRAP_SERVERS
+  value: brain-kafka-kafka-bootstrap.brain-events.svc:9093
+- name: SERVER_SSL_ENABLED
+  value: 'true'
+- name: SERVER_SSL_CERTIFICATE
+  value: file:/api-tls/tls.crt
+- name: SERVER_SSL_CERTIFICATE_PRIVATE_KEY
+  value: file:/api-tls/tls.key
+- name: SERVER_FORWARD_HEADERS_STRATEGY
+  value: NONE
+- name: MANAGEMENT_ENDPOINT_HEALTH_GROUP_READINESS_INCLUDE
+  value: readinessState,activityDatabase,activityStorage,activityProjection
+- name: BRAIN_ACTIVITY_DATABASE_PASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: brain-activity-db
+      key: password
+- name: BRAIN_ACTIVITY_SPACE_KEY
+  valueFrom:
+    secretKeyRef:
+      name: brain-activity-space-authorization
+      key: key
+- name: BRAIN_ACTIVITY_EXPORT_KEY
+  valueFrom:
+    secretKeyRef:
+      name: brain-learning-activity-export
+      key: key
+- name: BRAIN_ACTIVITY_PLANNING_ORIGIN
+  value: https://planning-service.brain-apps.svc:8080
+- name: BRAIN_ACTIVITY_PLANNING_EXPORT_KEY
+  valueFrom:
+    secretKeyRef:
+      name: brain-planning-activity-export
+      key: key
+- name: BRAIN_ACTIVITY_CONTENT_ORIGIN
+  value: https://content-service.brain-apps.svc:8080
+- name: BRAIN_ACTIVITY_CONTENT_EXPORT_KEY
+  valueFrom:
+    secretKeyRef:
+      name: brain-content-activity-export
+      key: key
+- name: BRAIN_ACTIVITY_KNOWLEDGE_ORIGIN
+  value: https://knowledge-service.brain-apps.svc:8080
+- name: BRAIN_ACTIVITY_KNOWLEDGE_EXPORT_KEY
+  valueFrom:
+    secretKeyRef:
+      name: brain-knowledge-activity-export
+      key: key
+- name: BRAIN_ACTIVITY_KAFKA_MAX_POLL_INTERVAL_MS
+  value: '1800000'
+- name: BRAIN_ACTIVITY_INTEGRATION_ORIGIN
+  value: https://integration-service.brain-apps.svc:8080
+- name: BRAIN_ACTIVITY_INTEGRATION_EXPORT_KEY
+  valueFrom:
+    secretKeyRef:
+      name: brain-integration-activity-export
+      key: key
+probeScheme: HTTPS
+restrictGuestApiIngress: true
+extraVolumeMounts:
+- name: api-tls
+  mountPath: /api-tls
+  readOnly: true
+- name: space-trust
+  mountPath: /space-trust
+  readOnly: true
+- name: ch-reader
+  mountPath: /clickhouse-reader
+  readOnly: true
+- name: ch-projector
+  mountPath: /clickhouse-projector
+  readOnly: true
+- name: kafka
+  mountPath: /activity-kafka
+  readOnly: true
+extraVolumes:
+- name: api-tls
+  secret:
+    secretName: brain-activity-api-tls
+- name: space-trust
+  secret:
+    secretName: brain-guest-api-trust
+- name: ch-reader
+  secret:
+    secretName: brain-activity-clickhouse-reader
+- name: ch-projector
+  secret:
+    secretName: brain-activity-clickhouse-projector
+- name: kafka
+  secret:
+    secretName: brain-activity-kafka
+progressDeadlineSeconds: 1800

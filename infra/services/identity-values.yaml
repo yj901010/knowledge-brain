@@ -1,0 +1,55 @@
+replicaCount: 2
+probeScheme: HTTPS
+restrictGuestApiIngress: true
+image:
+  repository: ''
+  tag: ''
+  pullPolicy: IfNotPresent
+resources:
+  requests:
+    cpu: 250m
+    memory: 384Mi
+  limits:
+    cpu: '1'
+    memory: 768Mi
+env:
+- name: BRAIN_IDENTITY_PERSISTENCE_ENABLED
+  value: 'true'
+- name: BRAIN_IDENTITY_API_ENABLED
+  value: 'true'
+- name: BRAIN_IDENTITY_DATABASE_URL
+  value: jdbc:postgresql://brain-postgres.brain-data.svc:5432/brain_identity
+- name: BRAIN_IDENTITY_DATABASE_PASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: brain-identity-db
+      key: password
+- name: BRAIN_IDENTITY_DATABASE_MAXIMUM_POOL_SIZE
+  value: '10'
+- name: BRAIN_IDENTITY_INTROSPECTION_KEY
+  valueFrom:
+    secretKeyRef:
+      name: brain-guest-introspection
+      key: key
+- name: MANAGEMENT_ENDPOINT_HEALTH_GROUP_READINESS_INCLUDE
+  value: readinessState,identityDatabase
+- name: SERVER_SSL_ENABLED
+  value: 'true'
+- name: SERVER_SSL_CERTIFICATE
+  value: file:/api-tls/tls.crt
+- name: SERVER_SSL_CERTIFICATE_PRIVATE_KEY
+  value: file:/api-tls/tls.key
+extraVolumeMounts:
+- name: api-tls
+  mountPath: /api-tls
+  readOnly: true
+- name: keycloak-trust
+  mountPath: /keycloak-trust
+  readOnly: true
+extraVolumes:
+- name: api-tls
+  secret:
+    secretName: brain-identity-api-tls
+- name: keycloak-trust
+  configMap:
+    name: brain-user-login-trust

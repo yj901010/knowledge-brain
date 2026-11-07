@@ -1,0 +1,381 @@
+openapi: 3.1.0
+info:
+  title: Private record Concept associations
+  version: 1.0.0
+  description: 'Content-owned links for typed Bookmark/Question/Decision UUIDv7 sources.
+    Existing corresponding READ/WRITE Space capability and common principal rechecked
+    every time; PERSONAL/PRIVATE only. Known archived source reads/history remain;
+    mutations require ACTIVE source. Independent rcN version/association ID, initial
+    null/zero/empty, no persisted head/event for empty initial no-op. Replace ordered
+    unique IDs up to20; retained IDs preserve link identity, removed then re-added
+    IDs receive new link IDs. No-op emits nothing; stale checked before no-op. Newly
+    added targets checked through current Knowledge API for active same-Space private
+    or readable public Concepts; retained retired targets can stay or be removed.
+    No copied target metadata, cross-owner SQL, distributed transaction, parent-body
+    rewrite or automatic publication. Parent row lock serializes relationship writes
+    and source archival; head/current links/audit/Outbox commit atomically. Archived
+    sources retain associations, filtered separately in canonical reverse catalog.
+    Reverse does not resolve target: existing references for retired Concepts remain
+    inspectable. Compact20/100 cursor binds Space/Concept/kind/lifecycle; live pages.
+    History5/10 descending exclusive version, includes source version at mutation.
+    Source body versions and link versions independent. TLS/origin/no-store/strict
+    queries/JSON/body; PUT max2 KiB, GET empty. Lost writes block resave until explicit
+    latest inspection/restart. No private browser storage.'
+servers:
+- url: https://localhost:8443
+security:
+- sessionCookie: []
+paths:
+  /api/spaces/{spaceId}/record-concepts/{recordType}/{recordId}:
+    parameters: &id007
+    - name: spaceId
+      in: path
+      required: true
+      schema: &id001
+        type: string
+        format: uuid
+        pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+    - name: recordType
+      in: path
+      required: true
+      schema: &id009
+        type: string
+        enum: &id008
+        - BOOKMARK
+        - QUESTION
+        - DECISION
+    - name: recordId
+      in: path
+      required: true
+      schema: *id001
+    get:
+      operationId: getPrivateRecordConcepts
+      responses:
+        '200':
+          description: Canonical private result; no automatic publication or copied
+            Knowledge facts
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"rc(0|[1-9][0-9]*)"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/View'
+        '400': &id002
+          description: Malformed/unknown/duplicate fields, invalid IDs/types/queries/cursor/tag
+            or nonempty read body
+        '401': &id003
+          description: Common browser session unavailable
+        '403': &id004
+          description: Same-origin or current role denied
+        '404': &id005
+          description: Space/source unavailable, archived source write or newly added
+            Concept unavailable
+        '503': &id006
+          description: Own storage or current authority unavailable; no partial mutation
+    put:
+      operationId: replacePrivateRecordConcepts
+      parameters:
+      - name: If-Match
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^"rc(0|[1-9][0-9]*)"$
+      - name: Origin
+        in: header
+        required: true
+        schema:
+          type: string
+          format: uri
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Input'
+      responses:
+        '200':
+          description: Canonical private result; no automatic publication or copied
+            Knowledge facts
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"rc(0|[1-9][0-9]*)"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/View'
+        '400': *id002
+        '401': *id003
+        '403': *id004
+        '404': *id005
+        '412':
+          description: Stale independent association version, before no-op and before
+            checking new targets
+        '413':
+          description: Body exceeds2 KiB
+        '415':
+          description: JSON required
+        '428':
+          description: If-Match required
+        '503': *id006
+  /api/spaces/{spaceId}/record-concepts/{recordType}/{recordId}/revisions:
+    parameters: *id007
+    get:
+      operationId: getPrivateRecordConceptRevisions
+      parameters:
+      - name: before
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 9223372036854775807
+          default: 9223372036854775807
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 5
+      responses:
+        '200':
+          description: Canonical private result; no automatic publication or copied
+            Knowledge facts
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+          content:
+            application/json:
+              schema:
+                type: array
+                maxItems: 10
+                items:
+                  $ref: '#/components/schemas/Revision'
+        '400': *id002
+        '401': *id003
+        '403': *id004
+        '404': *id005
+        '503': *id006
+  /api/spaces/{spaceId}/concept-references/{conceptId}/records:
+    parameters:
+    - name: spaceId
+      in: path
+      required: true
+      schema: *id001
+    - name: conceptId
+      in: path
+      required: true
+      schema: *id001
+    get:
+      operationId: listPrivateConceptRecords
+      parameters:
+      - name: type
+        in: query
+        required: false
+        schema:
+          type: string
+          enum: *id008
+          default: BOOKMARK
+      - name: state
+        in: query
+        required: false
+        schema:
+          type: string
+          enum: &id010
+          - ACTIVE
+          - RETIRED
+          default: ACTIVE
+      - name: after
+        in: query
+        required: false
+        schema:
+          type: string
+          maxLength: 256
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      responses:
+        '200':
+          description: Canonical private result; no automatic publication or copied
+            Knowledge facts
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Page'
+        '400': *id002
+        '401': *id003
+        '403': *id004
+        '404': *id005
+        '503': *id006
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest
+  schemas:
+    Link:
+      type: object
+      additionalProperties: false
+      required:
+      - linkId
+      - conceptId
+      properties:
+        linkId: *id001
+        conceptId: *id001
+    Snapshot:
+      type: object
+      additionalProperties: false
+      required:
+      - associationId
+      - version
+      - items
+      properties:
+        associationId:
+          oneOf:
+          - *id001
+          - type: 'null'
+        version:
+          type: integer
+          minimum: 0
+          maximum: 9223372036854775807
+        items:
+          type: array
+          maxItems: 20
+          items:
+            $ref: '#/components/schemas/Link'
+      allOf:
+      - if:
+          properties:
+            version:
+              const: 0
+        then:
+          properties:
+            associationId:
+              type: 'null'
+            items:
+              maxItems: 0
+        else:
+          properties:
+            associationId: *id001
+    Input:
+      type: object
+      additionalProperties: false
+      required:
+      - conceptIds
+      properties:
+        conceptIds:
+          type: array
+          uniqueItems: true
+          maxItems: 20
+          items: *id001
+    View:
+      type: object
+      additionalProperties: false
+      required:
+      - spaceId
+      - recordType
+      - recordId
+      - recordState
+      - recordVersion
+      - links
+      properties:
+        spaceId: *id001
+        recordType: *id009
+        recordId: *id001
+        recordState: &id012
+          type: string
+          enum: *id010
+        recordVersion: &id011
+          type: integer
+          minimum: 1
+          maximum: 9223372036854775807
+        links:
+          $ref: '#/components/schemas/Snapshot'
+    Revision:
+      type: object
+      additionalProperties: false
+      required:
+      - revisionId
+      - version
+      - actorId
+      - occurredAt
+      - recordVersion
+      - snapshot
+      properties:
+        revisionId: *id001
+        version: *id011
+        actorId: *id001
+        occurredAt:
+          type: string
+          format: date-time
+        recordVersion: *id011
+        snapshot:
+          $ref: '#/components/schemas/Snapshot'
+    Summary:
+      type: object
+      additionalProperties: false
+      required:
+      - recordId
+      - title
+      - state
+      - version
+      properties:
+        recordId: *id001
+        title:
+          type: string
+          maxLength: 200
+        state: *id012
+        version: *id011
+    Page:
+      type: object
+      additionalProperties: false
+      required:
+      - spaceId
+      - conceptId
+      - recordType
+      - state
+      - items
+      - nextAfter
+      properties:
+        spaceId: *id001
+        conceptId: *id001
+        recordType: *id009
+        state: *id012
+        items:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/Summary'
+        nextAfter:
+          type:
+          - string
+          - 'null'
+          maxLength: 256

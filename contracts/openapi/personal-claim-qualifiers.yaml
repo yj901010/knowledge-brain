@@ -1,0 +1,475 @@
+openapi: 3.1.0
+info:
+  title: Private Claim Qualifiers
+  version: 1.1.0
+  description: Knowledge-owned conditions pinned to a Claim revision. Fresh Space
+    CONCEPT_READ/WRITE authorization for every operation. Only ACTIVE PRIVATE same-Space
+    Claim Concepts and proposed qualifier references may be written. Retained predicate/value
+    references and historical Claim pins survive edits and retirement. Known revision
+    history remains readable after parent retirement; active reads/writes then return
+    404. DELETE retains snapshots. Exact duplicates conflict. Qualifier changes do
+    not imply verification, publication, or new Claim revisions. HTTPS and same-origin
+    writes; cookies only, never browser actor IDs. No automatic repinning or retries;
+    inspect latest before explicit replacement.
+paths:
+  /api/spaces/{spaceId}/concepts/{subjectConceptId}/claims/{claimId}/qualifiers:
+    parameters:
+    - name: spaceId
+      in: path
+      required: true
+      schema: &id001
+        type: string
+        format: uuid
+        pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+    - name: subjectConceptId
+      in: path
+      required: true
+      schema: *id001
+    - name: claimId
+      in: path
+      required: true
+      schema: *id001
+    get:
+      operationId: listClaimQualifiers
+      description: List PRIVATE qualifiers in ascending qualifier UUIDv7 order.
+        State defaults to ACTIVE and requires an effective active Claim. Explicit
+        RETIRED lists only directly retired qualifiers under the retained private
+        Claim and subject in the authorized Space, including retired parents and
+        predicate/value references. Values and immutable Claim pins are preserved.
+        Hidden ACTIVE qualifiers are excluded. Reads never restore, repin, publish
+        or write revisions/events. Only state, after and limit are accepted; keys
+        must be unique. State is forbidden on item, history and mutation routes.
+      responses:
+        '200':
+          description: Success; private no-store response
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Page'
+        '400':
+          description: Invalid UUID, exact JSON, value, query or strong ETag
+        '401':
+          description: Session unavailable
+        '403':
+          description: Space or origin denied
+        '404':
+          description: Private parent/reference/qualifier unavailable
+        '409':
+          description: Duplicate condition or version overflow
+        '412':
+          description: Qualifier or inspected Claim version changed
+        '413':
+          description: Body exceeds 16384 bytes
+        '415':
+          description: JSON required
+        '428':
+          description: If-Match required
+      parameters:
+      - in: query
+        name: state
+        schema:
+          type: string
+          enum: [ACTIVE, RETIRED]
+          default: ACTIVE
+      - in: query
+        name: limit
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      - in: query
+        name: after
+        schema: *id001
+    post:
+      operationId: createClaimQualifier
+      responses:
+        '201':
+          description: Success; private no-store response
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"qf[1-9][0-9]*"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Qualifier'
+        '400':
+          description: Invalid UUID, exact JSON, value, query or strong ETag
+        '401':
+          description: Session unavailable
+        '403':
+          description: Space or origin denied
+        '404':
+          description: Private parent/reference/qualifier unavailable
+        '409':
+          description: Duplicate condition or version overflow
+        '412':
+          description: Qualifier or inspected Claim version changed
+        '413':
+          description: Body exceeds 16384 bytes
+        '415':
+          description: JSON required
+        '428':
+          description: If-Match required
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Edit'
+  /api/spaces/{spaceId}/concepts/{subjectConceptId}/claims/{claimId}/qualifiers/{qualifierId}:
+    parameters:
+    - name: spaceId
+      in: path
+      required: true
+      schema: *id001
+    - name: subjectConceptId
+      in: path
+      required: true
+      schema: *id001
+    - name: claimId
+      in: path
+      required: true
+      schema: *id001
+    - name: qualifierId
+      in: path
+      required: true
+      schema: *id001
+    get:
+      operationId: getClaimQualifier
+      responses:
+        '200':
+          description: Success; private no-store response
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"qf[1-9][0-9]*"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Qualifier'
+        '400':
+          description: Invalid UUID, exact JSON, value, query or strong ETag
+        '401':
+          description: Session unavailable
+        '403':
+          description: Space or origin denied
+        '404':
+          description: Private parent/reference/qualifier unavailable
+        '409':
+          description: Duplicate condition or version overflow
+        '412':
+          description: Qualifier or inspected Claim version changed
+        '413':
+          description: Body exceeds 16384 bytes
+        '415':
+          description: JSON required
+        '428':
+          description: If-Match required
+    put:
+      operationId: updateClaimQualifier
+      responses:
+        '200':
+          description: Success; private no-store response
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"qf[1-9][0-9]*"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Qualifier'
+        '400':
+          description: Invalid UUID, exact JSON, value, query or strong ETag
+        '401':
+          description: Session unavailable
+        '403':
+          description: Space or origin denied
+        '404':
+          description: Private parent/reference/qualifier unavailable
+        '409':
+          description: Duplicate condition or version overflow
+        '412':
+          description: Qualifier or inspected Claim version changed
+        '413':
+          description: Body exceeds 16384 bytes
+        '415':
+          description: JSON required
+        '428':
+          description: If-Match required
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Edit'
+      parameters:
+      - in: header
+        name: If-Match
+        required: true
+        schema:
+          type: string
+          pattern: ^"qf[1-9][0-9]*"$
+    delete:
+      operationId: retireClaimQualifier
+      responses:
+        '204':
+          description: Success; private no-store response
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"qf[1-9][0-9]*"$
+        '400':
+          description: Invalid UUID, exact JSON, value, query or strong ETag
+        '401':
+          description: Session unavailable
+        '403':
+          description: Space or origin denied
+        '404':
+          description: Private parent/reference/qualifier unavailable
+        '409':
+          description: Duplicate condition or version overflow
+        '412':
+          description: Qualifier or inspected Claim version changed
+        '413':
+          description: Body exceeds 16384 bytes
+        '415':
+          description: JSON required
+        '428':
+          description: If-Match required
+      parameters:
+      - in: header
+        name: If-Match
+        required: true
+        schema:
+          type: string
+          pattern: ^"qf[1-9][0-9]*"$
+  /api/spaces/{spaceId}/concepts/{subjectConceptId}/claims/{claimId}/qualifiers/{qualifierId}/revisions:
+    parameters:
+    - name: spaceId
+      in: path
+      required: true
+      schema: *id001
+    - name: subjectConceptId
+      in: path
+      required: true
+      schema: *id001
+    - name: claimId
+      in: path
+      required: true
+      schema: *id001
+    - name: qualifierId
+      in: path
+      required: true
+      schema: *id001
+    get:
+      operationId: listClaimQualifierRevisions
+      responses:
+        '200':
+          description: Success; private no-store response
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                type: array
+                maxItems: 10
+                items:
+                  $ref: '#/components/schemas/Revision'
+        '400':
+          description: Invalid UUID, exact JSON, value, query or strong ETag
+        '401':
+          description: Session unavailable
+        '403':
+          description: Space or origin denied
+        '404':
+          description: Private parent/reference/qualifier unavailable
+        '409':
+          description: Duplicate condition or version overflow
+        '412':
+          description: Qualifier or inspected Claim version changed
+        '413':
+          description: Body exceeds 16384 bytes
+        '415':
+          description: JSON required
+        '428':
+          description: If-Match required
+      parameters:
+      - in: query
+        name: limit
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 5
+      - in: query
+        name: before
+        schema: &id002
+          type: integer
+          format: int64
+          minimum: 1
+security:
+- guestSession: []
+components:
+  schemas:
+    Value:
+      type: object
+      additionalProperties: false
+      required:
+      - type
+      - value
+      properties:
+        type:
+          type: string
+          enum:
+          - CONCEPT
+          - STRING
+          - NUMBER
+          - DATE
+          - BOOLEAN
+        value:
+          type: string
+          minLength: 1
+          maxLength: 1000
+          description: 'Canonical text. CONCEPT: UUIDv7; STRING: trimmed nonempty;
+            NUMBER: exact plain decimal, at most 38 significant/integer digits and
+            18 fractional digits, no exponent; DATE: valid YYYY-MM-DD years 0001..9999;
+            BOOLEAN: true or false.'
+    ClaimSnapshot:
+      type: object
+      additionalProperties: false
+      required:
+      - revisionId
+      - version
+      - subjectConceptId
+      - predicateConceptId
+      - object
+      properties:
+        revisionId: *id001
+        version: *id002
+        subjectConceptId: *id001
+        predicateConceptId: *id001
+        object:
+          $ref: personal-concept-claims.yaml#/components/schemas/ClaimObject
+    Edit:
+      type: object
+      additionalProperties: false
+      required:
+      - predicateConceptId
+      - value
+      - claimVersion
+      properties:
+        predicateConceptId: *id001
+        value:
+          $ref: '#/components/schemas/Value'
+        claimVersion: *id002
+    Qualifier:
+      type: object
+      additionalProperties: false
+      required:
+      - qualifierId
+      - spaceId
+      - claimId
+      - subjectConceptId
+      - claim
+      - predicateConceptId
+      - value
+      - visibility
+      - state
+      - version
+      - createdAt
+      - updatedAt
+      properties:
+        qualifierId: *id001
+        spaceId: *id001
+        claimId: *id001
+        subjectConceptId: *id001
+        claim: &id003
+          $ref: '#/components/schemas/ClaimSnapshot'
+        predicateConceptId: *id001
+        value: &id004
+          $ref: '#/components/schemas/Value'
+        visibility:
+          const: PRIVATE
+        state: &id005
+          enum:
+          - ACTIVE
+          - RETIRED
+        version: *id002
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    Revision:
+      type: object
+      additionalProperties: false
+      required:
+      - revisionId
+      - qualifierId
+      - claim
+      - predicateConceptId
+      - value
+      - state
+      - version
+      - actorId
+      - occurredAt
+      properties:
+        revisionId: *id001
+        qualifierId: *id001
+        claim: *id003
+        predicateConceptId: *id001
+        value: *id004
+        state: *id005
+        version: *id002
+        actorId: *id001
+        occurredAt:
+          type: string
+          format: date-time
+    Page:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - nextAfter
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Qualifier'
+          maxItems: 100
+        nextAfter:
+          anyOf:
+          - *id001
+          - type: 'null'
+  securitySchemes:
+    guestSession:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest
+      description: Common opaque application session for guest and Keycloak-linked
+        registered principals.

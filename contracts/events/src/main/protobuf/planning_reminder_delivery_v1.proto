@@ -1,0 +1,20 @@
+syntax = "proto3";
+package planning.reminder.delivery.v1;
+option java_package = "io.knowledgebrain.contracts.planning.delivery.v1";
+option java_multiple_files = true;
+message ReminderDeliveryEnvelopeV1 {
+ string event_id=1;string event_type=2;uint32 event_version=3;int64 occurred_at_epoch_millis=4;
+ string producer=5;string aggregate_type=6;string aggregate_id=7;string space_id=8;
+ string actor_id=9;string trace_id=10;bytes payload=11;
+}
+// One explicitly armed attempt. Only DISPATCHED requests an in-app notification.
+// DISPATCHED is terminal; downstream arrival may follow cancellation of later attempts.
+message ReminderDeliveryPayloadV1 {
+ string delivery_id=1;string reminder_id=2;uint64 reminder_version=3;
+ string schedule_id=4;uint64 schedule_version=5;uint32 minutes_before=6;string title=7;
+ string starts_at=8;string ends_at=9;string time_zone=10;string starts_local=11;
+ string ends_local=12;string starts_offset=13;string ends_offset=14;
+ string reminds_at=15;string reminds_local=16;string reminds_offset=17;
+ string state=18;string reason=19;string created_at=20;string updated_at=21;
+ string triggered_at=22;string armed_by=23;uint64 version=24;
+}

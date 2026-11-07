@@ -1,0 +1,19 @@
+syntax = "proto3";
+package knowledge.public_knowledge.v1;
+option java_package = "io.knowledgebrain.contracts.knowledge.publicknowledge.v1";
+option java_multiple_files = true;
+// Only PublicKnowledgeChanged is canonical. PublicKnowledgeProposalChanged must
+// be ignored by discovery; proposal text is never a discovery document.
+// Existing Concept/public-record contracts remain immutable and independently published.
+message EventEnvelopeV1 {
+ string event_id=1; string event_type=2; uint32 event_version=3;
+ int64 occurred_at_epoch_millis=4; string producer=5; string aggregate_type=6;
+ string aggregate_id=7; string space_id=8; string actor_id=9; string trace_id=10; bytes payload=11;
+}
+message PublicKnowledgeChangedPayloadV1 {
+ string entity_id=1; string kind=2; uint64 version=3; string state=4;
+ string title=5; string content_json=6; string revision_id=7;
+ // Exact qualified Claim scope reviewed by a verification assessment; {} otherwise.
+ string qualifier_pins_json=8;
+ string visibility=9;
+}

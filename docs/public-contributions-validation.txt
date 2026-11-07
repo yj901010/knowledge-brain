@@ -1,0 +1,78 @@
+Public Concept Contribution / Review / Merge validation
+Date: 2026-10-09 (Asia/Seoul)
+Environment: local k3d-knowledge-brain, Java 25, verified HTTPS
+
+Approved policy: docs/decisions/0003-public-concept-review.md.
+Designated reviewers only; self-review and self-merge forbidden.
+
+Backend full regression:
+  backend-validation-1791473762: BUILD SUCCESS.
+  209 tests, 0 failures, 0 errors, 0 skipped.
+  PostgreSQL, Kafka, CDC, search, graph and object-storage checks enabled.
+  Safe summaries: .local/public-backend-validation.txt.
+
+Final Knowledge follow-up after bounded catalog fix:
+  backend-validation-1791474811: BUILD SUCCESS.
+  23 tests, 0 failures, 0 errors, 0 skipped.
+  Includes maximum-size escaped descriptions, bounded keyset summaries,
+  canonical version conflict, concurrent review, immutable audit, atomic
+  rollback of canonical revision/review/state/Outbox, private-target denial,
+  self-review, strict browser input and actual Contribution/Concept CDC.
+
+Actual operator reviewer events:
+  backend-validation-1791474493: BUILD SUCCESS, 1 test passed.
+  Reads actual ACTIVE and RETIRED events produced by the scoped operator.
+  Space-owned committed bytes, generated Protobuf decoding, event IDs,
+  topics, schema headers, trace IDs and state order verified through Kafka.
+
+Real Keycloak / browser workflow:
+  graph-web-validation-1791474343: 2 passed (19.4 seconds).
+  Separate real author/reviewer registrations, explicit public CREATE,
+  approval without canonical publication, merge, UPDATE/new revision,
+  guest and ordinary-account write/review denials, self-review denial,
+  direct canonical write denial, private/public Space isolation, escaped
+  script text, desktop/mobile layout and live role revocation all verified.
+  Test reviewer role retired in the host runner's finally path.
+  Initial browser run caught a test readiness race: the guest login hint
+  rendered before its session finished loading. The test now waits for the
+  authoritative two-Space catalog and checks HTTP status before content.
+  Test fixtures remain auditable in the local Development catalog; no
+  medical dataset or clinical verification status is seeded.
+
+Event contracts:
+  contribution-contract-validation-1791473671: succeeded.
+  public-space-contract-validation-1791473673: succeeded.
+  FULL validity and FULL_TRANSITIVE compatibility, exact immutable bytes.
+  Existing Concept V1 contract and private event flow retained.
+
+Build checks:
+  Pinned Next.js/TypeScript export and CSP hashes passed.
+  Repeated Windows EPERM mkdir failures with five static-export workers;
+  configured one worker on Windows only, then successful complete export.
+  Runtime service boundaries and production architecture unchanged.
+  Helm brain-connect lint passed; Python helpers compile; OpenAPI YAML and
+  all local references resolve. No new dependency versions or datasets.
+
+Final operator installation:
+  contribution-contract-validation-1791475132: succeeded.
+  public-space-contract-validation-1791475138: succeeded.
+  knowledge-connector-config-1791475144: succeeded, task RUNNING.
+  space-connector-config-1791475150: succeeded, task RUNNING.
+  Complete image imports verified on both local nodes before deployment.
+
+Final images (all deployments Ready with one replica):
+  Space: knowledge-brain/space-service:local-568a9c645dcd784f
+  Knowledge: knowledge-brain/knowledge-service:local-038f52b9d8080763
+  Gateway: knowledge-brain/gateway-service:local-bc029402ff621658
+  Existing Identity and Keycloak authentication remain Ready and unchanged.
+
+Final deployed browser regression:
+  graph-web-validation-1791475212: 2 passed (22.0 seconds).
+  Includes the final bounded catalog and Windows single-worker export.
+  PUBLIC_WORKFLOW_VERIFIED; test reviewer ACTIVE then RETIRED through
+  public-reviewer-1791475264-d904ea and public-reviewer-1791475271-f7ae23.
+  No normal account receives reviewer rights automatically.
+  Final screenshots: .local/graph-ui-results/public.png and public-mobile.png.
+  Browser output: .local/graph-ui-results/validation.txt.
+  Desktop/mobile screenshots visually reviewed; no horizontal overflow.
+  Temporary image builder resources removed after deployment validation.

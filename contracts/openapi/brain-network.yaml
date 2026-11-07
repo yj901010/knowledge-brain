@@ -1,0 +1,225 @@
+openapi: 3.1.0
+info:
+  title: Personal Brain Integrated Graph and Search
+  version: 1.0.0
+servers:
+- url: https://localhost:8443
+paths:
+  /api/spaces/{spaceId}/graph/network:
+    get:
+      operationId: graphPersonalBrainNetwork
+      description: Fresh Space BRAIN_GRAPH decision for the common guest/registered
+        principal on every request. Nine-stream eventual projection. Bookmark, Question and Decision use typed nodes and RECORD_CONCEPT edges. Public Concept
+        references are excluded. Claim is a separate node with SUBJECT/PREDICATE/OBJECT
+        edges; version is canonical, not projection work sequence. Search is plain
+        text, all types by default, independent of graph bounds. Empty GET body and
+        singleton allowed parameters only.
+      security:
+      - applicationCookie: []
+      parameters:
+      - name: spaceId
+        in: path
+        required: true
+        schema: &id001
+          type: string
+          format: uuid
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 200
+          default: 100
+      responses:
+        '200':
+          description: PRIVATE PERSONAL projection; Cache-Control no-store; bounded
+            DTO only
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Graph'
+        '400':
+          description: Malformed, duplicate/unknown parameters, GET body, or offset+limit
+            exceeds 1000
+        '401':
+          description: Invalid or revoked application credential
+        '404':
+          description: Space unavailable or foreign/public/group Space
+        '503':
+          description: Authority or network projection unavailable; no stale data/count
+            fallback
+  /api/spaces/{spaceId}/search/network:
+    get:
+      operationId: searchPersonalBrainNetwork
+      description: Fresh Space BRAIN_SEARCH decision for the common guest/registered
+        principal on every request. Nine-stream eventual projection. Bookmark, Question and Decision use typed nodes and RECORD_CONCEPT edges. Public Concept
+        references are excluded. Claim is a separate node with SUBJECT/PREDICATE/OBJECT
+        edges; version is canonical, not projection work sequence. Search is plain
+        text, all types by default, independent of graph bounds. Empty GET body and
+        singleton allowed parameters only.
+      security:
+      - applicationCookie: []
+      parameters:
+      - name: spaceId
+        in: path
+        required: true
+        schema: *id001
+      - name: q
+        in: query
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 200
+      - name: kind
+        in: query
+        required: false
+        schema: &id002
+          type: string
+          enum:
+          - NOTE
+          - CONCEPT
+          - CLAIM
+          - BOOKMARK
+          - QUESTION
+          - DECISION
+      - name: offset
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          maximum: 999
+          default: 0
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 50
+          default: 20
+      responses:
+        '200':
+          description: PRIVATE PERSONAL projection; Cache-Control no-store; bounded
+            DTO only
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Search'
+        '400':
+          description: Malformed, duplicate/unknown parameters, GET body, or offset+limit
+            exceeds 1000
+        '401':
+          description: Invalid or revoked application credential
+        '404':
+          description: Space unavailable or foreign/public/group Space
+        '503':
+          description: Authority or network projection unavailable; no stale data/count
+            fallback
+components:
+  securitySchemes:
+    applicationCookie:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest
+  schemas:
+    Item:
+      type: object
+      required:
+      - key
+      - kind
+      - id
+      - title
+      - version
+      - subjectConceptId
+      properties:
+        key:
+          type: string
+        kind: *id002
+        id: *id001
+        title:
+          type: string
+          minLength: 1
+          maxLength: 650
+        version:
+          type: integer
+          minimum: 1
+        subjectConceptId:
+          anyOf:
+          - *id001
+          - type: 'null'
+    Edge:
+      type: object
+      required:
+      - key
+      - relationId
+      - role
+      - source
+      - target
+      properties:
+        key:
+          type: string
+        relationId: *id001
+        role:
+          type: string
+          enum:
+          - WIKI
+          - NOTE_CONCEPT
+          - RECORD_CONCEPT
+          - SUBJECT
+          - PREDICATE
+          - OBJECT
+        source:
+          type: string
+        target:
+          type: string
+    Graph:
+      type: object
+      required:
+      - nodes
+      - edges
+      - truncated
+      properties:
+        nodes:
+          type: array
+          maxItems: 200
+          items:
+            $ref: '#/components/schemas/Item'
+        edges:
+          type: array
+          maxItems: 1000
+          items:
+            $ref: '#/components/schemas/Edge'
+        truncated:
+          type: boolean
+    Search:
+      type: object
+      required:
+      - total
+      - offset
+      - limit
+      - nextOffset
+      - items
+      properties:
+        total:
+          type: integer
+          minimum: 0
+        offset:
+          type: integer
+          minimum: 0
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 50
+        nextOffset:
+          type:
+          - integer
+          - 'null'
+        items:
+          type: array
+          maxItems: 50
+          items:
+            $ref: '#/components/schemas/Item'

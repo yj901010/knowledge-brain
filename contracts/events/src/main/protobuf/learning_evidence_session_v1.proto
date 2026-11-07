@@ -1,0 +1,25 @@
+syntax = "proto3";
+package learning.evidencesession.v1;
+option java_package = "io.knowledgebrain.contracts.learning.evidencesession.v1";
+option java_multiple_files = true;
+message EvidenceSessionEventEnvelopeV1 {
+ string event_id = 1;
+ string event_type = 2;
+ uint32 event_version = 3;
+ int64 occurred_at_epoch_millis = 4;
+ string producer = 5;
+ string aggregate_type = 6;
+ string aggregate_id = 7;
+ string space_id = 8;
+ string actor_id = 9;
+ string trace_id = 10;
+ bytes payload = 11;
+}
+message EvidenceSessionChangedPayloadV1 {
+ string link_id = 1; string evidence_id = 2; string evidence_kind = 3;
+ string roadmap_id = 4; string node_id = 5; string node_title = 6;
+ string visibility = 7; string state = 8; uint64 version = 9;
+ string revision_id = 10; string session_id = 11; uint64 session_version = 12;
+ string session_node_title = 13; string started_at = 14; string ended_at = 15;
+ uint64 duration_seconds = 16; string created_at = 17; string updated_at = 18;
+}

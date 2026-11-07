@@ -1,0 +1,17 @@
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaUser
+metadata:
+  name: brain-graph-projector
+  namespace: brain-events
+  labels: {strimzi.io/cluster: brain-kafka}
+spec:
+  authentication: {type: tls}
+  authorization:
+    type: simple
+    acls:
+    - resource: {type: topic, name: content.note.v1, patternType: literal}
+      operations: [Read, Describe]
+    - resource: {type: topic, name: content.note-links.v1, patternType: literal}
+      operations: [Read, Describe]
+    - resource: {type: group, name: brain-query-note-graph-, patternType: prefix}
+      operations: [Read, Describe]

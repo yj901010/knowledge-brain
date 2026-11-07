@@ -1,0 +1,19 @@
+syntax = "proto3";
+package knowledgebrain.collaboration.graderetraction.v1;
+option java_package = "io.knowledgebrain.contracts.collaboration.graderetraction.v1";
+option java_multiple_files = true;
+message GradeRetractionEnvelopeV1 {
+ string event_id = 1; string event_type = 2; uint32 event_version = 3;
+ int64 occurred_at_epoch_millis = 4; string producer = 5; string aggregate_type = 6;
+ string aggregate_id = 7; string space_id = 8; string actor_id = 9; string trace_id = 10; bytes payload = 11;
+}
+// Private annotation on one immutable grade revision. Does not erase its original
+// score/reason/history, change other grade versions or update private learning progress.
+// Deduplicate event_id, apply increasing retraction versions and reauthorize readers.
+message GradeRetractionSnapshotV1 {
+ string retraction_id = 1; string grade_id = 2; int64 grade_version = 3;
+ string submission_id = 4; int64 submission_version = 5; string assignment_id = 6;
+ int64 assignment_version = 7; string study_id = 8; string group_id = 9; string space_id = 10;
+ string author_id = 11; string actor_id = 12; int64 version = 13;
+ string state = 14; string reason = 15; string audience = 16; string created_at = 17; string updated_at = 18;
+}

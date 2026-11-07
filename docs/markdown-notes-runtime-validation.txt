@@ -1,0 +1,97 @@
+2026-10-06 Markdown Note milestone; local k3d-knowledge-brain context
+
+Source images Content/Space/Gateway: knowledge-brain/{service}-service:local-de0e0184f268cd00
+Helm revisions Content 1, Space 6, Gateway 2, Connect 3. All 4 application Deployments Ready 1/1.
+Build Pods 1791297091/92/93; all 6 per-node imports 1791297221/22 succeeded before deployment.
+No host Docker or native Windows protoc substituted for real Linux/Kubernetes builds.
+
+Full suite backend-validation-1791297223:
+13 modules, 76 tests, 0 failures/errors/skips, actual owning PostgreSQL and mTLS Kafka.
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.928 s -- in io.knowledgebrain.gateway.GatewayProxyTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.614 s -- in io.knowledgebrain.gateway.ServiceBoundaryTest
+[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.280 s -- in io.knowledgebrain.identity.GuestSessionIntegrationTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.138 s -- in io.knowledgebrain.identity.GuestOutboxIntegrationTest
+PASS CDC committed byte-for-byte Protobuf, schema/trace headers, rollback absent, stable-ID replay, readonly client Write denied; committed=01a111a2-ec15-778b-862f-d75b64da815a rolled_back=01a111a2-ec27-7182-bad8-529963874951
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 13.91 s -- in io.knowledgebrain.identity.KafkaOutboxIntegrationTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.021 s -- in io.knowledgebrain.identity.UuidV7Test
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.015 s -- in io.knowledgebrain.identity.ServiceBoundaryTest
+[INFO] Tests run: 11, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.111 s -- in io.knowledgebrain.space.GuestIdentityEventTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.233 s -- in io.knowledgebrain.space.PersonalSpaceIntegrationTest
+PASS deployed Space consumer: PRIVATE OWNER, other-principal denial, durable Inbox replay without Kafka acknowledgement, one Outbox per Space, byte-exact CDC Protobuf and trace/schema headers; guests=91
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 18.00 s -- in io.knowledgebrain.space.SpaceKafkaIntegrationTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.103 s -- in io.knowledgebrain.space.ServiceBoundaryTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.699 s -- in io.knowledgebrain.space.ContentAuthorizationTest
+[INFO] Tests run: 15, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.492 s -- in io.knowledgebrain.knowledge.ServiceBoundaryTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.058 s -- in io.knowledgebrain.content.NoteApiTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 5.101 s -- in io.knowledgebrain.content.NoteKafkaIntegrationTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.622 s -- in io.knowledgebrain.content.ServiceBoundaryTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.871 s -- in io.knowledgebrain.content.NoteStoreIntegrationTest
+[INFO] Tests run: 13, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.786 s -- in io.knowledgebrain.learning.ServiceBoundaryTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.589 s -- in io.knowledgebrain.planning.ServiceBoundaryTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.412 s -- in io.knowledgebrain.collaboration.ServiceBoundaryTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.414 s -- in io.knowledgebrain.activity.ServiceBoundaryTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.563 s -- in io.knowledgebrain.media.ServiceBoundaryTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.493 s -- in io.knowledgebrain.integration.ServiceBoundaryTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.423 s -- in io.knowledgebrain.notification.ServiceBoundaryTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.458 s -- in io.knowledgebrain.brainquery.ServiceBoundaryTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+
+CDC bootstrap Job content-cdc-bootstrap-1791297050:
+CREATE ROLE
+GRANT
+GRANT
+GRANT
+DO
+PASS CDC outbox SELECT, Content membership denial, 12 other owner DB connection denials, publication restricted to one outbox
+
+Contract Job content-contract-validation-1791297051:
+PASS token issued: registry-publisher
+PASS token issued: registry-reader
+PASS VALIDITY=FULL
+PASS COMPATIBILITY=FULL_TRANSITIVE
+PASS content/note-events version 1 SHA256=e62519e0ec755f41dabb2aafcec3b5503cbfbcea6934f1669978a8e9b80fd8d9
+
+Connector Job content-connector-config-1791297169:
+PASS content-outbox connector and task RUNNING
+
+HTTPS Job notes-api-validation-1791297414:
+PASS HTTPS guest identity, private Markdown CRUD setup, cross-Space isolation, Origin, bounds and safe pagination
+PASS If-Match required, stale edit rejected, simultaneous edit has one winner, immutable revision snapshots and pagination
+PHASE1_WAITING_FOR_RESTART
+PASS space outage fails closed status=503
+PASS identity outage fails closed status=503
+PASS content outage fails closed status=502
+PASS Content restart retains identical Note, Space, version and history; outage writes made no mutation
+PASS soft deletion keeps private revisions, hides active reads/list, and guest revocation immediately denies Notes while other browser stays active
+
+Controlled outages were restored in finally blocks: Space -> Identity -> Content.
+Same Note/Space/version/history after Content replacement; no outage writes committed.
+Two browsers with credentials held only in verifier memory, no credential/Markdown logs.
+Read/write and historical privacy checks passed, including revoked credential 401.
+Retained synthetic private test data/history; no domain rows were destructively cleaned.
+
+Initial verifier attempts 1791297324/7374 stopped on validation harness assertions:
+invalid 33-character trace ID and overly exact Cache-Control comparison at Spring
+Security denial. Corrected harness to valid W3C trace and require no-store directive,
+then reran complete checks. No service authorization guard was relaxed.
+Initial local bootstrap clone typo in namespace metadata and runner Windows UTF-8
+decoding were corrected before successful bootstrap/validation Jobs.
+
+Additional checks: Helm lint, OpenAPI YAML/local references, Python script compilation.
+Temporary image artifact Pods/Services/ConfigMaps/NetworkPolicies removed after import.
+Application host access still uses user-run Start-LocalGateway.ps1; this validation
+asserts common-origin Kubernetes HTTPS, not independent Windows browser access.
+No frontend or Wiki Link parsing/projector is claimed complete.

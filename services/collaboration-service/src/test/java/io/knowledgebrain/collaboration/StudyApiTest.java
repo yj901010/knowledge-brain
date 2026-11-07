@@ -1,0 +1,32 @@
+package io.knowledgebrain.collaboration;
+import java.util.*;import java.time.*;import org.junit.jupiter.api.*;import static org.junit.jupiter.api.Assertions.*;import static org.mockito.Mockito.*;
+import org.springframework.mock.web.MockHttpServletRequest;import org.springframework.web.server.ResponseStatusException;import io.micrometer.core.instrument.simple.SimpleMeterRegistry;import org.mockito.ArgumentCaptor;
+class StudyApiTest {
+ StudyStore store;GroupStore groups;GroupSpaceClient auth;StudyController api;UUID group,space,actor,id;String token="b".repeat(43);
+ @BeforeEach void setup(){var ids=new UuidV7(Clock.systemUTC());group=ids.next();space=ids.next();actor=ids.next();id=ids.next();store=mock(StudyStore.class);groups=mock(GroupStore.class);auth=mock(GroupSpaceClient.class);api=new StudyController(store,groups,auth,new SimpleMeterRegistry(),"https://localhost:8443");when(groups.active(List.of(group))).thenReturn(List.of(new GroupStore.Group(group,actor,"Group","","ACTIVE",space,2,Instant.now(),Instant.now(),"PRIVATE")));role("OWNER");}
+ void role(String role){when(auth.participation(eq(token),eq(List.of(group)),anyString())).thenReturn(new GroupSpaceClient.Access(actor,"REGISTERED",List.of(new GroupSpaceClient.Grant(group,space,role,"PRIVATE"))));}
+ MockHttpServletRequest req(String method,String body){var r=new MockHttpServletRequest(method,"/");r.setSecure(true);r.addHeader("Cookie","__Host-brain_guest="+token);r.addHeader("Origin","https://localhost:8443");r.addHeader("Idempotency-Key","a".repeat(32));r.addHeader("If-Match","\"st1\"");r.setContentType("application/json");if(body!=null)r.setContent(body.getBytes(java.nio.charset.StandardCharsets.UTF_8));return r;}
+ String settings(){return "{\"title\":\"Study\",\"description\":\"Purpose\"}";}
+ @Test void memberAndViewerReadButCannotMutate()throws Exception{
+  for(String role:List.of("MEMBER","VIEWER")){role(role);when(store.list(group,space,null,20)).thenReturn(new StudyStore.Page(List.of(),null));assertEquals(200,api.list(group.toString(),req("GET",null)).getStatusCode().value());assertEquals(403,assertThrows(ResponseStatusException.class,()->api.create(group.toString(),req("POST",settings()))).getStatusCode().value());assertThrows(ResponseStatusException.class,()->api.metadata(group.toString(),id.toString(),req("PUT",settings())));assertThrows(ResponseStatusException.class,()->api.state(group.toString(),id.toString(),req("PUT","{\"state\":\"ACTIVE\"}")));assertThrows(ResponseStatusException.class,()->api.retire(group.toString(),id.toString(),req("DELETE",null)));}
+  verify(store,never()).create(any(),any(),any(),any(),any(),any(),any());verify(store,never()).state(any(),any(),any(),any(),anyLong(),any(),any());
+ }
+ @Test void missingGrantWrongSpaceAndPendingConfigAreHidden(){
+  when(auth.participation(any(),anyList(),anyString())).thenReturn(new GroupSpaceClient.Access(actor,"REGISTERED",List.of()));assertThrows(ResponseStatusException.class,()->api.list(group.toString(),req("GET",null)));
+  when(auth.participation(any(),anyList(),anyString())).thenReturn(new GroupSpaceClient.Access(actor,"REGISTERED",List.of(new GroupSpaceClient.Grant(group,id,"OWNER","PRIVATE"))));assertThrows(ResponseStatusException.class,()->api.list(group.toString(),req("GET",null)));role("OWNER");when(groups.active(anyList())).thenReturn(List.of());assertThrows(ResponseStatusException.class,()->api.create(group.toString(),req("POST",settings())));verifyNoInteractions(store);
+ }
+ @Test void insecureDuplicateCredentialsAndCrossOriginNeverCallAuthority(){
+  var insecure=req("POST",settings());insecure.setSecure(false);var duplicate=req("POST",settings());duplicate.addHeader("Cookie","__Host-brain_guest="+token);var origin=req("POST",settings());origin.addHeader("Origin","https://elsewhere.example");
+  for(var r:List.of(insecure,duplicate,origin))assertThrows(ResponseStatusException.class,()->api.create(group.toString(),r));verifyNoInteractions(auth,store);
+ }
+ @Test void strictBodiesQueriesVersionsAndKeysRejectAmbiguity(){
+  for(String body:List.of("{}",settings()+" {}",settings().replace("Study",""),"{\"title\":\"Study\",\"title\":\"Other\",\"description\":\"\"}",settings().replace("Purpose\"}","Purpose\",\"actorId\":\"spoof\"}")))assertThrows(ResponseStatusException.class,()->api.create(group.toString(),req("POST",body)));
+  var key=req("POST",settings());key.removeHeader("Idempotency-Key");assertThrows(ResponseStatusException.class,()->api.create(group.toString(),key));var q=req("GET",null);q.addParameter("token","bad");assertThrows(ResponseStatusException.class,()->api.list(group.toString(),q));var read=req("GET","{}");assertThrows(ResponseStatusException.class,()->api.list(group.toString(),read));var absent=req("DELETE",null);absent.removeHeader("If-Match");assertEquals(428,assertThrows(ResponseStatusException.class,()->api.retire(group.toString(),id.toString(),absent)).getStatusCode().value());
+  for(String tag:List.of("*","W/\"st1\"","\"gr1\"","\"st0\"")){var r=req("PUT",settings());r.removeHeader("If-Match");r.addHeader("If-Match",tag);assertThrows(ResponseStatusException.class,()->api.metadata(group.toString(),id.toString(),r));}verifyNoInteractions(store);
+ }
+ @Test void createAndOutboxUseSameGeneratedTraceAndIdempotentStatus()throws Exception{
+  var v=new StudyStore.Study(id,group,space,actor,1,"Study","Purpose","PLANNED","PRIVATE",Instant.now().toString(),Instant.now().toString());when(store.create(eq(group),eq(space),eq(actor),eq("a".repeat(32)),eq("Study"),eq("Purpose"),anyString())).thenReturn(new StudyStore.Result(v,true),new StudyStore.Result(v,false));
+  var first=api.create(group.toString(),req("POST",settings()));var retry=api.create(group.toString(),req("POST",settings()));assertEquals(201,first.getStatusCode().value());assertEquals(200,retry.getStatusCode().value());assertEquals("\"st1\"",first.getHeaders().getETag());assertEquals("no-store",first.getHeaders().getCacheControl());assertEquals(first.getHeaders().getLocation(),retry.getHeaders().getLocation());
+  var parents=ArgumentCaptor.forClass(String.class);verify(auth,times(2)).participation(eq(token),eq(List.of(group)),parents.capture());var traces=ArgumentCaptor.forClass(String.class);verify(store,times(2)).create(eq(group),eq(space),eq(actor),any(),any(),any(),traces.capture());for(int n=0;n<2;n++)assertEquals(parents.getAllValues().get(n).substring(3,35),traces.getAllValues().get(n));
+ }
+}

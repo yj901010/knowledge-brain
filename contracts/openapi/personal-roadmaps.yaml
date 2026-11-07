@@ -1,0 +1,562 @@
+openapi: 3.1.0
+info:
+  title: Private Personal Learning Roadmaps
+  version: 1.0.0
+  description: Learning owns Roadmap, nodes, edges, aggregate revisions and Outbox
+    in brain_learning. PRIVATE PERSONAL only in this phase. Every request freshly
+    authorizes a common guest/registered principal through Space REST. No cross-service
+    DB access. No public verification/ranking, progress, Concept reference or AI in
+    this phase. Gateway response bounded to 8 MiB for ten full snapshots.
+servers:
+- url: https://localhost:8443
+security:
+- sessionCookie: []
+paths:
+  /api/spaces/{spaceId}/roadmaps:
+    parameters:
+    - &id013
+      name: spaceId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/UuidV7'
+    get:
+      operationId: listPersonalRoadmaps
+      description: ACTIVE PRIVATE Roadmaps in ascending UUID order. Only singleton
+        after/limit allowed; exclusive keyset cursor. GET request bodies rejected.
+      parameters:
+      - name: after
+        in: query
+        required: false
+        schema:
+          $ref: '#/components/schemas/UuidV7'
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      responses:
+        '200':
+          description: Authorized canonical page
+          headers:
+            Cache-Control: &id001
+              description: Every response is private and must not be cached
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Page'
+        '400': &id002
+          description: Malformed query/body, invalid ID, graph rules or combined snapshot
+            exceeds 524288 bytes
+          headers:
+            Cache-Control: *id001
+        '401': &id003
+          description: Common browser principal missing or invalid
+          headers:
+            Cache-Control: *id001
+        '403': &id004
+          description: Wrong origin or insufficient current role
+          headers:
+            Cache-Control: *id001
+        '404': &id005
+          description: Space unavailable, mismatched parent, or Roadmap retired/missing
+          headers:
+            Cache-Control: *id001
+        '413': &id006
+          description: Graph request exceeds 1048576 bytes or metadata request exceeds
+            262144 bytes
+          headers:
+            Cache-Control: *id001
+        '415': &id007
+          description: application/json required
+          headers:
+            Cache-Control: *id001
+        '428': &id008
+          description: If-Match required
+          headers:
+            Cache-Control: *id001
+        '412': &id009
+          description: Aggregate version changed, inspect latest and explicitly restart
+            editing
+          headers:
+            Cache-Control: *id001
+        '502': &id010
+          description: Gateway upstream unavailable
+          headers:
+            Cache-Control: *id001
+        '503': &id011
+          description: Owner database or current Space authority unavailable
+          headers:
+            Cache-Control: *id001
+        '504': &id012
+          description: Gateway upstream deadline exceeded
+          headers:
+            Cache-Control: *id001
+    post:
+      operationId: createPersonalRoadmap
+      description: Guest or registered common principal may create within PERSONAL
+        PRIVATE Space. OWNER/ADMIN/EDITOR writes. Initial empty graph, version1; Roadmap/revision/full
+        Protobuf Outbox atomic. Strict JSON exact fields, duplicate keys, trailing
+        tokens and unknown fields rejected.
+      parameters:
+      - &id015
+        name: Origin
+        in: header
+        required: true
+        schema:
+          type: string
+          format: uri
+          description: Must exactly equal configured secure browser origin
+      responses:
+        '201':
+          description: Created private Roadmap
+          headers:
+            Cache-Control: *id001
+            ETag: &id014
+              description: Strong aggregate version, shared by metadata, graph and
+                retirement
+              schema: &id016
+                type: string
+                pattern: ^"rm[1-9][0-9]{0,18}"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Roadmap'
+        '400': *id002
+        '401': *id003
+        '403': *id004
+        '404': *id005
+        '413': *id006
+        '415': *id007
+        '428': *id008
+        '412': *id009
+        '502': *id010
+        '503': *id011
+        '504': *id012
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Edit'
+  /api/spaces/{spaceId}/roadmaps/{roadmapId}:
+    parameters:
+    - *id013
+    - &id018
+      name: roadmapId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/UuidV7'
+    get:
+      operationId: readPersonalRoadmap
+      description: Coherent current ACTIVE full snapshot read in one PostgreSQL statement;
+        fresh Space permission each request. No query keys/body allowed.
+      parameters: []
+      responses:
+        '200':
+          description: Current canonical Roadmap
+          headers:
+            Cache-Control: *id001
+            ETag: *id014
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Roadmap'
+        '400': *id002
+        '401': *id003
+        '403': *id004
+        '404': *id005
+        '413': *id006
+        '415': *id007
+        '428': *id008
+        '412': *id009
+        '502': *id010
+        '503': *id011
+        '504': *id012
+    put:
+      operationId: editPersonalRoadmap
+      description: Update title and description preserving graph. Exact strong rmN
+        precondition, no wildcard/list/weak/domain-other ETag; stale no-ops also fail
+        412. Changed metadata creates immutable full snapshot/revision/event; no-op
+        version stable.
+      parameters:
+      - *id015
+      - &id017
+        name: If-Match
+        in: header
+        required: true
+        schema: *id016
+      responses:
+        '200':
+          description: Saved full Roadmap
+          headers:
+            Cache-Control: *id001
+            ETag: *id014
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Roadmap'
+        '400': *id002
+        '401': *id003
+        '403': *id004
+        '404': *id005
+        '413': *id006
+        '415': *id007
+        '428': *id008
+        '412': *id009
+        '502': *id010
+        '503': *id011
+        '504': *id012
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Edit'
+    delete:
+      operationId: retirePersonalRoadmap
+      description: Retain last graph and all history, exclude from current reads and
+        catalog. Version precondition; no body/query. No restore endpoint.
+      parameters:
+      - *id015
+      - *id017
+      responses:
+        '204':
+          description: Retired Roadmap, new version
+          headers:
+            Cache-Control: *id001
+            ETag: *id014
+        '400': *id002
+        '401': *id003
+        '403': *id004
+        '404': *id005
+        '413': *id006
+        '415': *id007
+        '428': *id008
+        '412': *id009
+        '502': *id010
+        '503': *id011
+        '504': *id012
+  /api/spaces/{spaceId}/roadmaps/{roadmapId}/graph:
+    parameters:
+    - *id013
+    - *id018
+    put:
+      operationId: replacePersonalRoadmapGraph
+      description: Full replacement within one local transaction; excluded existing
+        nodes/edges are RETIRED, retained in history and cannot be resurrected. Unique
+        node and edge keys; endpoints must refer to submitted nodes; no self edges
+        or duplicate semantic relations. PREREQUISITE_OF, RECOMMENDED_BEFORE and REQUIRED_FOR
+        form one mixed DAG; PART_OF forms a separate DAG (child to parent); OPTIONAL_FOR
+        may cycle. RELATED_TO is undirected, normalized by UUID string order and cannot
+        repeat in reverse. Metadata is preserved. No-op graph preserves version, revision
+        and outbox. Root lock is obtained before reading the matching immutable revision.
+        Combined full snapshot at most 524288 UTF-8 bytes; any failure rolls back
+        all tables and Outbox.
+      parameters:
+      - *id015
+      - *id017
+      responses:
+        '200':
+          description: Saved canonical IDs and full graph
+          headers:
+            Cache-Control: *id001
+            ETag: *id014
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Roadmap'
+        '400': *id002
+        '401': *id003
+        '403': *id004
+        '404': *id005
+        '413': *id006
+        '415': *id007
+        '428': *id008
+        '412': *id009
+        '502': *id010
+        '503': *id011
+        '504': *id012
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GraphEdit'
+  /api/spaces/{spaceId}/roadmaps/{roadmapId}/revisions:
+    parameters:
+    - *id013
+    - *id018
+    get:
+      operationId: listPersonalRoadmapRevisions
+      description: Full immutable snapshots in descending version order, including
+        known retired Roadmaps if current Space permission allows. Only singleton
+        before/limit. Exclusive version cursor; default UI page5; max10.
+      parameters:
+      - name: before
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 9223372036854775807
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 5
+      responses:
+        '200':
+          description: Authorized immutable revisions
+          headers:
+            Cache-Control: *id001
+          content:
+            application/json:
+              schema:
+                type: array
+                maxItems: 10
+                items:
+                  $ref: '#/components/schemas/Revision'
+        '400': *id002
+        '401': *id003
+        '403': *id004
+        '404': *id005
+        '413': *id006
+        '415': *id007
+        '428': *id008
+        '412': *id009
+        '502': *id010
+        '503': *id011
+        '504': *id012
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest
+  schemas:
+    UuidV7:
+      type: string
+      format: uuid
+      pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+    Version:
+      type: integer
+      minimum: 1
+    Edit:
+      type: object
+      additionalProperties: false
+      required:
+      - title
+      - description
+      properties:
+        title: &id019
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: Nonblank by Java isBlank; at most 200 Unicode code points,
+            no ISO control characters or unpaired surrogate. Preserved without trimming.
+        description:
+          type: string
+          description: At most 32768 UTF-8 bytes; LF, CR and TAB allowed; other ISO
+            controls and unpaired surrogates rejected.
+    Node:
+      type: object
+      additionalProperties: false
+      required:
+      - nodeId
+      - title
+      - description
+      properties:
+        nodeId:
+          $ref: '#/components/schemas/UuidV7'
+        title: *id019
+        description:
+          type: string
+          description: At most 2048 UTF-8 bytes; LF, CR and TAB allowed; other ISO
+            controls and unpaired surrogates rejected.
+    Edge:
+      type: object
+      additionalProperties: false
+      required:
+      - edgeId
+      - kind
+      - sourceNodeId
+      - targetNodeId
+      properties:
+        edgeId:
+          $ref: '#/components/schemas/UuidV7'
+        kind:
+          type: string
+          enum: &id021
+          - PREREQUISITE_OF
+          - RECOMMENDED_BEFORE
+          - PART_OF
+          - REQUIRED_FOR
+          - OPTIONAL_FOR
+          - RELATED_TO
+        sourceNodeId:
+          $ref: '#/components/schemas/UuidV7'
+        targetNodeId:
+          $ref: '#/components/schemas/UuidV7'
+    NodeEdit:
+      type: object
+      additionalProperties: false
+      required:
+      - key
+      - title
+      - description
+      properties:
+        key: &id020
+          type: string
+          pattern: ^(new:[A-Za-z0-9_-]{1,32}|[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})$
+          description: 'Existing active ID in this exact Roadmap, or an ephemeral
+            new: key. Learning alone assigns persistent UUIDv7 IDs; client keys are
+            not persisted.'
+        title: *id019
+        description:
+          type: string
+          description: At most 2048 UTF-8 bytes; LF, CR and TAB allowed; other ISO
+            controls and unpaired surrogates rejected.
+    EdgeEdit:
+      type: object
+      additionalProperties: false
+      required:
+      - key
+      - kind
+      - source
+      - target
+      properties:
+        key: *id020
+        kind:
+          type: string
+          enum: *id021
+        source: *id020
+        target: *id020
+    GraphEdit:
+      type: object
+      additionalProperties: false
+      required:
+      - nodes
+      - edges
+      properties:
+        nodes:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/NodeEdit'
+        edges:
+          type: array
+          maxItems: 500
+          items:
+            $ref: '#/components/schemas/EdgeEdit'
+    Roadmap:
+      type: object
+      additionalProperties: false
+      required:
+      - roadmapId
+      - spaceId
+      - visibility
+      - state
+      - version
+      - title
+      - description
+      - createdAt
+      - updatedAt
+      - nodes
+      - edges
+      properties:
+        roadmapId: &id022
+          $ref: '#/components/schemas/UuidV7'
+        spaceId:
+          $ref: '#/components/schemas/UuidV7'
+        visibility:
+          const: PRIVATE
+        state:
+          enum:
+          - ACTIVE
+          - RETIRED
+        version: &id023
+          $ref: '#/components/schemas/Version'
+        title: *id019
+        description:
+          type: string
+          description: At most 32768 UTF-8 bytes; LF, CR and TAB allowed; other ISO
+            controls and unpaired surrogates rejected.
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt: &id024
+          type: string
+          format: date-time
+        nodes:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/Node'
+        edges:
+          type: array
+          maxItems: 500
+          items:
+            $ref: '#/components/schemas/Edge'
+    Summary:
+      type: object
+      additionalProperties: false
+      required:
+      - roadmapId
+      - title
+      - version
+      - updatedAt
+      properties:
+        roadmapId: *id022
+        title: *id019
+        version: *id023
+        updatedAt: *id024
+    Page:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - nextAfter
+      properties:
+        items:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/Summary'
+        nextAfter:
+          oneOf:
+          - $ref: '#/components/schemas/UuidV7'
+          - type: 'null'
+    Revision:
+      type: object
+      additionalProperties: false
+      required:
+      - revisionId
+      - roadmapId
+      - version
+      - actorId
+      - occurredAt
+      - snapshot
+      properties:
+        revisionId:
+          $ref: '#/components/schemas/UuidV7'
+        roadmapId:
+          $ref: '#/components/schemas/UuidV7'
+        version:
+          $ref: '#/components/schemas/Version'
+        actorId:
+          $ref: '#/components/schemas/UuidV7'
+        occurredAt:
+          type: string
+          format: date-time
+        snapshot:
+          $ref: '#/components/schemas/Roadmap'

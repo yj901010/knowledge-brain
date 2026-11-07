@@ -1,0 +1,242 @@
+openapi: 3.1.0
+info:
+  title: Public Concept Contribution and Review API
+  version: 1.0.0
+  description: >-
+    Fresh Identity/Space authorization on every request. Registered accounts
+    submit immutable public proposals; designated active Space reviewers review
+    and merge. Self-approval and self-merge are forbidden. Approval does not
+    mutate canonical data. Merge atomically records a new Concept revision and
+    Outbox events. UPDATE merge checks baseVersion. All responses use no-store.
+servers:
+  - url: https://localhost:8443
+security:
+  - browserSession: []
+paths:
+  /api/spaces/public:
+    get:
+      summary: Public Space catalog with current principal capabilities
+      responses:
+        '200':
+          description: PUBLIC catalog; canPropose and canReview are freshly computed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        spaceId: {$ref: '#/components/schemas/Id'}
+                        domain: {type: string, enum: [MEDICINE, DEVELOPMENT]}
+                        title: {type: string}
+                        canPropose: {type: boolean}
+                        canReview: {type: boolean}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '503': {$ref: '#/components/responses/Unavailable'}
+  /api/public/spaces/{spaceId}/concepts:
+    parameters:
+      - {$ref: '#/components/parameters/Space'}
+    get:
+      summary: List active canonical public Concepts
+      parameters:
+        - {$ref: '#/components/parameters/After'}
+        - {$ref: '#/components/parameters/Limit'}
+      responses:
+        '200':
+          description: UUIDv7 keyset page of conceptId, title, version, updatedAt; nextAfter null at end
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '503': {$ref: '#/components/responses/Unavailable'}
+  /api/public/spaces/{spaceId}/concepts/{conceptId}:
+    parameters:
+      - {$ref: '#/components/parameters/Space'}
+      - {name: conceptId, in: path, required: true, schema: {$ref: '#/components/schemas/Id'}}
+    get:
+      summary: Get canonical public Concept
+      responses:
+        '200':
+          description: Public Concept with strong quoted numeric version ETag
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Concept'}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '503': {$ref: '#/components/responses/Unavailable'}
+  /api/public/spaces/{spaceId}/concepts/{conceptId}/revisions:
+    parameters:
+      - {$ref: '#/components/parameters/Space'}
+      - {name: conceptId, in: path, required: true, schema: {$ref: '#/components/schemas/Id'}}
+    get:
+      summary: Canonical revision history, newest first
+      parameters:
+        - {name: before, in: query, schema: {type: integer, format: int64, minimum: 1}}
+        - {name: limit, in: query, schema: {type: integer, minimum: 1, maximum: 10, default: 5}}
+      responses:
+        '200': {description: Immutable revisions with revisionId, conceptId, version, state, title, description, actorId, occurredAt}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '503': {$ref: '#/components/responses/Unavailable'}
+  /api/public/spaces/{spaceId}/contributions:
+    parameters:
+      - {$ref: '#/components/parameters/Space'}
+    get:
+      summary: List immutable public proposals
+      parameters:
+        - {$ref: '#/components/parameters/After'}
+        - {$ref: '#/components/parameters/Limit'}
+      responses:
+        '200': {description: 'Bounded summaries of contributionId, conceptId, operation, title, authorId, state, version, baseVersion; nextAfter UUIDv7 or null. Text and rationale are fetched through the detail endpoint.'}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '503': {$ref: '#/components/responses/Unavailable'}
+    post:
+      summary: Explicitly submit new public Concept or update proposal
+      parameters:
+        - {$ref: '#/components/parameters/Origin'}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [conceptId, baseVersion, title, description, rationale]
+              properties:
+                conceptId:
+                  oneOf:
+                    - {$ref: '#/components/schemas/Id'}
+                    - {type: 'null'}
+                baseVersion: {type: integer, format: int64, minimum: 0, description: 'CREATE uses null conceptId and zero; UPDATE requires positive current canonical version'}
+                title: {type: string, minLength: 1, maxLength: 200}
+                description: {type: string, description: 'Plain Markdown string, maximum 32768 UTF-8 bytes'}
+                rationale: {type: string, minLength: 1, maxLength: 2000}
+      responses:
+        '201': {$ref: '#/components/responses/Proposal'}
+        '400': {description: Invalid UUIDv7, duplicate/unknown fields, invalid body or limits}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {description: Registered account and exact same Origin required}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '412': {description: Canonical base version changed}
+        '413': {description: Body exceeds 65536 bytes}
+        '503': {$ref: '#/components/responses/Unavailable'}
+  /api/public/spaces/{spaceId}/contributions/{contributionId}:
+    parameters:
+      - {$ref: '#/components/parameters/Space'}
+      - {$ref: '#/components/parameters/Contribution'}
+    get:
+      summary: Get proposal and strong pN ETag
+      responses:
+        '200': {$ref: '#/components/responses/Proposal'}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '503': {$ref: '#/components/responses/Unavailable'}
+  /api/public/spaces/{spaceId}/contributions/{contributionId}/reviews:
+    parameters:
+      - {$ref: '#/components/parameters/Space'}
+      - {$ref: '#/components/parameters/Contribution'}
+    get:
+      summary: Immutable review and merge audit in contribution-version order
+      responses:
+        '200': {description: 'Array of reviewId, reviewerId, decision, reason, contributionVersion, occurredAt; at most two rows per immutable proposal'}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '503': {$ref: '#/components/responses/Unavailable'}
+  /api/public/spaces/{spaceId}/contributions/{contributionId}/review:
+    parameters:
+      - {$ref: '#/components/parameters/Space'}
+      - {$ref: '#/components/parameters/Contribution'}
+    post:
+      summary: Designated reviewer approves or rejects SUBMITTED proposal
+      parameters:
+        - {$ref: '#/components/parameters/Origin'}
+        - {$ref: '#/components/parameters/Match'}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [decision, reason]
+              properties:
+                decision: {type: string, enum: [APPROVED, REJECTED]}
+                reason: {type: string, minLength: 1, maxLength: 2000}
+      responses:
+        '200': {$ref: '#/components/responses/Proposal'}
+        '403': {description: Reviewer membership absent/retired, self-review or wrong Origin}
+        '409': {description: Proposal is not SUBMITTED}
+        '412': {description: Contribution version changed}
+        '428': {description: Strong If-Match required}
+        '503': {$ref: '#/components/responses/Unavailable'}
+  /api/public/spaces/{spaceId}/contributions/{contributionId}/merge:
+    parameters:
+      - {$ref: '#/components/parameters/Space'}
+      - {$ref: '#/components/parameters/Contribution'}
+    post:
+      summary: Designated reviewer merges APPROVED proposal and records canonical Revision
+      parameters:
+        - {$ref: '#/components/parameters/Origin'}
+        - {$ref: '#/components/parameters/Match'}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {type: object, additionalProperties: false, maxProperties: 0}
+      responses:
+        '200': {$ref: '#/components/responses/Proposal'}
+        '403': {description: Reviewer membership absent/retired, self-merge or wrong Origin}
+        '409': {description: Proposal is not APPROVED}
+        '412': {description: Contribution or canonical base version changed; no mutation committed}
+        '428': {description: Strong If-Match required}
+        '503': {$ref: '#/components/responses/Unavailable'}
+components:
+  securitySchemes:
+    browserSession: {type: apiKey, in: cookie, name: __Host-brain_guest}
+  parameters:
+    Space: {name: spaceId, in: path, required: true, schema: {$ref: '#/components/schemas/Id'}}
+    Contribution: {name: contributionId, in: path, required: true, schema: {$ref: '#/components/schemas/Id'}}
+    After: {name: after, in: query, schema: {$ref: '#/components/schemas/Id'}}
+    Limit: {name: limit, in: query, schema: {type: integer, minimum: 1, maximum: 100, default: 20}}
+    Origin: {name: Origin, in: header, required: true, schema: {type: string}, description: Exact configured HTTPS browser Origin; Sec-Fetch-Site if present must be same-origin}
+    Match: {name: If-Match, in: header, required: true, schema: {type: string, pattern: '^"p[1-9][0-9]{0,18}"$'}}
+  schemas:
+    Id: {type: string, format: uuid, pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$'}
+    Concept:
+      type: object
+      properties:
+        conceptId: {$ref: '#/components/schemas/Id'}
+        spaceId: {$ref: '#/components/schemas/Id'}
+        visibility: {const: PUBLIC}
+        state: {const: ACTIVE}
+        version: {type: integer, format: int64}
+        title: {type: string}
+        description: {type: string}
+        createdAt: {type: string, format: date-time}
+        updatedAt: {type: string, format: date-time}
+    Proposal:
+      type: object
+      properties:
+        contributionId: {$ref: '#/components/schemas/Id'}
+        spaceId: {$ref: '#/components/schemas/Id'}
+        conceptId: {$ref: '#/components/schemas/Id'}
+        operation: {type: string, enum: [CREATE, UPDATE]}
+        baseVersion: {type: integer, format: int64}
+        title: {type: string}
+        description: {type: string}
+        rationale: {type: string}
+        authorId: {$ref: '#/components/schemas/Id'}
+        state: {type: string, enum: [SUBMITTED, APPROVED, REJECTED, MERGED]}
+        version: {type: integer, format: int64}
+        createdAt: {type: string, format: date-time}
+        updatedAt: {type: string, format: date-time}
+        mergedConceptVersion: {type: [integer, 'null'], format: int64}
+  responses:
+    Proposal:
+      description: Immutable proposal snapshot and current workflow state
+      headers:
+        ETag: {schema: {type: string}, description: Strong quoted pN contribution version}
+      content:
+        application/json:
+          schema: {$ref: '#/components/schemas/Proposal'}
+    Unauthorized: {description: Browser session absent, invalid or revoked}
+    NotFound: {description: Public Space or scoped resource unavailable}
+    Unavailable: {description: Identity/Space authority or canonical storage unavailable; fails closed}

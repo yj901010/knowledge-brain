@@ -1,0 +1,88 @@
+Concept learning evidence validation, 2026-10-15
+
+Architecture: Learning evidence variant, Knowledge-owned metadata reference,
+same-private-Space or freshly authorized public source, private learning relationship.
+No cross-owner SQL/FK/write, description/Claim copying or distributed transaction.
+Migration V4 preserves V3 Note IDs, full revisions, fingerprints and committed bytes.
+The typed Note API and Protobuf v1 remain unchanged. Wrong-kind IDs are 404 and
+cross-kind request-key reuse is 409. Real owner scope and public-feature/actor
+checks, independent ceN/no-op/history/lifecycle, root lock and atomic Outbox tested.
+
+{
+  "jobs": {
+    "backend": "backend-validation-1792065864",
+    "learningKafka": "backend-validation-1792065593",
+    "browser": "graph-web-validation-1792066956",
+    "focusedBrowser": "graph-web-validation-1792066615",
+    "registry": "learning-tracking-contract-validation-1792065221",
+    "cdc": "learning-cdc-bootstrap-1792066105"
+  },
+  "backend": {
+    "tests": 452,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 29
+  },
+  "learningKafka": {
+    "tests": 53,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "browserTests": 37,
+  "focusedBrowserTests": 3,
+  "registeredClaimMarkers": 2,
+  "publicOwnerPinAndUiVerified": true,
+  "schemaHashes": {
+    "concept": "defd2827328024b6fee71e56a3a40c650f335f0359d03dcf62ef0d6a2b31ef04",
+    "note": "432a3664007de5f39da77d077b745c534147c8dc50be424dab4cd04e56ccce2b"
+  },
+  "images": {
+    "knowledge": "knowledge-brain/knowledge-service:local-5b2942e7f3d5b3df",
+    "learning": "knowledge-brain/learning-service:local-60c0b0258e22af9d",
+    "gateway": "knowledge-brain/gateway-service:local-60c337e9001a1631"
+  },
+  "readyServices": 9,
+  "connectorRunning": true,
+  "exactTopicAclsVerified": true,
+  "ownedBuildResourcesRemoved": 6,
+  "hostHttpsVerified": true
+}
+
+Feature browser verifies foreign Space/source/node denials, changed version,
+Note/Concept collection and ID isolation, idempotent original-key replay after
+source/record retirement, 5+3 immutable history, independent root/progress, real
+22-Concept picker and 20+2 evidence pages, committed lost response retry, edit and
+retirement 412 with explicit latest inspection/restart, unchanged sibling drafts,
+literal escaped memo, late source-Space/closed reads, malformed pin scope and
+real revoked-session clearing. Desktop/mobile screenshots inspected and 390px fits.
+Mobile QA found inherited dark form background with dark labels; the final Gateway
+uses a light form background. Both focused and full browser runs above validate
+the final deployed image, after that isolated CSS correction.
+
+Full public workflow verifies unmerged proposal denial, actual reviewed public
+Concept linking, retained v1 pins after reviewed v2 merge, current public picker UI
+and guest study without automatic progress. Two actual Keycloak registrations
+preserve private Concept evidence IDs/pins through Space claim, then registered
+users update the same records. No automatic publishing or private browser storage.
+
+Real Kafka proof compares exact committed Protobuf bytes, full private Concept
+pins, source Space/visibility, stable event/revision IDs, actor/Space/trace/schema
+headers and three ordered versions. Registry v1 bytes/rules, broker topic ACLs,
+Outbox-only CDC and ten canonical/twelve other-owner privilege denials verified.
+
+Initial migration test compile failure was fixed before the successful 53-test
+and full backend runs. Its failed Learning builder and both superseded Gateway
+builders were removed only after exact Pod UID/labels, source ConfigMap owner refs,
+Service/NetworkPolicy selectors, exit code and current deployment image checks.
+Three successful builders were likewise removed after both-node import/deployment.
+An intermediate browser rerun exposed a pagination test race: the next click
+started before the prior page completed, and its button disappeared on the final
+page. The test now waits for newly loaded options/target before the next click;
+application behavior and source/visibility assertions were preserved.
+No database, PVC, broker offset, WAL slot or application data was reset.
+
+No new dependency/dataset/license. Media evidence, optional StudySession association,
+Activity timeline, public/group Roadmap learning and ratings/ranking remain later
+scope. Existing readiness/counters/trace verified; central telemetry deployment and
+exporter wiring remain platform follow-up. Visual redesign stays deferred.

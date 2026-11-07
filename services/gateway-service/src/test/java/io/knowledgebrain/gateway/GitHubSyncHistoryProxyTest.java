@@ -1,0 +1,8 @@
+package io.knowledgebrain.gateway;
+import org.junit.jupiter.api.*;import static org.junit.jupiter.api.Assertions.*;import org.springframework.web.server.ResponseStatusException;
+class GitHubSyncHistoryProxyTest {
+ GatewayProxyTest f;String id="019a0000-0000-7000-8000-000000000001",path="/api/spaces/"+id+"/github/repositories/"+id+"/syncs";
+ @BeforeEach void setup()throws Exception{f=new GatewayProxyTest();f.prepare();}@AfterEach void stop(){f.stop();}
+ @Test void exactReadOnlyRouteAndPrivateBeforeLimitForwardWithoutCallerAuthority()throws Exception{assertEquals("integration",GatewayRoute.select("GET",path).service());for(String method:java.util.List.of("POST","PUT","PATCH","DELETE"))assertNull(GatewayRoute.select(method,path));for(String suffix:java.util.List.of("/all","/"+id,"/extra"))assertNull(GatewayRoute.select("GET",path+suffix));var request=f.request("GET",path);request.setQueryString("before=7&limit=100");assertEquals(200,f.gateway.proxy(request).getStatusCode().value());assertFalse(f.headers.get().containsKey("Authorization"));assertEquals(1,f.requests.get());}
+ @Test void duplicateUnknownOverflowAndReadBodiesNeverReachTransport(){for(String query:java.util.List.of("before=0","before=-1","before=1.0","before=9223372036854775808","before=7&before=6","limit=0","limit=101","limit=20&","after="+id,"state=ACTIVE","actorId="+id)){var request=f.request("GET",path);request.setQueryString(query);assertThrows(ResponseStatusException.class,()->f.gateway.proxy(request));}var body=f.request("GET",path);body.setContent("{}".getBytes());assertThrows(ResponseStatusException.class,()->f.gateway.proxy(body));assertEquals(0,f.requests.get());}
+}

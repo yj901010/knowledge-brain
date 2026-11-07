@@ -1,0 +1,18 @@
+storage:
+  size: 5Gi
+  className: local-path
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: '1'
+    memory: 1Gi
+probes:
+  startup:
+    timeoutSeconds: 5
+  readiness:
+    timeoutSeconds: 5
+  liveness:
+    timeoutSeconds: 5
+    failureThreshold: 6

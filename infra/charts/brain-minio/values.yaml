@@ -1,0 +1,9 @@
+image:
+  repository: knowledge-brain/minio
+  tag: local-6399128ab0c1eb67
+  pullPolicy: Never
+replicas: 1
+storageSize: 10Gi
+resources:
+  requests: {cpu: 100m, memory: 256Mi}
+  limits: {cpu: '1', memory: 768Mi}

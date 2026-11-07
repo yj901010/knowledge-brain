@@ -1,0 +1,9 @@
+image: clickhouse/clickhouse-server:26.8.27.9@sha256:bc1a1d93355508c1414bb692e6e56972b492dad55a7891cb63c6e6f1b9697236
+storage: 10Gi
+resources:
+  requests:
+    cpu: 500m
+    memory: 1Gi
+  limits:
+    cpu: '2'
+    memory: 2Gi

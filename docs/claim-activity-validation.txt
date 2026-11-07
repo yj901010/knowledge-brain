@@ -1,0 +1,16 @@
+Claim activity validation — 2026-10-21
+
+knowledge: 207 passed, 0 failed/error/skipped; backend-validation-1792580846626455200
+activity: 67 passed, 0 failed/error/skipped; backend-validation-1792581878765373900-7cdcd648
+Browser: 21 passed (including 2 new Claim scenarios and 19 existing Activity regressions); graph-web-validation-1792582029894364500
+Real HTTPS export/authority boundary passed; claim-activity-export-validation-1792581358
+Static TypeScript/Next export passed; graph-static-build-1792580839023813600
+OpenAPI references resolved: 1467
+Knowledge and Activity process restarts preserved canonical Claim revisions, source metadata, Citation/Qualifier revision pins and exact activity event IDs.
+Four-owner retained-event replay passed: activity-timeline-replay-1792582206
+No canonical data, Inbox, ClickHouse, topics, CDC slots or Kafka checkpoints were reset.
+22 literal subscribed topics, 21 activity kinds; existing V1 and V2 Claim contracts/producer remain unchanged.
+Measured first warmup exceeded the old 600s poll/progress limit; now bounded configurable Kafka budget and deployment deadline default to 1800s. Failed backfill never acknowledges; complete durable backfill commits only the tail captured before scans.
+Initial simultaneous backend runner Job-name collision resolved using a random suffix. An early browser preflight was cancelled before final rollout; completed browser evidence is the gated run above.
+4 exact task-owned builder Pods/Services/NetworkPolicies and source ConfigMaps cleaned after verified imports/deployments.
+All 12 application Deployments ready; 8 CDC connectors running; host HTTPS /graph 200.

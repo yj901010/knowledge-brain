@@ -1,0 +1,5 @@
+apiVersion: v2
+name: brain-cassandra
+version: 0.1.0
+appVersion: '4.0.21'
+description: Private TLS Cassandra backing the Brain Query graph projection

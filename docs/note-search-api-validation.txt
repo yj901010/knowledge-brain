@@ -1,0 +1,29 @@
+Private Note search API validation - 2026-10-07
+Java 25; Space / Brain Query / Gateway source image tag local-4e1aaf8d14364560
+No new library, foreign SQL, migration or breaking event contract.
+Full regression Job backend-validation-1791379906: 156 tests, failures=0 errors=0 skips=0; BUILD SUCCESS.
+Completed brain-data/note-search-api-validation-1791380288
+PASS common-origin HTTPS title/Markdown search, exact private totals and bounded pagination
+PASS foreign Space, spoofed principal/bearer, absent/duplicate cookie and undeclared methods/parameters denied without hits/counts
+PASS actual canonical edit and retirement converge through CDC/Kafka to the user search API
+PASS a previously successful guest is denied immediately after session revocation
+PASS Space authority outage fails closed and replaced Pod restores authorized search
+PASS OpenSearch outage returns generic 503 without partial private results and recovers
+PASS private end-user search API validation
+Completed brain-data/note-search-api-validation-1791380561
+PASS encoded Korean query and literal DSL-shaped text use plain analysis
+PASS common-origin HTTPS title/Markdown search, exact private totals and bounded pagination
+PASS foreign Space, spoofed principal/bearer, absent/duplicate cookie and undeclared methods/parameters denied without hits/counts
+PASS actual canonical edit and retirement converge through CDC/Kafka to the user search API
+PASS a previously successful guest is denied immediately after session revocation
+PASS private end-user search API validation
+Actual replacement deployment/space-service: 8394489b-f017-4fa1-9b95-f2b063879418 -> 15b72b9d-27f0-4fcf-944a-7df055eda65e; restored replicas=1
+Actual replacement statefulset/brain-opensearch: 32d357dc-88a2-4299-82be-17d513346c34 -> e4789b9b-9ec5-4664-9793-06c5811698d9; restored replicas=1
+space-service Ready 1/1; knowledge-brain/space-service:local-4e1aaf8d14364560
+brain-query-service Ready 1/1; knowledge-brain/brain-query-service:local-4e1aaf8d14364560
+gateway-service Ready 1/1; knowledge-brain/gateway-service:local-4e1aaf8d14364560
+Browser test Jobs carry public trust only; cookies remain in process memory. Final regular Job has no search-client label or reader/admin certificates.
+Fresh Space decision occurs before any search request: Mockito ordering/repeated-call and denial/outage tests passed.
+Actual authority and OpenSearch outages return generic 503 with error only; no total or items.
+Standard text analysis is verified with encoded Korean text; morphological analysis is not implemented.
+Projection is eventually consistent; offset pages can shift under concurrent edits. Registered claiming, Graph View and Note-to-Concept remain separate work.

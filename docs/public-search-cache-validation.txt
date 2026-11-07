@@ -1,0 +1,72 @@
+2026-11-06 — PASSED for the bounded local public candidate-cache package.
+This does not mark the full agreed V1 or a production release complete.
+
+Runtime identity:
+- Existing cluster UID: ee84ca44-bb83-4712-a572-10169a6e2542.
+- Brain Query local-valkey-0f84a5b68ab11bf1:
+  sha256:16d4c42afbcbb8c40a02c8704997114ff470b995a5c33f7c96a46b784989ba1a.
+- Valkey9.0.7 index2d04268dfa26ab31cfa3fdc538866e76438b2d00e41db41b8cb86d780ac5a416;
+  actual linux/amd64 ba88e813493c4c449b0127b571240323ce862c12c98a78ec25da53859bc0a5b1.
+  Running node's index/manifest/config matched the exact scanned artifact.
+
+Implementation and license checks:
+- Common digest-pinned TLS-only chart/local overlay, idempotent Secrets/ACLs,
+  nonroot/read-only/private-network/no-PVC cache with64MiB maxmemory.
+- Official MIT client5.5.0, exact upstream SDK/JSON/Gson notices retained in image;
+  Commons Pool/SLF4J bundled notices inspected. License/source hashes locked.
+-5-second public IDs/kinds/versions/page metadata only. Strict16KiB codec,
+  GETRANGE network cap, fixed query binding,125ms caller read wait, two workers/
+  connections/no queue, async writes and1-second error cooldown.
+- Fresh Space/Identity authorization, current Knowledge checks and readiness before/
+  after are retained. Private APIs and response no-store behavior stay unchanged.
+
+Executed validation:
+- Helm lint, server dry-run and actual Ready Valkey deployment.
+- Query package90 total:59 executed,31 explicit external-condition skips,
+  zero failures/errors. Includes7 cache codec/deadline/fallback/cooldown cases and
+  three fresh authority/canonical/readiness boundary cases.
+- Both exact Valkey/Query artifacts:0 HIGH/CRITICAL, no waivers. Query image
+  config/class/license bytes matched source/build outputs; all source input hashes
+  remained unchanged during the final test/build/scan/import/rollout.
+- Both original nodes imported the exact Query manifest/config; the running Pod
+  imageID matches the pinned candidate.
+-15 actual production-transport checks: trusted TLS round trip, wrong CA, wrong
+  hostname, wrong password, own-prefix guard, server ACL command/key denial,
+  bounded reply/size/TTL parameters, actual TTL expiry and plaintext rejection.
+  One unrelated-workload NetworkPolicy denial also passed while cache was Ready.
+  Confined allowed/denied probe Jobs use the exact current application image and
+  remain NotReady while running, excluding them from live Query Service endpoints.
+-20 bounded public reads including concurrency4, real private Note Outbox/CDC
+  projection, private/public/foreign Space isolation and revoked-credential denial.
+- Actual cache-only scale-to-zero: all8 public reads succeeded, Query stayed Ready,
+  the exact private Note response survived, and the cache returned without an app
+  restart. Eight further public reads passed after recovery.
+- Live Valkey value inspected: only schema/binding/expiry/total and ID/kind/version
+  candidates, no raw search query/title/body/principal/credential.
+- Prometheus shows preserved fixed outcome labels, hits/misses/writes/errors/
+  cooldown and rejected-expired-payload fallback. No sensitive/dynamic query labels.
+- Three trusted-HTTPS browser scenarios passed: real private graph/mobile/revoke,
+  repeated public catalog/domain navigation, and private full-text paging/canonical
+  reopen/retirement/failure clearing/recovery/revocation. Job/source/image bound.
+- Final14 apps/7 monitoring/13 JVMs and10 connector/tasks healthy; no firing alerts.
+  All14 original app Deployment UIDs/all13 PVC identities and unrelated app/
+  monitoring specs preserved. Only Query rolled; Valkey is a separate new cache.
+
+Measured scope:
+-20 local HTTP read samples: median2078.0ms, max2156.0ms.
+-8 cache-outage samples: median2070.5ms, max2094.0ms.
+  These samples include fresh authority/canonical/client work and demonstrate
+  continuity, not a speedup, production SLO or sustained-load/HA qualification.
+  Cache hits avoid candidate source queries only; broader latency profiling remains.
+
+Evidence (ignored local operator artifacts, no credentials included):
+.local/valkey-build-source.json; valkey-image-proof.json; valkey-image-trivy.json;
+valkey-query-trivy.json; valkey-transport-proof.json; valkey-rollout-proof.json;
+valkey-api-proof.json; valkey-payload-proof.json; valkey-browser-proof.json;
+valkey-runtime-before.json; valkey-runtime-after.json; valkey-query-final-tested.log.
+Browser Job: graph-web-validation-1793974930998397000.
+
+No domain schema/API/event, direct publisher, service ownership, clinical dataset,
+public publication, learning progress, existing credentials or AI changed.
+Goal remains active for the remaining V1 source/evidence and usability/operations/
+remote delivery/licensed-content work. See current-status.md and v1-completion.md.

@@ -1,0 +1,74 @@
+fullnameOverride: brain-headlamp
+replicaCount: 1
+image:
+  registry: ghcr.io
+  repository: headlamp-k8s/headlamp
+  tag: v0.45.0@sha256:db3f0e0fc58d358d41daa3fe7fc852437552c7ee873c3645470f7b86a8e0db49
+  pullPolicy: IfNotPresent
+serviceAccount:
+  create: true
+  name: brain-headlamp
+clusterRoleBinding:
+  create: false
+automountServiceAccountToken: true
+config:
+  inCluster: true
+  inClusterContextName: knowledge-brain
+  sessionTTL: 3600
+  unsafeUseServiceAccountToken: false
+  enableHelm: false
+  watchPlugins: false
+  staticPlugins:
+    enabled: false
+  clusterInventory:
+    enabled: false
+  oidc:
+    secret:
+      create: false
+  tlsCertPath: /headlamp-tls/tls.crt
+  tlsKeyPath: /headlamp-tls/tls.key
+service:
+  type: ClusterIP
+  port: 80
+ingress:
+  enabled: false
+httpRoute:
+  enabled: false
+pluginsManager:
+  enabled: false
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 100
+  runAsGroup: 101
+  fsGroup: 101
+  seccompProfile:
+    type: RuntimeDefault
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 100
+  runAsGroup: 101
+  readOnlyRootFilesystem: true
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+    - ALL
+resources:
+  requests:
+    cpu: 50m
+    memory: 96Mi
+  limits:
+    cpu: 500m
+    memory: 384Mi
+probes:
+  scheme: HTTPS
+volumeMounts:
+- name: headlamp-tls
+  mountPath: /headlamp-tls
+  readOnly: true
+volumes:
+- name: headlamp-tls
+  secret:
+    secretName: brain-headlamp-tls
+- name: headlamp-tmp
+  emptyDir:
+    sizeLimit: 128Mi

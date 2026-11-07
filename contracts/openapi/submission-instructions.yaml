@@ -1,0 +1,93 @@
+openapi: 3.1.0
+info:
+  title: Immutable submitted assignment instructions
+  version: 1.0.0
+  description: Current submission author or Group OWNER retrieves the exact immutable
+    Assignment revision pinned by one submitted attempt. Current VIEWER author may
+    read; peers404 even if the attempted revision is absent. Removed authors lose
+    Group access, current OWNER retains prior work. Exact positive decimal int64 attempt
+    path; no query/body/actor selector. One bounded Collaboration-local canonical
+    read, no latest-instruction fallback or pagination scan. Later assignment edits,
+    resubmissions, close/archive do not rewrite the response. Assignment state is
+    historical OPEN, not current submit eligibility. Fresh Space membership before
+    read; concurrent revocation may race an admitted read and subsequent calls recheck.
+    No mutation, revision/event/ID creation, new migration, new event contract or
+    new dependency. No-store despite immutable content because current permission
+    can change.
+security:
+- browserSession: []
+paths:
+  ? /api/groups/{groupId}/studies/{studyId}/assignments/{assignmentId}/submissions/{submissionId}/revisions/{version}/instructions
+  : parameters:
+    - name: groupId
+      in: path
+      required: true
+      schema: &id001
+        $ref: assignment-submissions.yaml#/components/schemas/Id
+    - name: studyId
+      in: path
+      required: true
+      schema: *id001
+    - name: assignmentId
+      in: path
+      required: true
+      schema: *id001
+    - name: submissionId
+      in: path
+      required: true
+      schema: *id001
+    - name: version
+      in: path
+      required: true
+      schema: &id002
+        type: integer
+        format: int64
+        minimum: 1
+        maximum: 9223372036854775807
+    get:
+      operationId: getImmutableSubmittedInstructions
+      responses:
+        '200':
+          description: Exact immutable instructions for this submitted attempt, never
+            substituted with current Assignment
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubmittedInstructions'
+        '400':
+          description: Invalid UUIDv7/positive decimal int64 version, nonempty GET
+            body or any query
+        '401':
+          description: Singleton secure browser credential required
+        '403':
+          description: Registered Group participant required or unsupported method/path
+        '404':
+          description: Scoped Submission/attempt unavailable, peer, or removed Group
+            participation; no existence disclosure
+        '503':
+          description: Space authority or Collaboration storage unavailable
+components:
+  securitySchemes:
+    browserSession:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest
+  schemas:
+    SubmittedInstructions:
+      type: object
+      additionalProperties: false
+      required:
+      - submissionId
+      - submissionVersion
+      - assignmentVersion
+      - assignment
+      properties:
+        submissionId: *id001
+        submissionVersion: *id002
+        assignmentVersion: *id002
+        assignment:
+          $ref: study-assignments.yaml#/components/schemas/Assignment

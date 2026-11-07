@@ -1,0 +1,88 @@
+V1 source/Unicode contract corrections — 2026-11-07 (Asia/Seoul)
+State: COMPLETE for the scoped local audit/correction/verification package
+Whole V1: ACTIVE; hosted delivery and actual content review/publication remain open
+Cluster UID: ee84ca44-bb83-4712-a572-10169a6e2542
+Gateway manifest: sha256:466049bd04b131a018569ab75c95f8f4ea28d54153a7d25f4101461735c62c71
+Learning retained: sha256:aba561be5c4749b8ffd22355ee84f6ae086ac00508faf6f244e6ae52cea3d8a8
+Query retained: sha256:16d4c42afbcbb8c40a02c8704997114ff470b995a5c33f7c96a46b784989ba1a
+
+Delivered
+- Native UTF-16 ceilings plus canonical code-point guards for identified private,
+  public, Group and search inputs; no implicit title rewrite. ASCII/UUID/URL/date/
+  key/number and UTF-8 body constraints remain separate.
+- Shared existing Java whitespace semantics preserve NBSP/narrow-NBSP/BOM names
+  and filenames; metadata still appends its existing revision on replacement.
+- Typed public field limits retain the12,000-byte content budget and exact source
+  references. No permission, API, schema, migration, event, dependency or AI added.
+- Graph-dependent test now reports missing Graph configuration as a skip, retaining
+  PG-only coverage. New isolated owner PG run:2 executed,1 explicit skip. No original
+  DB was used. Historical graph-live receipt separately proves the actual Cassandra
+  path with GraphInbox3 methods executed; this run does not claim that execution.
+- Source-publication review CLI prepares only ignored local archives/manifests;
+  tracked operational data, real private keys/stores/kubeconfigs, root escapes,
+  links/reparse paths, stale or changing trees and overwrite are rejected.
+  fsync/chmod precede atomic success-manifest publication. No commit/remote call.
+
+Exact artifacts and checks
+- Pinned Linux frontend fixture3eb8df466b453c3b8b467d109f24a07281ce0ac9 passed
+  TypeScript/Next export,56 asset hashes, CSP and publisher notices. No source-repo
+  commit was created; the current source/asset receipt matches the final archive.
+- Gateway245 executed,0 skipped/failures/errors. Exact archive scan0 HIGH/CRITICAL;
+  no waivers/stale compiled chunks. Both original nodes imported checked manifest/
+  config IDs; Helm image-only diff/server dry-run/atomic rollout preserved settings.
+- Python delivery/contract/Helm/source-review checks:71 discovered,70 executed,
+  1 explicit file-symlink privilege skip,0 failures/errors. Actual Windows junction
+  rejection, real Windows command-file and chmod-failure boundaries passed.
+  Earlier69/70-check evidence is retained. Per-command POSIX-form safe.directory
+  and Windows executable-bit stat normalization avoid actual-worktree false alarms;
+  no global Git setting or read-only/file-identity/hash guard is weakened.
+-750 Java/SQL/POM files across10 unchanged owner services match the source audit;
+  Learning208-file receipt still matches; Gateway435-file current receipt matches;
+  Query106 freshly compiled app classes match its existing deployed image archive.
+  This continuity does not mean every historical test was rerun.
+
+Final verified-CA HTTPS scenario executions:73 across overlapping suites
+  unicode: 7 / graph-web-validation-1793993153237947300 / 9bce0aef-abeb-415a-9df2-5430e471f9a2
+  personal: 33 / graph-web-validation-1793992862709984500 / d4d58a4c-4917-4a05-aabf-4cdd83e9585b
+  group: 16 / graph-web-validation-1793993240454150700 / 0245c20c-229f-4b11-a62c-1f6e1a3af2eb
+  workbench: 1 / graph-web-validation-1793993554761122800 / 20e0c354-ebec-4562-acce-b753fcf18d52
+  concept: 1 / graph-web-validation-1793994052125219100 / 6228093c-2e18-4a5d-8f7d-a6cb8586d4e2
+  curation: 9 / graph-web-validation-1793993819366539900 / 04d3f6a1-9781-45cc-ae26-a5acff4896a4
+  restore: 6 / graph-web-validation-1793994177416249500 / 18eab0a1-ab3f-423a-a189-5abb061c1946
+All final Job/ConfigMap identities, current test-source hashes and Gateway image
+annotations are checked. Seven new scenarios use real guest/registered accounts,
+canonical APIs and MinIO without app interception:200-astral titles/201 ASCII,
+five Group writers, exact200/128/64-point search,1000-astral metadata STRING,
+CAS/history/IDs/body preservation, sealed filename/download bytes, two unmerged
+Development SOURCE proposals and the original12KB content rejection/no POST.
+Existing private33, Group16, typed-public1, Concept/Roadmap1, curation9 and restore6
+provide their substantive source/authority/retained-draft/history regressions.
+Curation9 includes two real flows and seven intercepted failure fixtures; it is
+not nine independent canonical publication tests. Test medical publication is absent.
+
+Failed first attempts are retained. Three new-test selectors were corrected using
+actual accessible textbox names/fieldsets and the original Concept edit label.
+The legacy Roadmap proposal selector now includes its existing visible state.
+Product source and assertions were not weakened or rebuilt for these test fixes.
+
+Preservation
+- Original43 workload UID/spec pairs retained except the single Gateway image;
+  original13 PVCs, two node UIDs and kubeconfig hash retained.14 apps/13 JVMs/7
+  monitoring deployments and10 connector/tasks healthy;79 Registry bytes/rules
+  match source;0 firing alerts; five loopback HTTPS entries pass the project CA.
+- Original login/guest identity, Note v2/v1 history, sealed binary and privacy
+  pass a post-rollout recovery inspect. The inspect creates fresh auth/claim
+  fixtures while preserving the original Note; it is not a wholly read-only run.
+- All four temporary public reviewer fixtures are RETIRED, including the failed
+  legacy run. No active expert/official capability remains. Development-only
+  capability tests are not claims of professional credentials.
+
+Limits and open work
+- These are scoped local functional/source/runtime checks, not complete WCAG,
+  production capacity/HA/PITR, full-infrastructure security or legal certification.
+-21 authoring drafts remain unresolved/unpublished/independently unreviewed.
+  Preview, synthetic Development fixture publication and API checks do not replace
+  actual factual/rights review by designated people.
+- Repository/visibility/license approval, actual hosted Actions/GHCR and reviewed
+  existing-app adoption are still required. Source review is a bounded publication
+  guard, not complete secret detection or a license decision.

@@ -1,0 +1,43 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: brain-registry-config
+  namespace: {{ .Release.Namespace }}
+data:
+  application.properties: |
+    apicurio.storage.kind=kafkasql
+    apicurio.kafkasql.bootstrap.servers={{ .Values.kafka.clusterName }}-kafka-bootstrap.{{ .Release.Namespace }}.svc:9093
+    apicurio.kafkasql.topic=registry-journal
+    apicurio.kafkasql.snapshots.topic=registry-snapshots
+    apicurio.events.kafka.topic=registry-events
+    apicurio.kafkasql.topic.auto-create=false
+    apicurio.kafkasql.consumer.group-prefix=brain-registry-
+    apicurio.kafka.common.ssl.endpoint.identification.algorithm=https
+    apicurio.kafkasql.producer.acks=all
+    apicurio.kafkasql.producer.enable.idempotence=true
+    apicurio.kafkasql.security.protocol=SSL
+    apicurio.kafkasql.security.ssl.truststore.type=PKCS12
+    apicurio.kafkasql.security.ssl.truststore.location=/kafka/ca/ca.p12
+    apicurio.kafkasql.security.ssl.truststore.password=${KAFKA_CA_PASSWORD}
+    apicurio.kafkasql.security.ssl.keystore.type=PKCS12
+    apicurio.kafkasql.security.ssl.keystore.location=/kafka/user/user.p12
+    apicurio.kafkasql.security.ssl.keystore.password=${KAFKA_USER_PASSWORD}
+    apicurio.kafkasql.security.ssl.key.password=${KAFKA_USER_PASSWORD}
+    apicurio.storage.snapshot.location=/tmp
+    quarkus.oidc.tenant-enabled=true
+    quarkus.oidc.application-type=service
+    quarkus.oidc.auth-server-url={{ required "oidc.issuerUrl must be supplied after Keycloak provisioning" .Values.oidc.issuerUrl }}
+    quarkus.oidc.client-id={{ .Values.oidc.clientId }}
+    quarkus.oidc.token.audience={{ .Values.oidc.clientId }}
+    quarkus.oidc.roles.role-claim-path=realm_access/roles
+{{- if .Values.oidc.trustSecret }}
+    quarkus.oidc.tls.tls-configuration-name=keycloak
+    quarkus.tls.keycloak.trust-store.pem.certs=/oidc/ca.crt
+    quarkus.tls.keycloak.hostname-verification-algorithm=HTTPS
+{{- end }}
+    apicurio.auth.role-based-authorization=true
+    apicurio.auth.anonymous-read-access.enabled=false
+    apicurio.auth.authenticated-read-access.enabled=false
+    apicurio.auth.roles.admin=sr-admin
+    apicurio.auth.roles.developer=sr-developer
+    apicurio.auth.roles.readonly=sr-readonly

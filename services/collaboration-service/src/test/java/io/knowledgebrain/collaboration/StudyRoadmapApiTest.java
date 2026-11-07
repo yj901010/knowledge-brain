@@ -1,0 +1,18 @@
+package io.knowledgebrain.collaboration;
+import java.util.*;import java.time.*;import org.junit.jupiter.api.*;import static org.junit.jupiter.api.Assertions.*;import static org.mockito.Mockito.*;import org.springframework.web.server.ResponseStatusException;import org.springframework.http.HttpStatus;import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+class StudyRoadmapApiTest {
+ StudyApiTest f;StudyRoadmapStore store;StudyRoadmapController api;LearningRoadmapClient learning;
+ @BeforeEach void setup(){f=new StudyApiTest();f.setup();store=mock(StudyRoadmapStore.class);learning=mock(LearningRoadmapClient.class);api=new StudyRoadmapController(store,f.store,f.api,learning,new SimpleMeterRegistry());when(store.change(any(),any(),any(),any(),anyLong(),any(),anyString())).thenReturn(new StudyRoadmapStore.Current(null));when(f.store.get(f.group,f.space,f.id)).thenReturn(new StudyStore.Study(f.id,f.group,f.space,f.actor,1,"Study","","PLANNED","PRIVATE",Instant.now().toString(),Instant.now().toString()));}
+ org.springframework.mock.web.MockHttpServletRequest req(String method,String body){var r=f.req(method,body);r.removeHeader("If-Match");r.addHeader("If-Match","\"sr0\"");return r;}
+ String input(){return "{\"roadmapLinkId\":\""+f.id+"\",\"roadmapLinkVersion\":1}";}
+ @Test void readAndUnlinkDoNotDependOnLearning()throws Exception{when(store.get(f.group,f.space,f.id)).thenReturn(new StudyRoadmapStore.Current(null));assertEquals("\"sr0\"",api.get(f.group.toString(),f.id.toString(),req("GET",null)).getHeaders().getETag());api.remove(f.group.toString(),f.id.toString(),req("DELETE",null));verifyNoInteractions(learning);}
+ @Test void memberAndViewerCannotMutateBeforeSourceCheck(){for(String role:List.of("MEMBER","VIEWER")){f.role(role);assertEquals(403,assertThrows(ResponseStatusException.class,()->api.put(f.group.toString(),f.id.toString(),req("PUT",input()))).getStatusCode().value());assertThrows(ResponseStatusException.class,()->api.remove(f.group.toString(),f.id.toString(),req("DELETE",null)));}verifyNoInteractions(learning,store);}
+ @Test void unavailableOrStaleSourceNeverWritesAndArchivedStudyDoesNotCallLearning()throws Exception{
+  when(learning.check(any(),any(),any(),anyLong(),any(),any())).thenThrow(new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE));assertThrows(ResponseStatusException.class,()->api.put(f.group.toString(),f.id.toString(),req("PUT",input())));verifyNoInteractions(store);
+  when(f.store.get(any(),any(),any())).thenReturn(new StudyStore.Study(f.id,f.group,f.space,f.actor,2,"Study","","RETIRED","PRIVATE",Instant.now().toString(),Instant.now().toString()));clearInvocations(learning);assertEquals(409,assertThrows(ResponseStatusException.class,()->api.put(f.group.toString(),f.id.toString(),req("PUT",input()))).getStatusCode().value());verifyNoInteractions(learning);
+ }
+ @Test void strictVersionBodyQueryAndTraceChecks()throws Exception{
+  for(String body:List.of("{}",input()+" {}",input().replace(":1}",":1.5}"),input().replace(":1}",":1,\"actorId\":\"spoof\"}"),input().replace(":1}",":1,\"roadmapLinkVersion\":2}")))assertThrows(ResponseStatusException.class,()->api.put(f.group.toString(),f.id.toString(),req("PUT",body)));
+  var missing=req("PUT",input());missing.removeHeader("If-Match");assertEquals(428,assertThrows(ResponseStatusException.class,()->api.put(f.group.toString(),f.id.toString(),missing)).getStatusCode().value());var cross=req("PUT",input());cross.removeHeader("Origin");assertThrows(ResponseStatusException.class,()->api.put(f.group.toString(),f.id.toString(),cross));verifyNoInteractions(learning,store);
+ }
+}

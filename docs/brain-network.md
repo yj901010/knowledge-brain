@@ -1,0 +1,31 @@
+# Personal Brain integrated network
+
+Current extension (2026-10-20): [typed Claim objects](typed-claims.md) adds scalar
+objects and V2 Claim/Citation/Qualifier events, preserving prior history. The
+following original-stage evidence remains historical; use the typed-Claim
+rollout/recovery guidance for the current deployment.
+
+
+The personal Graph page has an explicit **통합 탐색 열기** panel. Notes, private Concepts and private Concept-object Claims can be explored and searched together. The existing Note graph/search/editor remain available. This functional circular SVG is part of the agreed function-first phase; the later dark force-directed redesign is still planned.
+
+The map includes at most 200 nodes and 1,000 selected-endpoint edges. A Claim is a distinct node connected by SUBJECT, PREDICATE and OBJECT roles, including when the three roles share a Concept. Wiki links and explicit Note-to-Concept references preserve stable relation IDs. Search separately queries the full network, with 20-row UI pages, optional NOTE/CONCEPT/CLAIM filter and a 1,000-result window. Note Markdown, Concept description and current Claim triple titles are searchable. Selecting any result reads the current canonical source; Notes can be opened in the existing editor. Refresh/search do not save or replace unrelated editor drafts.
+
+Every API request receives a fresh BRAIN_GRAPH/BRAIN_SEARCH decision through Space and the common guest/registered application principal. Only PRIVATE PERSONAL Spaces are included. Public Concept references, foreign Spaces and retired entities never supply private network labels. Browser state is memory-only, no-store; requests are abortable and generation-checked, and denied reads clear private surfaces. A missing storage/authority returns 503 rather than cached counts/titles. Canonical source may already be changed while an event is being reflected.
+
+## Ownership and reliability
+
+Content and Knowledge remain the canonical owners. Brain Query stores only disposable own-DB source snapshots, full-wire Inbox hashes, relation dependencies and a durable materialization queue. It consumes the unchanged content.note.v1, content.note-links.v1, content.note-concepts.v1, knowledge.concept.v1 and knowledge.claim.v1 streams using the read-only brain-network-projector identity and literal brain-query-network-v1 group. Event ID, producer, aggregate, UUIDv7, schema headers, bounded fields and nonzero trace are validated. Independent stream versions cannot overwrite each other. Immutable Space/visibility/Claim subject, conflicting same-version snapshots and tombstones are enforced.
+
+A Concept change queues dependent Claims and linked Note search text. It never edits canonical Claim/Note versions or histories. A distinct monotonic work sequence drives JanusGraph and OpenSearch idempotency; the DTO keeps the canonical version. Runtime batches contain up to 10 documents; operator drain batches contain up to 50. JanusGraph commits a batch transaction, and the fixed OpenSearch index uses bounded bulk actions with each response ID/index/status checked. Duplicate/older versions are verified individually after 409. Both derived writes must succeed before any durable work marker in the batch advances. A partial external failure rolls back all local markers and retries idempotently. Kafka commits after source+queue persistence, so a failed derived write can be retried after restart. PostgreSQL advisory locks serialize local staging/materialization across replicas. Retention gaps require an explicit rebuild.
+
+JanusGraph uses separate brain* properties/typed vertices in the existing derived keyspace. OpenSearch uses the fixed brain-network-v1 index. The fixed reader certificate has search-only rights; the projector has index/get rights and no search. Existing Note-only stores are retained. No cross-service SQL, new dependency, event version or architecture change was introduced.
+
+## Local installation and recovery
+
+Provision with `python scripts/Provision-NetworkProjection.py`; update the existing OpenSearch Helm release and run `python scripts/Initialize-NetworkSearch.py`. Build and import Space, Knowledge, Content and Brain Query images on every node, then run `python scripts/Install-LocalBrainNetwork.py --helm <existing helm.exe>`. Query starts with the network flag disabled while Flyway installs its disposable V3 tables.
+
+Run `python scripts/Rebuild-LocalBrainNetwork.py`, then `python scripts/Install-LocalBrainNetwork.py --helm <existing helm.exe> --enable`. Build/import Gateway and use the same installer with `--gateway`. The base and local charts share the same logical feature, identities and mounts; production activation similarly follows successful operator provisioning/rebuild.
+
+Recovery first preflights all five canonical operator feeds before touching projections. It records original replicas/image, stops every Query Pod, resets only typed network vertices and the fixed network index, then scans canonical Content/Knowledge snapshots and replays five captured Kafka tails. It drains the durable queue and checkpoints before restoring replicas. Failed recovery after reset leaves Query paused, with `.local/brain-network-rebuild-state.json` available for explicit repair/retry; it never deletes canonical revisions, the old Note projection or PVCs. Snapshot credentials are mounted only in bounded operator Jobs, never the live Query Pod. The Java operator also supports `--drain-only`, which processes the same durable pending queue under the shared own-DB lock without resetting stores, holding canonical feed credentials or changing Kafka checkpoints. It can safely assist/retry materialization alongside another worker. `--pause` is a bounded validation handshake at BRAIN_REBUILD_SNAPSHOT_READY; release only the owned Job by creating `/tmp/rebuild.resume`.
+
+Readiness includes brainNetworkProjection. Private-safe event logs carry event_id/trace_id/kind and in-process Micrometer counters record brain.network.events, brain.network.failures and brain.network.requests. Trace IDs are carried through the existing HTTP/Protobuf contracts into consumer logs; centralized OpenTelemetry/metrics export remains platform work. Runtime proofs and test counts are recorded in brain-network-validation.txt.

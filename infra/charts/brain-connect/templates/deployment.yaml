@@ -1,0 +1,109 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: {name: brain-connect}
+spec:
+  replicas: {{ .Values.replicas }}
+  selector:
+    matchLabels: {app: brain-connect}
+  template:
+    metadata:
+      labels: {app: brain-connect}
+    spec:
+      automountServiceAccountToken: false
+      securityContext: {runAsNonRoot: true, runAsUser: 1001, runAsGroup: 0, fsGroup: 1001}
+      containers:
+        - name: connect
+          image: {{ .Values.image | quote }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities: {drop: [ALL]}
+          ports: [{name: rest, containerPort: 8083}]
+          env:
+            - {name: BOOTSTRAP_SERVERS, value: "{{ .Values.kafka.clusterName }}-kafka-bootstrap:9093"}
+            - {name: GROUP_ID, value: brain-connect}
+            - {name: CONFIG_STORAGE_TOPIC, value: brain-connect-configs}
+            - {name: OFFSET_STORAGE_TOPIC, value: brain-connect-offsets}
+            - {name: STATUS_STORAGE_TOPIC, value: brain-connect-status}
+            - name: ADVERTISED_HOST_NAME
+              valueFrom: {fieldRef: {fieldPath: status.podIP}}
+            - {name: HEAP_OPTS, value: "-Xms128m -Xmx512m"}
+            - {name: CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR, value: {{ .Values.kafka.replicationFactor | quote }}}
+            - {name: CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR, value: {{ .Values.kafka.replicationFactor | quote }}}
+            - {name: CONNECT_STATUS_STORAGE_REPLICATION_FACTOR, value: {{ .Values.kafka.replicationFactor | quote }}}
+            - {name: CONNECT_CONFIG_PROVIDERS, value: file}
+            - {name: CONNECT_CONFIG_PROVIDERS_FILE_CLASS, value: org.apache.kafka.common.config.provider.FileConfigProvider}
+            - {name: CONNECT_CONFIG_PROVIDERS_FILE_PARAM_ALLOWED_PATHS, value: /secrets}
+            - {name: CONNECT_CONNECTOR_CLIENT_CONFIG_OVERRIDE_POLICY, value: None}
+{{- range $prefix := list "CONNECT_" "CONNECT_PRODUCER_" "CONNECT_CONSUMER_" }}
+            - {name: {{ $prefix }}SECURITY_PROTOCOL, value: SSL}
+            - {name: {{ $prefix }}SSL_ENDPOINT_IDENTIFICATION_ALGORITHM, value: HTTPS}
+            - {name: {{ $prefix }}SSL_TRUSTSTORE_TYPE, value: PKCS12}
+            - {name: {{ $prefix }}SSL_TRUSTSTORE_LOCATION, value: /kafka/ca/ca.p12}
+            - name: {{ $prefix }}SSL_TRUSTSTORE_PASSWORD
+              valueFrom:
+                secretKeyRef: {name: {{ $.Values.kafka.clusterName }}-cluster-ca-cert, key: ca.password}
+            - {name: {{ $prefix }}SSL_KEYSTORE_TYPE, value: PKCS12}
+            - {name: {{ $prefix }}SSL_KEYSTORE_LOCATION, value: /kafka/user/user.p12}
+            - name: {{ $prefix }}SSL_KEYSTORE_PASSWORD
+              valueFrom:
+                secretKeyRef: {name: brain-connect, key: user.password}
+{{- end }}
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+          startupProbe:
+            httpGet: {path: /, port: rest}
+            failureThreshold: 60
+            periodSeconds: 10
+          readinessProbe:
+            httpGet: {path: /, port: rest}
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: {path: /, port: rest}
+            periodSeconds: 10
+          volumeMounts:
+            - {name: kafka-ca, mountPath: /kafka/ca, readOnly: true}
+            - {name: kafka-user, mountPath: /kafka/user, readOnly: true}
+            - {name: identity-cdc, mountPath: /secrets, readOnly: true}
+      volumes:
+        - name: kafka-ca
+          secret: {secretName: {{ .Values.kafka.clusterName }}-cluster-ca-cert, items: [{key: ca.p12, path: ca.p12}]}
+        - name: kafka-user
+          secret: {secretName: brain-connect, items: [{key: user.p12, path: user.p12}]}
+        - name: identity-cdc
+          projected:
+            sources:
+              - secret: {name: brain-identity-cdc, items: [{key: identity.properties, path: identity.properties}]}
+              - secret: {name: brain-space-cdc, items: [{key: space.properties, path: space.properties}]}
+              - secret: {name: brain-content-cdc, items: [{key: content.properties, path: content.properties}]}
+              - secret: {name: brain-knowledge-cdc, items: [{key: knowledge.properties, path: knowledge.properties}]}
+              - secret: {name: brain-learning-cdc, items: [{key: learning.properties, path: learning.properties}]}
+              - secret: {name: brain-integration-cdc, items: [{key: integration.properties, path: integration.properties}]}
+              - secret: {name: brain-planning-cdc, items: [{key: planning.properties, path: planning.properties}]}
+              - secret: {name: brain-collaboration-cdc, items: [{key: collaboration.properties, path: collaboration.properties}]}
+              - secret: {name: brain-notification-cdc, items: [{key: notification.properties, path: notification.properties}]}
+              - secret: {name: brain-media-cdc, items: [{key: media.properties, path: media.properties}]}
+---
+apiVersion: v1
+kind: Service
+metadata: {name: brain-connect}
+spec:
+  type: ClusterIP
+  selector: {app: brain-connect}
+  ports: [{name: rest, port: 8083, targetPort: rest}]
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: {name: brain-connect-rest}
+spec:
+  podSelector:
+    matchLabels: {app: brain-connect}
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels: {app: brain-connect}
+        - namespaceSelector:
+            matchLabels: {kubernetes.io/metadata.name: brain-data}
+          podSelector:
+            matchLabels: {brain-connect-admin: "true"}
+      ports: [{protocol: TCP, port: 8083}]

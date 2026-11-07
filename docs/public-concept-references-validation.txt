@@ -1,0 +1,69 @@
+Public Concept references: validated local Kubernetes delivery
+No architecture conflict: PROJECT Personal Brain references public Concepts without duplication.
+No DB migration; immutable IDs only; Content V1 Outbox/CDC/Registry contract unchanged.
+
+JOB=backend-validation-1791476189
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 5.904 s -- in io.knowledgebrain.knowledge.ConceptKafkaIntegrationTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.047 s -- in io.knowledgebrain.knowledge.ContributionKafkaIntegrationTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.170 s -- in io.knowledgebrain.knowledge.PublicKnowledgeApiTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.062 s -- in io.knowledgebrain.knowledge.ConceptReferenceCheckTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.078 s -- in io.knowledgebrain.knowledge.ConceptApiTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.155 s -- in io.knowledgebrain.knowledge.ServiceBoundaryTest
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.537 s -- in io.knowledgebrain.knowledge.ContributionIntegrationTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.713 s -- in io.knowledgebrain.knowledge.ConceptStoreIntegrationTest
+[INFO] Tests run: 29, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+JOB=backend-validation-1791476192
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.547 s -- in io.knowledgebrain.content.AttachmentStoreIntegrationTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.979 s -- in io.knowledgebrain.content.ConceptLinkKafkaIntegrationTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 16.44 s -- in io.knowledgebrain.content.NoteSnapshotIntegrationTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.177 s -- in io.knowledgebrain.content.DailyStoreIntegrationTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.864 s -- in io.knowledgebrain.content.NoteApiTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.461 s -- in io.knowledgebrain.content.DailyApiTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.107 s -- in io.knowledgebrain.content.NoteSnapshotApiTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.874 s -- in io.knowledgebrain.content.ConceptLinkStoreIntegrationTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.039 s -- in io.knowledgebrain.content.AttachmentApiTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.006 s -- in io.knowledgebrain.content.DailyDatesTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.833 s -- in io.knowledgebrain.content.WikiKafkaIntegrationTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.610 s -- in io.knowledgebrain.content.MetadataStoreIntegrationTest
+[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.575 s -- in io.knowledgebrain.content.NoteLinksIntegrationTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.740 s -- in io.knowledgebrain.content.AttachmentKafkaIntegrationTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.695 s -- in io.knowledgebrain.content.DailyKafkaIntegrationTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.022 s -- in io.knowledgebrain.content.MetadataInputTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.702 s -- in io.knowledgebrain.content.NoteKafkaIntegrationTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.046 s -- in io.knowledgebrain.content.ConceptLinkApiTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.005 s -- in io.knowledgebrain.content.WikiLinksTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.147 s -- in io.knowledgebrain.content.ServiceBoundaryTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.691 s -- in io.knowledgebrain.content.NoteStoreIntegrationTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.717 s -- in io.knowledgebrain.content.MetadataKafkaIntegrationTest
+[INFO] Tests run: 64, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+
+JOB=graph-web-validation-1791476627
+  ✓  2 tests/graph.spec.ts:2:5 › private graph create, explore, mobile, outage and revoke (5.8s)
+PUBLIC_REVIEWER_READY=01a11c54-6b41-7000-aae2-c32b4826cb90
+PUBLIC_NOTE_REFERENCES_VERIFIED: guest/registered, unpublished/foreign-private denial, stable IDs, revision independence, persistence, removal, private Note isolation
+PUBLIC_REVIEWER_REVOKE_READY=01a11c54-6b41-7000-aae2-c32b4826cb90
+PUBLIC_WORKFLOW_VERIFIED
+  ✓  1 tests/public.spec.ts:3:5 › public Concept proposal, designated review, atomic merge and reviewer revocation (23.0s)
+  2 passed (24.2s)
+PASS reviewer fixture roles retired by scoped operator, including failure cleanup.
+PASS verified HTTPS desktop/mobile screenshots inspected: .local/graph-ui-results/references*.png
+
+JOB=note-concept-api-validation-1791476568
+PASS private Concept CRUD/revisions, Content-only stable ID refs, ETags, foreign Space, duplicate/origin/missing precondition denial and retired Concept audit
+PASS guest mixed public/private ID references and private Note isolation
+PASS public refs remain readable/reorderable/removable during real Knowledge outage; new addition fails closed
+PASS real Knowledge outage prevents additions without mutating links and recovers
+PASS Note retirement emits cleared reference revision, immediate revocation and internal route denial
+Actual Knowledge Pod replacement and replicas restored: {"resource": "deployment/knowledge-service", "before": ["230053cc-7dd4-4c86-8fba-8f06c745bda1"], "after": ["169105b6-16c7-44ac-b006-7297efdf1859"], "replicas": 1}
+Ready=1 knowledge knowledge-brain/knowledge-service:local-e57082e64f5fdd4f
+Ready=1 gateway knowledge-brain/gateway-service:local-75073323c23591ff
+Ready=1 content knowledge-brain/content-service:local-1c1cb6f0fb453711
+PASS imported knowledge-image-import-1791476312-0 k3d-knowledge-brain-agent-0
+PASS imported knowledge-image-import-1791476312-1 k3d-knowledge-brain-server-0
+PASS imported gateway-image-import-1791476380-0 k3d-knowledge-brain-agent-0
+PASS imported gateway-image-import-1791476380-1 k3d-knowledge-brain-server-0
+PASS TypeScript/Next static export and CSP hashes; Windows mkdir EPERM succeeded on retry.
+PASS both OpenAPI YAML contracts parsed; Python operator/validator syntax checked.
+UI redesign and public Concept graph/search projections remain separate scope.

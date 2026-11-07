@@ -1,0 +1,40 @@
+syntax = "proto3";
+package learning.githubevidence.v1;
+option java_package = "io.knowledgebrain.contracts.learning.githubevidence.v1";
+option java_multiple_files = true;
+message GitHubLearningEventEnvelopeV1 {
+ string event_id=1; string event_type=2; uint32 event_version=3;
+ int64 occurred_at_epoch_millis=4; string producer=5; string aggregate_type=6;
+ string aggregate_id=7; string space_id=8; string actor_id=9; string trace_id=10; bytes payload=11;
+}
+message GitHubEvidenceChangedPayloadV1 {
+ string evidence_id=1;
+ string revision_id=2;
+ string roadmap_id=3;
+ string node_id=4;
+ string node_title=5;
+ string visibility=6;
+ string state=7;
+ uint64 version=8;
+ string repository_id=9;
+ string commit_id=10;
+ uint64 commit_version=11;
+ string repository_full_name=12;
+ string sha=13;
+ string subject=14;
+ string author_login=15;
+ string committed_at=16;
+ string imported_at=17;
+ string url=18;
+ string memo=19;
+ string created_at=20;
+ string updated_at=21;
+}
+message GitHubEvidenceSessionChangedPayloadV1 {
+ string link_id = 1; string evidence_id = 2; string evidence_kind = 3;
+ string roadmap_id = 4; string node_id = 5; string node_title = 6;
+ string visibility = 7; string state = 8; uint64 version = 9;
+ string revision_id = 10; string session_id = 11; uint64 session_version = 12;
+ string session_node_title = 13; string started_at = 14; string ended_at = 15;
+ uint64 duration_seconds = 16; string created_at = 17; string updated_at = 18;
+}

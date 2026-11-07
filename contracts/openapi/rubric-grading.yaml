@@ -1,0 +1,367 @@
+openapi: 3.1.0
+info:
+  title: Explicit direct or rubric-summed submission grading
+  version: 1.0.0
+  description: 'User-approved2026-10-25: explicit choice of DIRECT or RUBRIC grading.
+    DIRECT retains integer0..100 manual scores. RUBRIC uses the nonempty frozen100-point
+    Assignment criteria and computes the total server-side. Current OWNER cannot grade
+    self. Author/current OWNER alone read scores/comments/history. No peer/public
+    feed or automatic Learning progress. Existing grade V1 JSON/Protobuf and legacy
+    /grade exact no-op stay unchanged. Both modes share strong sgN CAS and original
+    submitted instruction version. Different criterion scores/comments at same total
+    or explicit mode conversion append a new grade revision. Same calculated criteria/reason/source
+    is no-op and never restores retraction. RUBRIC basis is immutable per exact grade
+    version, retains full frozen rubric and ordered scored criteria/comments. DIRECT
+    has null basis; converting an existing calculated grade at same score/reason still
+    creates a revision. New submitted attempts retain older grades/bases and require
+    explicit fresh review. OPEN/CLOSED plus nonarchived Study allow writes; DRAFT/RETIRED
+    parents read-only. Empty rubric cannot calculate; DIRECT stays available. V15
+    local exact FKs, one DataSource/REQUIRED ACID transaction for grade revision,
+    immutable basis and both Outboxes. No cross-service SQL/FK/write/distributed transaction;
+    no dependency/dataset. Fresh Space authorization precedes transaction and subsequent
+    calls recheck; admitted concurrent revocation may race. New immutable collaboration.rubric-assessment.v1
+    / collaboration/rubric-assessment-events/1.'
+security:
+- browserSession: []
+paths:
+  /api/groups/{groupId}/studies/{studyId}/assignments/{assignmentId}/submissions/{submissionId}/rubric-grade:
+    parameters:
+    - &id002
+      name: groupId
+      in: path
+      required: true
+      schema: &id001
+        $ref: assignment-submissions.yaml#/components/schemas/Id
+    - &id003
+      name: studyId
+      in: path
+      required: true
+      schema: *id001
+    - &id004
+      name: assignmentId
+      in: path
+      required: true
+      schema: *id001
+    - &id005
+      name: submissionId
+      in: path
+      required: true
+      schema: *id001
+    get:
+      operationId: getRubricGradingContext
+      responses:
+        '200':
+          description: Current-author/current-OWNER-only view or immutable exact grade
+            basis. Null basis explicitly means manual grade, not failed lookup. No
+            score/progress/publication side effects from reads.
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"sg(0|[1-9][0-9]*)"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/View'
+        '400':
+          description: Exact mode-specific JSON, valid Unicode and bounded ordered
+            unique criterion IDs/integer points; all criterion scores0..their maximum.
+            Malformed strong sgN, query or canonical path version.
+        '401':
+          description: Singleton secure HTTPS browser credential required.
+        '403':
+          description: Registered current Group access; write current OWNER only,
+            same-origin and no self grading including no-op.
+        '404':
+          description: Unavailable scoped submission/grade version, peer or removed
+            participation.
+        '409':
+          description: Reviewed submission/instruction source changed, absent/cleared
+            frozen rubric, wrong rubric version/order/IDs, DRAFT/archived parent.
+        '412':
+          description: Shared grade sgN changed, including stale same-value command.
+            Explicit refresh/reconfirm.
+        '413':
+          description: Command body exceeds32768 bytes.
+        '415':
+          description: application/json required.
+        '428':
+          description: Strong If-Match sgN required; sg0 before any grade.
+        '503':
+          description: Authority/storage unavailable.
+    put:
+      operationId: recordExplicitGradingMode
+      parameters:
+      - name: Origin
+        in: header
+        required: true
+        schema:
+          type: string
+      - name: If-Match
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^"sg(0|[1-9][0-9]*)"$
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Input'
+      responses:
+        '200':
+          description: Current-author/current-OWNER-only view or immutable exact grade
+            basis. Null basis explicitly means manual grade, not failed lookup. No
+            score/progress/publication side effects from reads.
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"sg(0|[1-9][0-9]*)"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/View'
+        '400':
+          description: Exact mode-specific JSON, valid Unicode and bounded ordered
+            unique criterion IDs/integer points; all criterion scores0..their maximum.
+            Malformed strong sgN, query or canonical path version.
+        '401':
+          description: Singleton secure HTTPS browser credential required.
+        '403':
+          description: Registered current Group access; write current OWNER only,
+            same-origin and no self grading including no-op.
+        '404':
+          description: Unavailable scoped submission/grade version, peer or removed
+            participation.
+        '409':
+          description: Reviewed submission/instruction source changed, absent/cleared
+            frozen rubric, wrong rubric version/order/IDs, DRAFT/archived parent.
+        '412':
+          description: Shared grade sgN changed, including stale same-value command.
+            Explicit refresh/reconfirm.
+        '413':
+          description: Command body exceeds32768 bytes.
+        '415':
+          description: application/json required.
+        '428':
+          description: Strong If-Match sgN required; sg0 before any grade.
+        '503':
+          description: Authority/storage unavailable.
+  ? /api/groups/{groupId}/studies/{studyId}/assignments/{assignmentId}/submissions/{submissionId}/grade/revisions/{gradeVersion}/rubric-assessment
+  : parameters:
+    - *id002
+    - *id003
+    - *id004
+    - *id005
+    - name: gradeVersion
+      in: path
+      required: true
+      schema: &id006
+        type: integer
+        format: int64
+        minimum: 1
+        maximum: 9223372036854775807
+    get:
+      operationId: getImmutableGradeRubricBasis
+      responses:
+        '200':
+          description: Current-author/current-OWNER-only view or immutable exact grade
+            basis. Null basis explicitly means manual grade, not failed lookup. No
+            score/progress/publication side effects from reads.
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Basis'
+        '400':
+          description: Exact mode-specific JSON, valid Unicode and bounded ordered
+            unique criterion IDs/integer points; all criterion scores0..their maximum.
+            Malformed strong sgN, query or canonical path version.
+        '401':
+          description: Singleton secure HTTPS browser credential required.
+        '403':
+          description: Registered current Group access; write current OWNER only,
+            same-origin and no self grading including no-op.
+        '404':
+          description: Unavailable scoped submission/grade version, peer or removed
+            participation.
+        '409':
+          description: Reviewed submission/instruction source changed, absent/cleared
+            frozen rubric, wrong rubric version/order/IDs, DRAFT/archived parent.
+        '412':
+          description: Shared grade sgN changed, including stale same-value command.
+            Explicit refresh/reconfirm.
+        '413':
+          description: Command body exceeds32768 bytes.
+        '415':
+          description: application/json required.
+        '428':
+          description: Strong If-Match sgN required; sg0 before any grade.
+        '503':
+          description: Authority/storage unavailable.
+components:
+  securitySchemes:
+    browserSession:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest
+  schemas:
+    Item:
+      type: object
+      additionalProperties: false
+      required:
+      - criterionId
+      - score
+      - comment
+      properties:
+        criterionId: *id001
+        score: &id007
+          type: integer
+          minimum: 0
+          maximum: 100
+        comment:
+          type: string
+          description: Valid Unicode/no NUL/unpaired surrogate; at most2048 UTF8 bytes,
+            blank allowed. Render literally.
+    Input:
+      oneOf:
+      - type: object
+        additionalProperties: false
+        required:
+        - mode
+        - submissionVersion
+        - assignmentVersion
+        - score
+        - reason
+        properties:
+          mode:
+            const: DIRECT
+          submissionVersion: *id006
+          assignmentVersion: *id006
+          score: *id007
+          reason: &id008
+            type: string
+            minLength: 1
+            description: Nonblank valid Unicode/no NUL/unpaired surrogate; at most8192
+              UTF8 bytes. Render literally.
+      - type: object
+        additionalProperties: false
+        required:
+        - mode
+        - submissionVersion
+        - assignmentVersion
+        - rubricVersion
+        - reason
+        - criteria
+        properties:
+          mode:
+            const: RUBRIC
+          submissionVersion: *id006
+          assignmentVersion: *id006
+          rubricVersion: *id006
+          reason: *id008
+          criteria: &id009
+            type: array
+            minItems: 1
+            maxItems: 10
+            items:
+              $ref: '#/components/schemas/Item'
+            description: Every frozen criterion exactly once in definition order.
+              Each score <= that criterion maxPoints. Server computes sum; client
+              cannot select a total in RUBRIC mode.
+    Assessment:
+      type: object
+      additionalProperties: false
+      required:
+      - assessmentId
+      - version
+      - gradeId
+      - gradeVersion
+      - submissionId
+      - assignmentId
+      - studyId
+      - groupId
+      - spaceId
+      - authorId
+      - graderId
+      - submissionVersion
+      - assignmentVersion
+      - rubric
+      - criteria
+      - score
+      - reason
+      - audience
+      - createdAt
+      properties:
+        assessmentId: *id001
+        version:
+          const: 1
+        gradeId: *id001
+        gradeVersion: *id006
+        submissionId: *id001
+        assignmentId: *id001
+        studyId: *id001
+        groupId: *id001
+        spaceId: *id001
+        authorId: *id001
+        graderId: *id001
+        submissionVersion: *id006
+        assignmentVersion: *id006
+        rubric: &id010
+          $ref: assignment-rubrics.yaml#/components/schemas/Rubric
+        criteria: *id009
+        score: *id007
+        reason: *id008
+        audience:
+          const: AUTHOR_AND_OWNER
+        createdAt:
+          type: string
+          format: date-time
+    View:
+      type: object
+      additionalProperties: false
+      required:
+      - submissionVersion
+      - assignmentVersion
+      - rubric
+      - grade
+      - assessment
+      - canWrite
+      properties:
+        submissionVersion: *id006
+        assignmentVersion: *id006
+        rubric:
+          oneOf:
+          - *id010
+          - type: 'null'
+        grade:
+          oneOf:
+          - $ref: submission-grades.yaml#/components/schemas/Grade
+          - type: 'null'
+        assessment:
+          oneOf:
+          - $ref: '#/components/schemas/Assessment'
+          - type: 'null'
+        canWrite:
+          type: boolean
+    Basis:
+      type: object
+      additionalProperties: false
+      required:
+      - assessment
+      properties:
+        assessment:
+          oneOf:
+          - $ref: '#/components/schemas/Assessment'
+          - type: 'null'

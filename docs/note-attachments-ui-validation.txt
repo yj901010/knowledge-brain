@@ -1,0 +1,21 @@
+Note attachment UI validation - 2026-10-09
+AGENTS.md and PROJECT.md read first. Content owns relations; Media owns lifecycle and metadata; direct MinIO bytes retained. No ownership or domain API/schema/event/dependency changes.
+Ready=1: knowledge-brain/gateway-service:local-0698d171177ec494
+Ready=1: knowledge-brain/content-service:local-4aa4555f06fa2328
+Ready=1: knowledge-brain/media-service:local-6ddaf0af077315cf
+Job PASS: gateway-image-import-1791538542-0
+Job PASS: gateway-image-import-1791538542-1
+Job PASS: graph-static-build-1791538456391701200
+Job PASS: backend-validation-1791538643
+Job PASS: graph-web-validation-1791538572
+Gateway: 20 passed, zero skipped/failures/errors. Actual HTTP boundary verifies config GET allowed, config POST and management/unlisted API denied, fixed HTTPS origin and bounded CSP.
+Browser: 8 passed (attachments/editor/graph/Journal/links/metadata/search/public); real trusted-CA HTTPS without TLS bypass. Scoped fixture reviewer retired.
+Attachments: actual direct multipart MinIO upload and sealed completion; SHA256 metadata comparison and exact downloaded bytes; all browser storage transfer headers checked without Cookie/Referer. Failed upload resumed with same allocation; a-ETag real conflict blocks writes until explicit reload. Unlink retains Media; reuse across Notes; stable IDs retained for surviving relations; independent Note version; five plus two history rows and twenty plus one Media rows; foreign Space denial, list failure/recovery, filename text escaping, file clearing on Note switch, mobile no horizontal overflow and revoked identity clearing.
+First browser run graph-web-validation-1791538293: seven existing workflows passed; new config GET was denied by missing explicit SecurityConfiguration allow-list entry. Narrow GET entry fixed and real boundary test added.
+Backend fixture configuration was isolated with a test-only profile; final current-source Gateway suite passed. No service authorization broadened.
+No deletion/quota reclamation, inline preview, malware scanning or orphan cleanup is claimed. Attachment removal does not remove allocated Media. Unknown allocation outcome requires checking existing files before creating another.
+Local upload/download needs Start-LocalMedia.ps1 direct TLS forward at localhost:9443 in addition to the existing Gateway forward.
+Desktop/mobile screenshots checked; attachment controls wrap within the existing scrollable inspector.
+Focused attachment screen verification: graph-web-validation-1791538691, 1 passed. Desktop/mobile upload chooser and library controls inspected at their own scroll positions.
+Owned temporary Gateway builders cleaned; successful validation Jobs retain existing TTL.
+Host-side helper printed a 9443 forward but same-host trusted HTTPS health verification timed out. In-cluster browser bridge passed actual transfers. Interactive Windows usage should run Start-LocalMedia.ps1 in the user terminal; no working host forward is claimed.

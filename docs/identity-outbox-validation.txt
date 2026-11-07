@@ -1,0 +1,18 @@
+Validated 2026-10-06, local k3d-knowledge-brain, PostgreSQL 17.11.
+Java 25, Maven 3.10.0, protoc/runtime 4.36.2; native Linux code generation, no skipped generator.
+Kubernetes Job backend-validation-1791286676: Complete 1/1, duration 72s.
+13 service packages + event-contracts: BUILD SUCCESS.
+41 tests: 0 failures, 0 errors, 0 skipped (39 existing boundary tests + UUIDv7 + actual PostgreSQL integration).
+UUIDv7 validation: 10,000 IDs, correct timestamp/version/variant and uniqueness.
+Identity migration V1: applied successfully in brain_identity with the Identity owner credential.
+Identity/outbox commit: Protobuf envelope and typed principal payload decoded from actual stored bytea.
+Duplicate credential: rejected without adding an outbox event.
+Forced outbox constraint failure: preceding guest INSERT and outbox INSERT both rolled back; test constraint removed.
+Committed synthetic event fixture: 01a11101-eaf9-7e7e-9fb4-5611a67efc36.
+Registry Job identity-contract-validation-1791286735: Complete 1/1.
+OIDC publisher registers/reuses exact identity/guest-identity-events version 1; readonly client reads exact content.
+Artifact content SHA256: 28497b5af498d67aff7b865769b4fdc1517fec248c1c7a23567e42862613f334.
+Artifact rules read back: VALIDITY=FULL, COMPATIBILITY=FULL_TRANSITIVE.
+Windows native protoc failed with process error 623; host port-forward connections were inaccessible in this execution environment.
+Validation ran the normal build and real DB test inside Kubernetes instead; no Java version downgrade or generated source commit.
+Not validated/deployed in this step: Connect/Debezium CDC, Kafka delivery/replay, application-domain rollout, consumer idempotency, browser token/private Space flow.

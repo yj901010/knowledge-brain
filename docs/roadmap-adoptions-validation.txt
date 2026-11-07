@@ -1,0 +1,46 @@
+2026-10-20 — Public Roadmap adoption into private learning completed
+
+Compatibility: AGENTS.md/PROJECT.md read first. Learning-owned canonical data;
+fresh Space authority for private destination and public source, same principal.
+No new dependency, AI, cross-owner DB or architectural change. Explicit private
+copy of inspected public version with immutable origin and ID mappings.
+
+Backend: backend-validation-1792496327326996300; 765 passed, 11 environment-gated skipped,
+0 failures/errors across 13 service modules. Scoped Learning backend-validation-1792496029416796800:106/106,
+0 skipped. Actual PostgreSQL+Kafka exact Outbox bytes/header/atomic rollback,
+concurrent single copy, retry after source update/claim/retirement and isolation.
+
+Browser: graph-web-validation-1792496788190790700;105/105, no failures. Actual guest UI consent/destination,
+private study sessions/progress/provenance, foreign Space denial, edit/retire,
+repeat/no resurrection; actual Keycloak registered source-v2 adoption retains
+progress after public-v3 merge, same immutable retry and separate fresh-v3 copy.
+Focused graph-web-validation-1792496711445302400:2/2,6.3s. Failure503/stale409/late response and selection.
+Pinned Next/TypeScript/license/CSP builds: graph-static-build-1792496143968333500, graph-static-build-1792496326584255700.
+
+Contract:1439 local OpenAPI refs resolved. Registry adoption V1 FULL/FULL_TRANSITIVE.
+LF UTF-8 SHA256 6169b84bb4689ef16cf9c5592f0daa00c8a65c171f04697921a84c250a61d177
+Existing public, rating and private contracts unchanged. Four gated registry
+checks: public-roadmap-contract-validation-1792496560, roadmap-contribution-contract-validation-1792496566, roadmap-rating-contract-validation-1792496574, roadmap-adoption-contract-validation-1792496581372428500.
+New literal learning.roadmap-adoption.v1 Connect-write / validator-read ACL.
+Existing Learning CDC config/slot/checkpoint and Activity20 scopes unchanged.
+Activity receives the ordinary private RoadmapCreated; provenance has no consumer.
+
+Exact images imported on both nodes then deployed:
+Learning knowledge-brain/learning-service:local-64e7f6e5707edb61
+Gateway knowledge-brain/gateway-service:local-f94b263982ae7d4e
+12 application Deployments Ready,8 CDC connectors/tasks RUNNING.
+Owned Learning/Gateway temporary builders removed after ownership verification.
+Actual Learning Pod restart changed UID; read-only owner PostgreSQL before/after
+fingerprints match for immutable public-v2 origin, private v1 graph/history,
+COMPLETED progress/history and graph/adoption/progress Outbox while public is v3.
+Proof Jobs: roadmap-adoption-durability-1792497293245426800-before, roadmap-adoption-durability-1792497310491511800-after.
+HTTPS https://localhost:8443/graph/roadmaps verified with project CA.
+
+UI: public detail -> 내 공간에 가져오기 열기 -> choose Personal Space/consent ->
+이 버전 가져오기 -> 가져온 로드맵 학습 열기. Also in /graph personal Roadmaps.
+Existing copy after retirement remains retired and returns same ID on retry.
+No automatic source updates or progress transfer across source versions.
+Private usage/completion public ranking, group learning and central telemetry
+remain subsequent scope. No source/PVC/Inbox/topic/CDC reset or bulk Activity replay.
+Detailed proof: .local/roadmap-adoptions-proof.json and
+.local/roadmap-adoptions-runtime-proof.json.

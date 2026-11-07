@@ -1,0 +1,8 @@
+package io.knowledgebrain.gateway;
+import java.util.*;import org.junit.jupiter.api.*;import org.springframework.web.server.ResponseStatusException;import static org.junit.jupiter.api.Assertions.*;
+class StudyMyResubmissionsProxyTest {
+ GatewayProxyTest f;String id="019a0000-0000-7000-8000-000000000001";String path="/api/groups/"+id+"/studies/"+id+"/my-resubmission-requests";
+ @BeforeEach void setup()throws Exception{f=new GatewayProxyTest();f.prepare();}@AfterEach void clean(){f.stop();}
+ @Test void allNewFiltersForwardOnlyOnTheGradingEndpoint()throws Exception{for(String filter:List.of("REQUESTED","RESOLVED","CANCELLED","ALL","UNAVAILABLE")){var r=f.request("GET",path);r.setQueryString("filter="+filter+"&limit=20&after="+id);assertEquals(200,f.gateway.proxy(r).getStatusCode().value());}assertEquals(5,f.requests.get());assertFalse(f.headers.get().containsKey("Authorization"));}
+ @Test void originalReviewFiltersAndNewGradingFiltersStaySeparatedBeforeTransport(){for(String query:List.of("filter=HAS_FEEDBACK","filter=all","filter=REQUESTED&filter=ALL","actorId="+id,"limit=101","after=invalid","filter=REQUESTED&")){var r=f.request("GET",path);r.setQueryString(query);assertThrows(ResponseStatusException.class,()->f.gateway.proxy(r));}var old=f.request("GET",path.replace("my-resubmission-requests","assignments/"+id+"/submissions/review-queue"));old.setQueryString("filter=REQUESTED");assertThrows(ResponseStatusException.class,()->f.gateway.proxy(old));var body=f.request("GET",path);body.setContent("{}".getBytes());assertThrows(ResponseStatusException.class,()->f.gateway.proxy(body));assertEquals(0,f.requests.get());}
+}

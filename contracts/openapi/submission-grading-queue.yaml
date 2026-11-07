@@ -1,0 +1,158 @@
+openapi: 3.1.0
+info:
+  title: OWNER submission grading work queue
+  version: 1.0.0
+  description: Current registered Group OWNER only; fresh Space authority on every
+    read. Excludes the current OWNER own submissions under the existing no-self-grading
+    policy. Does not enumerate non-submitters. MISSING means no grade, OUTDATED means
+    latest grade targets an older answer, RETRACTED means the exact latest grade for
+    the current answer is withdrawn, CURRENT means current-answer grade with absent/restored
+    annotation. Grade0 and rubric-computed0 are real grades. UNAVAILABLE means source/annotation
+    cannot safely be classified; never CURRENT. NEEDS_GRADING includes every status
+    except CURRENT. Historical marker on an older grade version does not affect newer
+    grades. Metadata only, never score/reason/answer/rubric content; no pass/verification/completion
+    or automatic progress decision. A single bounded statement joins only Collaboration-owned
+    canonical tables with exact latest grade-version annotation. Filters precede limit,
+    ascending UUIDv7 keyset default20/max100, limit+1 next cursor. Point-in-time pages
+    may change after source writes; refresh starts from beginning. Archived parents
+    retain reads. No mutation/new event/migration/dependency or cross-owner SQL. The
+    existing review-queue endpoint and its response/filter vocabulary remain unchanged.
+servers:
+- url: https://localhost:8443
+security:
+- browserSession: []
+paths:
+  /api/groups/{groupId}/studies/{studyId}/assignments/{assignmentId}/submissions/grading-queue:
+    parameters:
+    - name: groupId
+      in: path
+      required: true
+      schema: &id001
+        $ref: assignment-submissions.yaml#/components/schemas/Id
+    - name: studyId
+      in: path
+      required: true
+      schema: *id001
+    - name: assignmentId
+      in: path
+      required: true
+      schema: *id001
+    get:
+      operationId: getOwnerSubmissionGradingQueue
+      parameters:
+      - name: filter
+        in: query
+        schema:
+          type: string
+          enum:
+          - NEEDS_GRADING
+          - ALL
+          - MISSING
+          - CURRENT
+          - OUTDATED
+          - RETRACTED
+          - UNAVAILABLE
+          default: NEEDS_GRADING
+      - name: after
+        in: query
+        schema: *id001
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      responses:
+        '400':
+          description: Malformed/singleton query, limit, cursor or nonempty GET body
+        '401':
+          description: Secure singleton browser session required
+        '403':
+          description: Current registered Group OWNER required, even for empty results
+        '404':
+          description: Missing current Group participation or exact parent scope
+        '503':
+          description: Space authority unavailable
+        '200':
+          description: Current read-only grading metadata, excluding OWNER own submissions
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Page'
+components:
+  securitySchemes:
+    browserSession:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest
+  schemas:
+    Row:
+      type: object
+      additionalProperties: false
+      required:
+      - submissionId
+      - authorId
+      - version
+      - assignmentVersion
+      - updatedAt
+      - gradingStatus
+      - gradeVersion
+      - gradedSubmissionVersion
+      - gradeRetractionState
+      - retractionVersion
+      properties:
+        submissionId: *id001
+        authorId: *id001
+        version: &id002
+          type: integer
+          format: int64
+          minimum: 1
+        assignmentVersion: *id002
+        updatedAt:
+          type: string
+          format: date-time
+        gradingStatus:
+          type: string
+          enum:
+          - MISSING
+          - CURRENT
+          - OUTDATED
+          - RETRACTED
+          - UNAVAILABLE
+        gradeVersion: &id003
+          type:
+          - integer
+          - 'null'
+          format: int64
+          minimum: 1
+        gradedSubmissionVersion: *id003
+        gradeRetractionState:
+          type: string
+          enum:
+          - NONE
+          - RETRACTED
+          - RESTORED
+          - UNKNOWN
+        retractionVersion: *id003
+    Page:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - nextAfter
+      properties:
+        items:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/Row'
+        nextAfter:
+          anyOf:
+          - *id001
+          - type: 'null'

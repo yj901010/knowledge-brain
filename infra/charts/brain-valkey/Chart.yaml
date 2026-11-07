@@ -1,0 +1,6 @@
+apiVersion: v2
+name: brain-valkey
+description: Disposable TLS-only platform cache; no canonical data or authority
+type: application
+version: 0.1.0
+appVersion: 9.0.7

@@ -1,0 +1,88 @@
+apiVersion: v1
+kind: ConfigMap
+metadata: {name: brain-opensearch-config}
+data:
+  opensearch.yml: |
+    cluster.name: knowledge-brain-search
+    node.name: ${HOSTNAME}
+    network.host: 0.0.0.0
+{{ if .Values.singleNode }}
+    discovery.type: single-node
+{{ end }}
+    plugins.security.ssl.transport.pemcert_filepath: tls/tls.crt
+    plugins.security.ssl.transport.pemkey_filepath: tls/tls.key
+    plugins.security.ssl.transport.pemtrustedcas_filepath: tls/ca.crt
+    plugins.security.ssl.http.enabled: true
+    plugins.security.ssl.http.pemcert_filepath: tls/tls.crt
+    plugins.security.ssl.http.pemkey_filepath: tls/tls.key
+    plugins.security.ssl.http.pemtrustedcas_filepath: tls/ca.crt
+    plugins.security.ssl.http.clientauth_mode: REQUIRE
+    plugins.security.nodes_dn: ["CN=brain-opensearch"]
+    plugins.security.authcz.admin_dn: ["CN=brain-search-admin"]
+    plugins.security.allow_unsafe_democertificates: false
+    plugins.security.allow_default_init_securityindex: false
+    plugins.security.restapi.roles_enabled: []
+    action.auto_create_index: false
+---
+apiVersion: v1
+kind: ConfigMap
+metadata: {name: brain-opensearch-security}
+data:
+  config.yml: |
+    _meta: {type: config, config_version: 2}
+    config:
+      dynamic:
+        http: {anonymous_auth_enabled: false}
+        authc:
+          clientcert_auth_domain:
+            http_enabled: true
+            transport_enabled: false
+            order: 0
+            http_authenticator:
+              type: clientcert
+              challenge: false
+              config: {username_attribute: cn}
+            authentication_backend: {type: noop}
+        authz: {}
+  roles.yml: |
+    _meta: {type: roles, config_version: 2}
+    brain_note_reader:
+      cluster_permissions: []
+      index_permissions:
+      - index_patterns: [brain-notes-v1, brain-network-v1, brain-public-knowledge-v1]
+        allowed_actions: ["indices:data/read/search*"]
+    brain_note_projector:
+      cluster_permissions: ["indices:data/write/bulk*"]
+      index_permissions:
+      - index_patterns: [brain-notes-v1, brain-network-v1, brain-public-knowledge-v1]
+        allowed_actions: ["indices:data/write/index*", "indices:data/write/bulk*", "indices:data/read/get*"]
+    brain_node_probe:
+      cluster_permissions: ["cluster:monitor/health"]
+      index_permissions: []
+  roles_mapping.yml: |
+    _meta: {type: rolesmapping, config_version: 2}
+    brain_note_reader: {users: [brain-note-reader]}
+    brain_note_projector: {users: [brain-note-projector]}
+    brain_node_probe: {users: [brain-opensearch]}
+  internal_users.yml: |
+    _meta: {type: internalusers, config_version: 2}
+  action_groups.yml: |
+    _meta: {type: actiongroups, config_version: 2}
+  tenants.yml: |
+    _meta: {type: tenants, config_version: 2}
+  nodes_dn.yml: |
+    _meta: {type: nodesdn, config_version: 2}
+  allowlist.yml: |
+    _meta: {type: allowlist, config_version: 2}
+    config: {enabled: false, requests: {}}
+  audit.yml: |
+    _meta: {type: audit, config_version: 2}
+    config:
+      enabled: true
+      audit:
+        log_request_body: false
+        exclude_sensitive_headers: true
+      compliance:
+        enabled: false
+        write_metadata_only: true
+        read_metadata_only: true

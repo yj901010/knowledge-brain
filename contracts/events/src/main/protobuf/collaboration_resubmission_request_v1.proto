@@ -1,0 +1,20 @@
+syntax = "proto3";
+package knowledgebrain.collaboration.resubmissionrequest.v1;
+option java_package = "io.knowledgebrain.contracts.collaboration.resubmissionrequest.v1";
+option java_multiple_files = true;
+message ResubmissionRequestEnvelopeV1 {
+ string event_id = 1; string event_type = 2; uint32 event_version = 3;
+ int64 occurred_at_epoch_millis = 4; string producer = 5; string aggregate_type = 6;
+ string aggregate_id = 7; string space_id = 8; string actor_id = 9; string trace_id = 10; bytes payload = 11;
+}
+// Private author/current OWNER workflow. RESOLVED means a newer answer was submitted,
+// never accepted/graded/completed. No permission to submit to closed/archived parents.
+// Consumers deduplicate event_id, apply increasing request versions and reauthorize.
+message ResubmissionRequestSnapshotV1 {
+ string request_id = 1; string submission_id = 2; string assignment_id = 3;
+ string study_id = 4; string group_id = 5; string space_id = 6;
+ string author_id = 7; string requested_by = 8; string changed_by = 9;
+ int64 version = 10; int64 submission_version = 11; int64 assignment_version = 12;
+ string reason = 13; string state = 14; optional int64 resolved_submission_version = 15;
+ string audience = 16; string created_at = 17; string updated_at = 18;
+}

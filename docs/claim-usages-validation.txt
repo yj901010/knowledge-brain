@@ -1,0 +1,85 @@
+Concept -> Claim usage browsing delivery (2026-10-11)
+
+AGENTS.md and PROJECT.md read before implementation. Existing Knowledge ownership,
+private Personal Space/common principal, Subject -> Predicate -> Object, immutable
+revisions/Citation pins, Outbox and event contracts remain compatible. No new
+canonical mutation, dependency, external dataset or cross-service SQL.
+
+Feature: personal Concept library -> select Concept -> 이 개념을 사용하는 관계.
+Independent OBJECT / PREDICATE discovery; real exclusive 20-row Claim-ID pages;
+current same-query triple titles, independent Claim version and stable IDs;
+canonical inline detail and retained immutable history, 5-row exclusive before
+pages. Four unrelated Concept/Alias/outgoing Claim/Note drafts remain independent.
+
+Java 25 whole reactor:
+  scripts/Run-BackendValidation.py --knowledge-kafka
+  Job: backend-validation-1791684350 Complete; BUILD SUCCESS.
+  378 discovered; 362 executed/passed;
+  0 failures; 0 errors;
+  16 optional unrelated environment-gated skips.
+  New ClaimUsageApiTest: 8 real production servlet/filter tests, all passed.
+  New ClaimUsageStoreIntegrationTest: 9 actual PostgreSQL tests, all passed.
+  GatewayProxyTest: 20 passed, exact private GET/body/cursor/role boundary covered.
+  PG: 20+2 keysets, role isolation, self-loop de-duplication, current title/triple
+  updates, effective all-three-Concept lifecycle and private scope, retained
+  known history, V8 indexes, byte-for-byte canonical/revision/Citation/Outbox
+  independence, strict input boundaries.
+  Evidence: .local/claim-usages-backend-full.log and
+  .local/claim-usages-backend-proof.json (lists 16 optional skipped tests).
+
+Contract / migration:
+  contracts/openapi/claim-usages.yaml: GET only; 18 refs resolved.
+  Raw canonical UUIDv7 paths/cursors; singleton OBJECT/PREDICATE/after/limit;
+  bodyless HTTPS with fresh CONCEPT_READ, no-store and no collection ETag.
+  Known PRIVATE retired Concept returns empty discovery, known Claim history
+  remains readable; unknown/foreign/public identity remains unavailable.
+  V8 adds only ACTIVE partial indexes on claim(space_id,object_concept_id,claim_id)
+  and claim(space_id,predicate_concept_id,claim_id).
+  Existing migrations validated unchanged; all 6 published Knowledge Protobuf
+  bytes unchanged. No new topic, schema, ACL, aggregate, event or revision.
+  Evidence: .local/claim-usages-contracts-proof.json.
+
+Static build and local delivery:
+  Initial static job graph-static-build-1791684638273744500 Complete.
+  Visual QA found inline title/version/ID labels touching; CSS now separates
+  them into readable blocks. No Java/JS/API behavior changed after full tests.
+  Final static job graph-static-build-1791685113774104400 Complete; TypeScript/Next export, dependency
+  notices and generated CSP passed.
+  Knowledge: knowledge-brain/knowledge-service:local-753e9660fab4ec30
+  Gateway: knowledge-brain/gateway-service:local-2b97684f88b84348
+  Matching imports completed on both k3d nodes before deployment.
+  Install-LocalClaimUsages.py rollout Ready; all 8 brain-apps Deployments Ready;
+  Knowledge validated 8 migrations and current schema version 8.
+  Evidence: .local/claim-usages-deployments.json.
+
+Actual deployed browser verification:
+  Full --public Job graph-web-validation-1791684863 Complete; 22 passed, 0 failed (same full run).
+  New usage scenario: actual 22 OBJECT and 22 PREDICATE Claims, independent 20+2
+  cursors, duplicate-title IDs, current title metadata, canonical detail and
+  eight revisions over 5+3 pages; unchanged revisions/Citation pins after title
+  edits; four sibling drafts/unchanged unrelated canonical objects; role/Claim/
+  Concept switch and close reject held late reads; 503 clears stale list/detail/
+  history with retry; Claim/Concept retirement hides discovery and keeps known
+  Claim/Citation history; parent mode/retirement keep selected history; foreign/
+  public denial and actual delayed read after session revocation clear private
+  surfaces; escaped labels, no external requests/storage, no JS/CSP errors.
+  Final --claim-usages-only Job graph-web-validation-1791685371 Complete; 1 passed, 0 failed on
+  final CSS/image. Desktop and 390-pixel mobile fit visually checked after fix.
+  Full/final logs: .local/claim-usages-browser-full-validation.txt and
+  .local/claim-usages-browser-final-validation.txt.
+  Screenshots: .local/graph-ui-results/claim-usages.png and
+  .local/graph-ui-results/claim-usages-mobile.png.
+
+Host HTTPS:
+  https://localhost:8443/graph returned 200 with project CA/hostname verified,
+  CSP present. .local/claim-usages-https-proof.json.
+
+Temporary resources:
+  Exact builder UID/labels/selectors/ConfigMap owners and deployed image/import
+  evidence checked. Owned initial and final Knowledge/Gateway builder Pods,
+  Services, NetworkPolicies and source ConfigMaps deleted; absence verified.
+  Evidence: .local/claim-usages-initial-build-cleanup.json and
+  .local/claim-usages-build-cleanup.json. Validation Jobs/owned source ConfigMaps
+  retain the existing 24h TTL.
+
+Feature guide: docs/claim-usages.md. No Git initialization/commit/push performed.

@@ -1,0 +1,606 @@
+openapi: 3.1.0
+info:
+  title: Private imported GitHub PR and Issue observations
+  version: 1.0.0
+  description: Integration owns all source facts and local command state; additive
+    APIs and events retain existing commit/learning contracts. Cookie/Origin, duplicate
+    JSON/query checks and no-store apply. No code/body/comments/email storage.
+servers:
+- url: https://localhost:8443
+security:
+- sessionCookie: []
+paths:
+  /api/spaces/{spaceId}/github/repositories/{repositoryId}/work-items:
+    parameters:
+    - &id002
+      name: spaceId
+      in: path
+      required: true
+      schema: &id001
+        type: string
+        format: uuid
+        pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+    - &id003
+      name: repositoryId
+      in: path
+      required: true
+      schema: *id001
+    get:
+      operationId: listImportedGitHubWorkItems
+      description: Fresh registered PERSONAL PRIVATE Space OWNER authority. Owner-local
+        retained facts only; no GitHub I/O. Ascending UUID keyset, PR default and
+        ALL state. Missing rows on a bounded remote page never imply deletion.
+      parameters:
+      - name: kind
+        in: query
+        required: false
+        schema:
+          enum: &id004
+          - PULL_REQUEST
+          - ISSUE
+          default: PULL_REQUEST
+      - name: state
+        in: query
+        required: false
+        schema:
+          enum:
+          - ALL
+          - OPEN
+          - CLOSED
+          default: ALL
+      - name: after
+        in: query
+        required: false
+        schema: *id001
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      responses:
+        '200':
+          description: Scoped current observation or exact retry
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Page'
+        '400':
+          description: Private no-store failure; no partial local command.
+        '401':
+          description: Private no-store failure; no partial local command.
+        '403':
+          description: Private no-store failure; no partial local command.
+        '404':
+          description: Private no-store failure; no partial local command.
+        '409':
+          description: Private no-store failure; no partial local command.
+        '412':
+          description: Private no-store failure; no partial local command.
+        '413':
+          description: Private no-store failure; no partial local command.
+        '415':
+          description: Private no-store failure; no partial local command.
+        '428':
+          description: Private no-store failure; no partial local command.
+        '502':
+          description: Private no-store failure; no partial local command.
+        '503':
+          description: Private no-store failure; no partial local command.
+  /api/spaces/{spaceId}/github/repositories/{repositoryId}/work-items/{itemId}:
+    parameters:
+    - *id002
+    - *id003
+    - name: itemId
+      in: path
+      required: true
+      schema: *id001
+    get:
+      operationId: readImportedGitHubWorkItem
+      description: Fresh registered PERSONAL PRIVATE Space OWNER authority. Current
+        version of this imported observation; upstream timestamps and local observedAt
+        are distinct. Retained after disconnect. No GitHub I/O.
+      parameters: &id005 []
+      responses:
+        '200':
+          description: Scoped current observation or exact retry
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"ghwi[1-9][0-9]*"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Item'
+        '400':
+          description: Private no-store failure; no partial local command.
+        '401':
+          description: Private no-store failure; no partial local command.
+        '403':
+          description: Private no-store failure; no partial local command.
+        '404':
+          description: Private no-store failure; no partial local command.
+        '409':
+          description: Private no-store failure; no partial local command.
+        '412':
+          description: Private no-store failure; no partial local command.
+        '413':
+          description: Private no-store failure; no partial local command.
+        '415':
+          description: Private no-store failure; no partial local command.
+        '428':
+          description: Private no-store failure; no partial local command.
+        '502':
+          description: Private no-store failure; no partial local command.
+        '503':
+          description: Private no-store failure; no partial local command.
+  /api/spaces/{spaceId}/github/repositories/{repositoryId}/work-items/{itemId}/revisions:
+    parameters:
+    - *id002
+    - *id003
+    - name: itemId
+      in: path
+      required: true
+      schema: *id001
+    get:
+      operationId: listImportedGitHubWorkItemRevisions
+      description: Fresh registered PERSONAL PRIVATE Space OWNER authority. Immutable
+        snapshots by descending local version, default5/max10. No mutation on read.
+      parameters:
+      - name: before
+        in: query
+        required: false
+        schema: &id007
+          type: integer
+          minimum: 1
+          maximum: 9007199254740991
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 5
+      responses:
+        '200':
+          description: Scoped current observation or exact retry
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                type: array
+                maxItems: 10
+                items:
+                  $ref: '#/components/schemas/Revision'
+        '400':
+          description: Private no-store failure; no partial local command.
+        '401':
+          description: Private no-store failure; no partial local command.
+        '403':
+          description: Private no-store failure; no partial local command.
+        '404':
+          description: Private no-store failure; no partial local command.
+        '409':
+          description: Private no-store failure; no partial local command.
+        '412':
+          description: Private no-store failure; no partial local command.
+        '413':
+          description: Private no-store failure; no partial local command.
+        '415':
+          description: Private no-store failure; no partial local command.
+        '428':
+          description: Private no-store failure; no partial local command.
+        '502':
+          description: Private no-store failure; no partial local command.
+        '503':
+          description: Private no-store failure; no partial local command.
+  /api/spaces/{spaceId}/github/repositories/{repositoryId}/work-items/{kind}/sync-state:
+    parameters: &id006
+    - *id002
+    - *id003
+    - name: kind
+      in: path
+      required: true
+      schema: &id008
+        enum: *id004
+    get:
+      operationId: readGitHubWorkImportState
+      description: Fresh registered PERSONAL PRIVATE Space OWNER authority. Independent
+        per repository+kind ghwN (initial0); existing repository ghrN/commits and
+        learning pins unchanged. Fresh repository lifecycle is included.
+      parameters: *id005
+      responses:
+        '200':
+          description: Scoped current observation or exact retry
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"ghw(0|[1-9][0-9]*)"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/State'
+        '400':
+          description: Private no-store failure; no partial local command.
+        '401':
+          description: Private no-store failure; no partial local command.
+        '403':
+          description: Private no-store failure; no partial local command.
+        '404':
+          description: Private no-store failure; no partial local command.
+        '409':
+          description: Private no-store failure; no partial local command.
+        '412':
+          description: Private no-store failure; no partial local command.
+        '413':
+          description: Private no-store failure; no partial local command.
+        '415':
+          description: Private no-store failure; no partial local command.
+        '428':
+          description: Private no-store failure; no partial local command.
+        '502':
+          description: Private no-store failure; no partial local command.
+        '503':
+          description: Private no-store failure; no partial local command.
+  /api/spaces/{spaceId}/github/repositories/{repositoryId}/work-items/{kind}/sync:
+    parameters: *id006
+    post:
+      operationId: explicitlyImportRecentGitHubWork
+      description: Fresh registered PERSONAL PRIVATE Space OWNER authority. One fixed
+        HTTPS public repository read then one all-state page sorted updated desc,
+        per_page20. ISSUE excludes pull_request-marked responses; scanned may exceed
+        observed. Not full-history completeness or contribution attribution. Recheck
+        authority after remote read and parent ACTIVE under local lock. No auto retries,
+        no remote writes. Per repository+kind+actor exact key/expected replay before
+        remote access, retained after disconnect. New/changed rows+immutable revision+Outbox+receipt+sync
+        state commit atomically. Unchanged metadata adds receipt only. Reject older
+        source updatedAt, external identity drift and stale sync state. Parent ghrN
+        and old commands remain unchanged.
+      parameters:
+      - name: Origin
+        in: header
+        required: true
+        schema:
+          type: string
+          format: uri
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^[0-9a-f]{32}$
+      - name: If-Match
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^"ghw(0|[1-9][0-9]*)"$
+      responses:
+        '200':
+          description: Scoped current observation or exact retry
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"ghw(0|[1-9][0-9]*)"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Synced'
+        '400':
+          description: Private no-store failure; no partial local command.
+        '401':
+          description: Private no-store failure; no partial local command.
+        '403':
+          description: Private no-store failure; no partial local command.
+        '404':
+          description: Private no-store failure; no partial local command.
+        '409':
+          description: Private no-store failure; no partial local command.
+        '412':
+          description: Private no-store failure; no partial local command.
+        '413':
+          description: Private no-store failure; no partial local command.
+        '415':
+          description: Private no-store failure; no partial local command.
+        '428':
+          description: Private no-store failure; no partial local command.
+        '502':
+          description: Private no-store failure; no partial local command.
+        '503':
+          description: Private no-store failure; no partial local command.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              maxProperties: 0
+  /api/spaces/{spaceId}/github/repositories/{repositoryId}/work-items/{kind}/syncs:
+    parameters: *id006
+    get:
+      operationId: listGitHubWorkImportReceipts
+      description: Fresh registered PERSONAL PRIVATE Space OWNER authority. Existing
+        completed command counters, including empty/unchanged and disconnected sources.
+        Descending logical per-kind syncVersion; request keys/internal expected versions
+        excluded.
+      parameters:
+      - name: before
+        in: query
+        required: false
+        schema: *id007
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      responses:
+        '200':
+          description: Scoped current observation or exact retry
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SyncPage'
+        '400':
+          description: Private no-store failure; no partial local command.
+        '401':
+          description: Private no-store failure; no partial local command.
+        '403':
+          description: Private no-store failure; no partial local command.
+        '404':
+          description: Private no-store failure; no partial local command.
+        '409':
+          description: Private no-store failure; no partial local command.
+        '412':
+          description: Private no-store failure; no partial local command.
+        '413':
+          description: Private no-store failure; no partial local command.
+        '415':
+          description: Private no-store failure; no partial local command.
+        '428':
+          description: Private no-store failure; no partial local command.
+        '502':
+          description: Private no-store failure; no partial local command.
+        '503':
+          description: Private no-store failure; no partial local command.
+components:
+  schemas:
+    Item:
+      type: object
+      additionalProperties: false
+      required:
+      - itemId
+      - repositoryId
+      - spaceId
+      - visibility
+      - sourceVisibility
+      - kind
+      - number
+      - externalId
+      - repositoryExternalId
+      - repositoryFullName
+      - title
+      - state
+      - authorLogin
+      - draft
+      - createdAt
+      - updatedAt
+      - closedAt
+      - url
+      - version
+      - firstObservedAt
+      - observedAt
+      - observedBy
+      properties:
+        itemId: *id001
+        repositoryId: *id001
+        spaceId: *id001
+        visibility:
+          const: PRIVATE
+        sourceVisibility:
+          const: PUBLIC
+        kind: *id008
+        number: *id007
+        externalId:
+          type: string
+          pattern: ^[1-9][0-9]{0,18}$
+        repositoryExternalId:
+          type: string
+          pattern: ^[1-9][0-9]{0,18}$
+        repositoryFullName:
+          type: string
+          pattern: ^[A-Za-z0-9-]{1,39}/[A-Za-z0-9_.-]{1,100}$
+        title:
+          type: string
+          minLength: 1
+          maxLength: 500
+        state:
+          enum:
+          - OPEN
+          - CLOSED
+        authorLogin:
+          type:
+          - string
+          - 'null'
+        draft:
+          type:
+          - boolean
+          - 'null'
+          description: Boolean for PR, null for ISSUE; closed does not imply merged.
+        createdAt: &id009
+          type: string
+          format: date-time
+        updatedAt: *id009
+        closedAt: &id010
+          anyOf:
+          - *id009
+          - type: 'null'
+        url:
+          type: string
+          format: uri
+        version: *id007
+        firstObservedAt: *id009
+        observedAt: *id009
+        observedBy: *id001
+    State:
+      type: object
+      additionalProperties: false
+      required:
+      - repositoryId
+      - spaceId
+      - kind
+      - version
+      - lastSyncedAt
+      - repositoryState
+      properties:
+        repositoryId: *id001
+        spaceId: *id001
+        kind: *id008
+        version:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+        lastSyncedAt: *id010
+        repositoryState:
+          enum:
+          - ACTIVE
+          - RETIRED
+    Receipt:
+      type: object
+      additionalProperties: false
+      required:
+      - syncId
+      - repositoryId
+      - kind
+      - syncVersion
+      - observedAt
+      - scannedCount
+      - observedCount
+      - importedCount
+      - updatedCount
+      - unchangedCount
+      - possiblyMore
+      properties:
+        syncId: *id001
+        repositoryId: *id001
+        kind: *id008
+        syncVersion: *id007
+        observedAt: *id009
+        scannedCount:
+          type: integer
+          minimum: 0
+          maximum: 20
+        observedCount:
+          type: integer
+          minimum: 0
+          maximum: 20
+        importedCount:
+          type: integer
+          minimum: 0
+          maximum: 20
+        updatedCount:
+          type: integer
+          minimum: 0
+          maximum: 20
+        unchangedCount:
+          type: integer
+          minimum: 0
+          maximum: 20
+        possiblyMore:
+          type: boolean
+    Synced:
+      type: object
+      additionalProperties: false
+      required:
+      - state
+      - sync
+      - replay
+      properties:
+        state:
+          $ref: '#/components/schemas/State'
+        sync:
+          $ref: '#/components/schemas/Receipt'
+        replay:
+          type: boolean
+    Revision:
+      type: object
+      additionalProperties: false
+      required:
+      - revisionId
+      - version
+      - actorId
+      - occurredAt
+      - snapshot
+      properties:
+        revisionId: *id001
+        version: *id007
+        actorId: *id001
+        occurredAt: *id009
+        snapshot:
+          $ref: '#/components/schemas/Item'
+    Page:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - nextAfter
+      properties:
+        items:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/Item'
+        nextAfter:
+          anyOf:
+          - *id001
+          - type: 'null'
+    SyncPage:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - nextBefore
+      properties:
+        items:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/Receipt'
+        nextBefore:
+          anyOf:
+          - *id007
+          - type: 'null'
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest

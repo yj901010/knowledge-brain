@@ -1,0 +1,195 @@
+openapi: 3.1.0
+info:
+  title: Group review notification internal capabilities
+  version: 1.0.0
+  description: Separate machine credentials for each endpoint. The browser Gateway
+    never forwards internal routes. Space resolves REGISTERED identity and current
+    ACTIVE private Group membership for every request. Collaboration queries only
+    its own retained Outbox and exports content-free source metadata, original envelope
+    SHA256 and immutable cursor; never answer/score/reason/file contents. Consumers
+    capture Kafka end positions before export, then replay overlap through durable
+    hash receipts. No mutation or offset reset.
+paths:
+  /internal/space/group-review-authorization:
+    servers:
+    - url: https://space-service.brain-apps.svc:8080
+    post:
+      operationId: authorizeCurrentGroupNotificationRecipient
+      security:
+      - groupReviewCapability: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Check'
+      responses:
+        '200':
+          description: Bounded content-free capability or original signal metadata
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Access'
+        '400':
+          description: Invalid query or JSON
+        '401':
+          description: Dedicated service credential and TLS required; browser cookies
+            rejected
+        '403':
+          description: Registered principal required
+        '404':
+          description: No current Group participation
+  /internal/collaboration/review-signals:
+    servers:
+    - url: https://collaboration-service.brain-apps.svc:8080
+    get:
+      operationId: exportContentFreeReviewSignals
+      security:
+      - reviewSignalExport: []
+      parameters:
+      - name: after
+        in: query
+        required: false
+        schema: &id001
+          type: string
+          format: uuid
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 50
+      responses:
+        '200':
+          description: Bounded content-free capability or original signal metadata
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Page'
+        '400':
+          description: Invalid query or JSON
+        '401':
+          description: Dedicated service credential and TLS required; browser cookies
+            rejected
+        '403':
+          description: Registered principal required
+        '404':
+          description: No current Group participation
+components:
+  securitySchemes:
+    groupReviewCapability:
+      type: http
+      scheme: bearer
+      bearerFormat: Dedicated opaque 32-byte credential
+    reviewSignalExport:
+      type: http
+      scheme: bearer
+      bearerFormat: Dedicated opaque 32-byte credential
+  schemas:
+    Check:
+      type: object
+      additionalProperties: false
+      required:
+      - token
+      - groupId
+      properties:
+        token:
+          type: string
+          pattern: ^[A-Za-z0-9_-]{43}$
+        groupId: *id001
+    Access:
+      type: object
+      additionalProperties: false
+      required:
+      - groupId
+      - spaceId
+      - principalId
+      - membershipVersion
+      properties:
+        groupId: *id001
+        spaceId: *id001
+        principalId: *id001
+        membershipVersion: &id002
+          type: integer
+          format: int64
+          minimum: 1
+    Signal:
+      type: object
+      additionalProperties: false
+      required:
+      - eventId
+      - payloadHash
+      - kind
+      - aggregateId
+      - sourceVersion
+      - groupId
+      - spaceId
+      - recipientId
+      - actorId
+      - studyId
+      - assignmentId
+      - submissionId
+      - submissionVersion
+      - occurredAt
+      - traceId
+      properties:
+        eventId: *id001
+        payloadHash:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+        kind:
+          type: string
+          enum:
+          - FEEDBACK
+          - RESUBMISSION_REQUESTED
+          - RESUBMISSION_CANCELLED
+          - RESUBMISSION_RESOLVED
+          - GRADE
+          - FEEDBACK_RETRACTED
+          - FEEDBACK_RESTORED
+          - GRADE_RETRACTED
+          - GRADE_RESTORED
+        aggregateId: *id001
+        sourceVersion: *id002
+        groupId: *id001
+        spaceId: *id001
+        recipientId: *id001
+        actorId: *id001
+        studyId: *id001
+        assignmentId: *id001
+        submissionId: *id001
+        submissionVersion: *id002
+        occurredAt: *id002
+        traceId:
+          type: string
+          pattern: ^(?!0{32}$)[0-9a-f]{32}$
+    Page:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - nextAfter
+      properties:
+        items:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/Signal'
+        nextAfter:
+          type:
+          - string
+          - 'null'
+          format: uuid

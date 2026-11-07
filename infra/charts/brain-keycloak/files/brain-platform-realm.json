@@ -1,0 +1,148 @@
+{
+  "realm": "brain-platform",
+  "enabled": true,
+  "sslRequired": "all",
+  "registrationAllowed": false,
+  "resetPasswordAllowed": false,
+  "bruteForceProtected": true,
+  "roles": {
+    "realm": [
+      {
+        "name": "sr-admin"
+      },
+      {
+        "name": "sr-developer"
+      },
+      {
+        "name": "sr-readonly"
+      }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "registry-api",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "bearerOnly": true
+    },
+    {
+      "clientId": "registry-publisher",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "${REGISTRY_PUBLISHER_SECRET}",
+      "serviceAccountsEnabled": true,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "fullScopeAllowed": false,
+      "defaultClientScopes": [
+        "roles"
+      ],
+      "protocolMappers": [
+        {
+          "name": "registry-audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": {
+            "included.client.audience": "registry-api",
+            "access.token.claim": "true",
+            "id.token.claim": "false"
+          }
+        }
+      ]
+    },
+    {
+      "clientId": "registry-reader",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "${REGISTRY_READER_SECRET}",
+      "serviceAccountsEnabled": true,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "fullScopeAllowed": false,
+      "defaultClientScopes": [
+        "roles"
+      ],
+      "protocolMappers": [
+        {
+          "name": "registry-audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": {
+            "included.client.audience": "registry-api",
+            "access.token.claim": "true",
+            "id.token.claim": "false"
+          }
+        }
+      ]
+    },
+    {
+      "clientId": "registry-unprivileged",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "${REGISTRY_UNPRIVILEGED_SECRET}",
+      "serviceAccountsEnabled": true,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "fullScopeAllowed": false,
+      "defaultClientScopes": [
+        "roles"
+      ],
+      "protocolMappers": [
+        {
+          "name": "registry-audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": {
+            "included.client.audience": "registry-api",
+            "access.token.claim": "true",
+            "id.token.claim": "false"
+          }
+        }
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "service-account-registry-publisher",
+      "enabled": true,
+      "serviceAccountClientId": "registry-publisher",
+      "realmRoles": [
+        "sr-developer"
+      ]
+    },
+    {
+      "username": "service-account-registry-reader",
+      "enabled": true,
+      "serviceAccountClientId": "registry-reader",
+      "realmRoles": [
+        "sr-readonly"
+      ]
+    },
+    {
+      "username": "service-account-registry-unprivileged",
+      "enabled": true,
+      "serviceAccountClientId": "registry-unprivileged",
+      "realmRoles": []
+    }
+  ],
+  "scopeMappings": [
+    {
+      "client": "registry-publisher",
+      "roles": [
+        "sr-developer"
+      ]
+    },
+    {
+      "client": "registry-reader",
+      "roles": [
+        "sr-readonly"
+      ]
+    }
+  ]
+}

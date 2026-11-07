@@ -1,0 +1,154 @@
+openapi: 3.1.0
+info:
+  title: Study own resubmission-request overview
+  version: 1.0.0
+  description: Current registered Group participants including VIEWER read only existing
+    requests on their own submissions in the exact Study. Actor comes from fresh Space
+    authority; no author selectors, non-submitters, request reasons, answers, scores
+    or personal content. REQUESTED default; ALL includes existing requests only. CANCELLED
+    and RESOLVED retain historical source versions; RESOLVED means newer answer arrived,
+    never passing/completion. Inconsistent or unknown source state is UNAVAILABLE,
+    never pending/resolved. Single local Collaboration statement with exact full-tuple
+    source joins, filters before ascending UUIDv7 keyset limit+1/default20/max100.
+    Current pages may shift; refresh resets. Closed/retired parents retain reads but
+    do not grant submission permission. Read-only, no event/migration/dependency or
+    cross-owner SQL. Original own-submission and OWNER queues unchanged.
+servers:
+- url: https://localhost:8443
+security:
+- browserSession: []
+paths:
+  /api/groups/{groupId}/studies/{studyId}/my-resubmission-requests:
+    parameters:
+    - name: groupId
+      in: path
+      required: true
+      schema: &id001
+        $ref: assignment-submissions.yaml#/components/schemas/Id
+    - name: studyId
+      in: path
+      required: true
+      schema: *id001
+    get:
+      operationId: getStudyOwnResubmissionRequests
+      parameters:
+      - name: filter
+        in: query
+        schema:
+          type: string
+          enum:
+          - REQUESTED
+          - RESOLVED
+          - CANCELLED
+          - ALL
+          - UNAVAILABLE
+          default: REQUESTED
+      - name: after
+        in: query
+        schema: *id001
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      responses:
+        '400':
+          description: Malformed/singleton query, limit, cursor or nonempty GET body
+        '401':
+          description: Secure singleton browser session required
+        '403':
+          description: Registered Group participation required
+        '404':
+          description: Missing current Group participation or exact parent scope
+        '503':
+          description: Space authority unavailable
+        '200':
+          description: Only own existing requests; eleven metadata fields without
+            source contents
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Page'
+components:
+  securitySchemes:
+    browserSession:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest
+  schemas:
+    Row:
+      type: object
+      additionalProperties: false
+      required:
+      - submissionId
+      - assignmentId
+      - assignmentTitle
+      - assignmentState
+      - version
+      - assignmentVersion
+      - updatedAt
+      - requestVersion
+      - requestState
+      - requestedSubmissionVersion
+      - resolvedSubmissionVersion
+      properties:
+        submissionId: &id002
+          $ref: assignment-submissions.yaml#/components/schemas/Id
+        assignmentId: *id002
+        assignmentTitle:
+          type: string
+          minLength: 1
+          maxLength: 200
+        assignmentState:
+          type: string
+          enum:
+          - DRAFT
+          - OPEN
+          - CLOSED
+          - RETIRED
+        version: &id003
+          type: integer
+          format: int64
+          minimum: 1
+        assignmentVersion: *id003
+        updatedAt:
+          type: string
+          format: date-time
+        requestVersion: *id003
+        requestState:
+          type: string
+          enum:
+          - REQUESTED
+          - RESOLVED
+          - CANCELLED
+          - UNAVAILABLE
+        requestedSubmissionVersion: *id003
+        resolvedSubmissionVersion:
+          type:
+          - integer
+          - 'null'
+          format: int64
+          minimum: 1
+    Page:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - nextAfter
+      properties:
+        items:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/Row'
+        nextAfter:
+          anyOf:
+          - *id001
+          - type: 'null'

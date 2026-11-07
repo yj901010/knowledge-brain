@@ -1,0 +1,158 @@
+Private Planning Tasks validation, 2026-10-16
+
+Tasks are deployed under the existing Planning owner/DB/capability/Outbox. V3
+adds only own Task/revision tables and an own Goal FK with same-Space enforcement.
+The original Goal and seven Learning v1 event contracts remain unchanged.
+
+{
+  "jobs": {
+    "backend": "backend-validation-1792149900344134100",
+    "planningPostgres": "backend-validation-1792149645692439300",
+    "browser": "graph-web-validation-1792150716",
+    "focusedBrowser": "graph-web-validation-1792150705",
+    "registry": "planning-contract-validation-1792149649",
+    "cdcIsolation": "planning-cdc-bootstrap-1792149991",
+    "canonicalConsistency": "planning-task-state-1792150124",
+    "browserBeforeUiCorrection": "graph-web-validation-1792150113"
+  },
+  "backend": {
+    "tests": 530,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 31
+  },
+  "planningTestsWithActualPostgresAndKafka": {
+    "tests": 31,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "browserTests": 54,
+  "focusedBrowserTests": 5,
+  "confirmedRejectedCreateRetainsEditableDraft": true,
+  "registeredClaimChecks": 2,
+  "registryTaskSha256": "844707c3cbe6339cc44de5499f37198bf315953db5a71c9f7720403cddff78c3",
+  "unchangedGoalSchemaSha256": "643ed1f2566750ffc0bb21b63d2837ad8aaa625d0fe1ed3d2ca21a85cc6391b3",
+  "unchangedLearningSchemaHashes": {
+    "association": "1e210a4b741051d23b1e560384c6b9adfde008ccc91b28594495c846fec034a7",
+    "media": "570c5ed12f35a119b9bda059c98a2fea913e19cf329adaa964b96de97f1bbc52",
+    "note": "432a3664007de5f39da77d077b745c534147c8dc50be424dab4cd04e56ccce2b",
+    "concept": "defd2827328024b6fee71e56a3a40c650f335f0359d03dcf62ef0d6a2b31ef04",
+    "progress": "ef3bf592594564efa67c9ddd1f3b9f3dddb7f6cc5e6fc7d20943464f013c1113",
+    "study": "98b45509343000736c25510aa59fb5cd814a9f2672de5e9dcdd242a2cf55a90e",
+    "roadmap": "a2c1db67ceded3c5c965b92797b2caa0e7224aeb71386e71899d2edd4db5e1a9"
+  },
+  "openapiReferences": 1219,
+  "newOperations": [
+    "listPrivateTasks",
+    "createPrivateTask",
+    "readPrivateTask",
+    "updatePrivateTask",
+    "retirePrivateTask",
+    "readPrivateTaskRevisions"
+  ],
+  "images": {
+    "space": "knowledge-brain/space-service:local-13ad53ebc818576d",
+    "planning": "knowledge-brain/planning-service:local-13ad53ebc818576d",
+    "gateway": "knowledge-brain/gateway-service:local-d5b08b705eecdf11"
+  },
+  "readyDeployments": 11,
+  "connectors": {
+    "space-outbox": "RUNNING",
+    "planning-outbox": "RUNNING",
+    "knowledge-outbox": "RUNNING",
+    "media-outbox": "RUNNING",
+    "content-outbox": "RUNNING",
+    "learning-outbox": "RUNNING",
+    "identity-outbox": "RUNNING"
+  },
+  "exactPlanningTwoTopicValidatorAndTaskProducerAcls": true,
+  "cdcCanonicalSelectDenials": 4,
+  "cdcOtherDatabaseConnectDenials": 12,
+  "liveFlywayVersions": [
+    1,
+    2,
+    3
+  ],
+  "liveTaskSnapshotAndGoalSpaceMismatches": 0,
+  "existingPlanningSlotActiveAndOneOutboxPublication": true,
+  "runtime": {
+    "spaceId": "01a14479-1f4f-7bfa-83d8-b3aaf00106f5",
+    "taskId": "01a14479-35d8-7f1d-96c6-30ad1512dd78",
+    "archivedTaskId": "01a14479-4e4f-7b67-9f5b-9ad5b0b2bad5",
+    "goalId": "01a14479-2dba-76ea-a55a-245b0ef2af22",
+    "oldPodUids": [
+      "bc33b738-d2c7-43d3-bf9e-10d439798ce2"
+    ],
+    "newPodUids": [
+      "36167456-14e8-4088-b279-373d5208d769"
+    ],
+    "image": "knowledge-brain/planning-service:local-13ad53ebc818576d",
+    "browserJob": "graph-web-validation-1792150113",
+    "canonicalSnapshotsAndRevisionIdsPreserved": true,
+    "completedStatusAndClearedDatePreserved": true,
+    "literalGregorianDatePreserved": "1582-10-10",
+    "retiredDiscoveryAndAuditPreserved": true,
+    "originalCreateKeySurvivesRestartAndRetiredGoalWithoutDuplicate": true,
+    "taskCompletionDoesNotChangeGoal": true,
+    "retiredGoalLinkAndHistoryPreserved": true
+  },
+  "ownedBuilderSetsRemoved": 4,
+  "hostGatewayAndMinioHttpsVerified": true
+}
+
+The full backend reactor completed 530 tests with no failures/errors. Its 31
+environment-gated skips are from unchanged storage/Kafka integrations; no claim
+is made that all skipped owner integrations were rerun in this feature. The
+Planning module's 31 tests ran with actual own PostgreSQL and two scoped TLS
+Kafka topics, zero skips. Gateway's 36 tests had zero skips; Space's 30 tests
+retain two existing Kafka skips and cover both guest/registered Task authority.
+
+Task checks include atomic create/update/retirement Outbox rollback; concurrent
+create/write winners; stale versus current no-op writes; original create-key
+replay after edit, retirement, parent retirement and principal change; exact
+date-only values at year/cutover boundaries under a non-UTC database timezone;
+23-row catalog and nine-version history paging; foreign/missing/retired new Goal
+link denial; composite same-Space database enforcement; retaining/editing an
+existing retired-Goal link, explicit unlink and rejected re-add; and unchanged
+Goal snapshots/history when Task progress changes. The real Task Kafka check
+matches four committed wire envelopes, exact Outbox bytes, ID/Space/actor/trace
+and schema headers, snapshots, null date/link representation and stable versions.
+
+All 54 final deployed browser tests passed. Five new Task scenarios exercise real
+CRUD/history/paging/date/status boundaries; lost creation responses retried once
+logically; 412 draft retention and explicit latest restart; fresh retirement
+acknowledgement; retained archive discovery/history; escaped markup, sibling Note
+drafts, 390px fit and late/revoked reads; and a 23-Goal picker with duplicate labels,
+retired-parent filtering, retained link edits/unlink, rejected re-add, independent
+Goal draft and unchanged Goal manual progress/history. A confirmed rejected Goal
+link during creation preserves editable title/description/selection; selecting
+another active Goal reuses the unreserved key and creates exactly one Task/revision.
+Two real Keycloak account
+flows preserve guest Task IDs/link/initial actor across Space claim and record
+registered edits under the new actor. Focused desktop/mobile screenshots were
+visually inspected. Existing Goal/Note/Knowledge/Learning/Media/public flows pass
+in the same full run.
+
+A verified host-HTTPS fixture retained exact Task/revision IDs/snapshots, completed
+state, cleared date, archived Gregorian 1582-10-10, same-ID retired Goal link and
+original create replay after restarting only Planning. Explicit Task completion
+did not modify the Goal snapshot. Validation session tokens were not persisted.
+Live owner-only SQL confirms V1/V2/V3 success, zero Task snapshot/date/link or
+Goal-Space inconsistencies, the active original planning_outbox_v1 slot and only
+public.outbox_event in the existing publication.
+
+Registry planning/task-events/v1 has exact checked bytes, FULL validity and
+FULL_TRANSITIVE compatibility. The producer has an exact Task topic ACL; the
+read-only validator has only two Planning topics plus its prefixed test group.
+CDC can read Outbox while four canonical tables and 12 other owner databases are
+denied. All seven existing connectors/tasks, including Planning, are RUNNING.
+No slot/offset/topic/PVC/table or user fact/event was deleted/reset. All 11 app
+deployments are Ready. Six new Task operations and all local OpenAPI references
+resolve. Four successful exact owned builder sets were removed after source
+owner UID, selector and deployed-image verification. Host Graph/MinIO HTTPS
+forwards were reconnected and verified.
+
+No dependency version, dataset, AI feature or frontend redesign was introduced.
+Task/Goal activity projections, scheduling, recurrence/reminders/notifications,
+Task-to-Concept links and central observability deployment remain separate work.

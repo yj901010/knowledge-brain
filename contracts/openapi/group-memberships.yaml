@@ -1,0 +1,912 @@
+openapi: 3.1.0
+info:
+  title: Private Group invitations and membership
+  version: 1.0.0
+servers:
+- url: https://localhost:8443
+security:
+- browserSession: []
+paths:
+  /api/groups/{groupId}/membership:
+    get:
+      summary: Read my active current Group membership
+      parameters:
+      - name: groupId
+        in: path
+        required: true
+        schema: &id001
+          type: string
+          format: uuid
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+      responses:
+        '200':
+          description: No-store authorized response; no GET credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Member'
+        '400':
+          description: Malformed/ambiguous input
+        '401':
+          description: Browser session required
+        '403':
+          description: Registered account or OWNER/same origin required
+        '404':
+          description: Group/member unavailable
+        '409':
+          description: Conflicting state or request intent; OWNER protected
+        '410':
+          description: Invitation revoked/expired/used by another account
+        '412':
+          description: Stale version
+        '428':
+          description: Current If-Match required
+        '503':
+          description: Authorization/persistence unavailable; retry safely
+  /api/groups/{groupId}/members:
+    get:
+      summary: 'OWNER: list active members'
+      parameters:
+      - name: groupId
+        in: path
+        required: true
+        schema: *id001
+      - name: after
+        in: query
+        schema: *id001
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      responses:
+        '200':
+          description: No-store authorized response; no GET credentials
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - items
+                - nextAfter
+                properties:
+                  items:
+                    type: array
+                    maxItems: 100
+                    items:
+                      $ref: '#/components/schemas/Member'
+                  nextAfter:
+                    type:
+                    - string
+                    - 'null'
+        '400':
+          description: Malformed/ambiguous input
+        '401':
+          description: Browser session required
+        '403':
+          description: Registered account or OWNER/same origin required
+        '404':
+          description: Group/member unavailable
+        '409':
+          description: Conflicting state or request intent; OWNER protected
+        '410':
+          description: Invitation revoked/expired/used by another account
+        '412':
+          description: Stale version
+        '428':
+          description: Current If-Match required
+        '503':
+          description: Authorization/persistence unavailable; retry safely
+  /api/groups/{groupId}/members/{principalId}:
+    put:
+      summary: 'OWNER: change MEMBER/VIEWER role'
+      parameters:
+      - name: groupId
+        in: path
+        required: true
+        schema: *id001
+      - name: principalId
+        in: path
+        required: true
+        schema: *id001
+      - name: Origin
+        in: header
+        required: true
+        schema:
+          type: string
+          const: https://localhost:8443
+      - name: If-Match
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^"gm[1-9][0-9]{0,18}"$
+      responses:
+        '200':
+          description: No-store authorized response; no GET credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Member'
+        '400':
+          description: Malformed/ambiguous input
+        '401':
+          description: Browser session required
+        '403':
+          description: Registered account or OWNER/same origin required
+        '404':
+          description: Group/member unavailable
+        '409':
+          description: Conflicting state or request intent; OWNER protected
+        '410':
+          description: Invitation revoked/expired/used by another account
+        '412':
+          description: Stale version
+        '428':
+          description: Current If-Match required
+        '503':
+          description: Authorization/persistence unavailable; retry safely
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - role
+              properties:
+                role:
+                  enum:
+                  - MEMBER
+                  - VIEWER
+    delete:
+      summary: 'OWNER: retire a member; OWNER protected'
+      parameters:
+      - name: groupId
+        in: path
+        required: true
+        schema: *id001
+      - name: principalId
+        in: path
+        required: true
+        schema: *id001
+      - name: Origin
+        in: header
+        required: true
+        schema:
+          type: string
+          const: https://localhost:8443
+      - name: If-Match
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^"gm[1-9][0-9]{0,18}"$
+      responses:
+        '200':
+          description: No-store authorized response; no GET credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Member'
+        '400':
+          description: Malformed/ambiguous input
+        '401':
+          description: Browser session required
+        '403':
+          description: Registered account or OWNER/same origin required
+        '404':
+          description: Group/member unavailable
+        '409':
+          description: Conflicting state or request intent; OWNER protected
+        '410':
+          description: Invitation revoked/expired/used by another account
+        '412':
+          description: Stale version
+        '428':
+          description: Current If-Match required
+        '503':
+          description: Authorization/persistence unavailable; retry safely
+  /api/groups/{groupId}/leave:
+    post:
+      summary: 'MEMBER/VIEWER: explicitly leave; old accepted code cannot restore
+        membership'
+      parameters:
+      - name: groupId
+        in: path
+        required: true
+        schema: *id001
+      - name: Origin
+        in: header
+        required: true
+        schema:
+          type: string
+          const: https://localhost:8443
+      - name: If-Match
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^"gm[1-9][0-9]{0,18}"$
+      responses:
+        '200':
+          description: No-store authorized response; no GET credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Member'
+        '400':
+          description: Malformed/ambiguous input
+        '401':
+          description: Browser session required
+        '403':
+          description: Registered account or OWNER/same origin required
+        '404':
+          description: Group/member unavailable
+        '409':
+          description: Conflicting state or request intent; OWNER protected
+        '410':
+          description: Invitation revoked/expired/used by another account
+        '412':
+          description: Stale version
+        '428':
+          description: Current If-Match required
+        '503':
+          description: Authorization/persistence unavailable; retry safely
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: []
+              properties: {}
+  /api/groups/{groupId}/members/{principalId}/revisions:
+    get:
+      summary: 'OWNER: immutable member history'
+      parameters:
+      - name: groupId
+        in: path
+        required: true
+        schema: *id001
+      - name: principalId
+        in: path
+        required: true
+        schema: *id001
+      - name: before
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 10
+      responses:
+        '200':
+          description: No-store authorized response; no GET credentials
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - items
+                - nextBefore
+                properties:
+                  items:
+                    type: array
+                    maxItems: 10
+                    items:
+                      $ref: '#/components/schemas/MemberRevision'
+                  nextBefore:
+                    type:
+                    - integer
+                    - 'null'
+        '400':
+          description: Malformed/ambiguous input
+        '401':
+          description: Browser session required
+        '403':
+          description: Registered account or OWNER/same origin required
+        '404':
+          description: Group/member unavailable
+        '409':
+          description: Conflicting state or request intent; OWNER protected
+        '410':
+          description: Invitation revoked/expired/used by another account
+        '412':
+          description: Stale version
+        '428':
+          description: Current If-Match required
+        '503':
+          description: Authorization/persistence unavailable; retry safely
+  /api/groups/{groupId}/invitations:
+    post:
+      summary: 'OWNER: issue a 24-hour single-use invitation; exact replay retains
+        pending code'
+      parameters:
+      - name: groupId
+        in: path
+        required: true
+        schema: *id001
+      - name: Origin
+        in: header
+        required: true
+        schema:
+          type: string
+          const: https://localhost:8443
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^[0-9a-f]{32}$
+      responses:
+        '200':
+          description: No-store authorized response; no GET credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Issued'
+        '400':
+          description: Malformed/ambiguous input
+        '401':
+          description: Browser session required
+        '403':
+          description: Registered account or OWNER/same origin required
+        '404':
+          description: Group/member unavailable
+        '409':
+          description: Conflicting state or request intent; OWNER protected
+        '410':
+          description: Invitation revoked/expired/used by another account
+        '412':
+          description: Stale version
+        '428':
+          description: Current If-Match required
+        '503':
+          description: Authorization/persistence unavailable; retry safely
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - role
+              properties:
+                role:
+                  enum:
+                  - MEMBER
+                  - VIEWER
+    get:
+      summary: 'OWNER: list invitation metadata; EXPIRED is derived from expiresAt'
+      parameters:
+      - name: groupId
+        in: path
+        required: true
+        schema: *id001
+      - name: after
+        in: query
+        schema: *id001
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      responses:
+        '200':
+          description: No-store authorized response; no GET credentials
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - items
+                - nextAfter
+                properties:
+                  items:
+                    type: array
+                    maxItems: 100
+                    items:
+                      $ref: '#/components/schemas/Invitation'
+                  nextAfter:
+                    type:
+                    - string
+                    - 'null'
+        '400':
+          description: Malformed/ambiguous input
+        '401':
+          description: Browser session required
+        '403':
+          description: Registered account or OWNER/same origin required
+        '404':
+          description: Group/member unavailable
+        '409':
+          description: Conflicting state or request intent; OWNER protected
+        '410':
+          description: Invitation revoked/expired/used by another account
+        '412':
+          description: Stale version
+        '428':
+          description: Current If-Match required
+        '503':
+          description: Authorization/persistence unavailable; retry safely
+  /api/groups/{groupId}/invitations/{invitationId}/revoke:
+    post:
+      summary: 'OWNER: revoke pending/expired invitation'
+      parameters:
+      - name: groupId
+        in: path
+        required: true
+        schema: *id001
+      - name: invitationId
+        in: path
+        required: true
+        schema: *id001
+      - name: Origin
+        in: header
+        required: true
+        schema:
+          type: string
+          const: https://localhost:8443
+      - name: If-Match
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^"gi[1-9][0-9]{0,18}"$
+      responses:
+        '200':
+          description: No-store authorized response; no GET credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invitation'
+        '400':
+          description: Malformed/ambiguous input
+        '401':
+          description: Browser session required
+        '403':
+          description: Registered account or OWNER/same origin required
+        '404':
+          description: Group/member unavailable
+        '409':
+          description: Conflicting state or request intent; OWNER protected
+        '410':
+          description: Invitation revoked/expired/used by another account
+        '412':
+          description: Stale version
+        '428':
+          description: Current If-Match required
+        '503':
+          description: Authorization/persistence unavailable; retry safely
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: []
+              properties: {}
+  /api/groups/{groupId}/invitations/{invitationId}/revisions:
+    get:
+      summary: 'OWNER: immutable invitation history; no codes/hashes'
+      parameters:
+      - name: groupId
+        in: path
+        required: true
+        schema: *id001
+      - name: invitationId
+        in: path
+        required: true
+        schema: *id001
+      - name: before
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 10
+      responses:
+        '200':
+          description: No-store authorized response; no GET credentials
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - items
+                - nextBefore
+                properties:
+                  items:
+                    type: array
+                    maxItems: 10
+                    items:
+                      $ref: '#/components/schemas/InvitationRevision'
+                  nextBefore:
+                    type:
+                    - integer
+                    - 'null'
+        '400':
+          description: Malformed/ambiguous input
+        '401':
+          description: Browser session required
+        '403':
+          description: Registered account or OWNER/same origin required
+        '404':
+          description: Group/member unavailable
+        '409':
+          description: Conflicting state or request intent; OWNER protected
+        '410':
+          description: Invitation revoked/expired/used by another account
+        '412':
+          description: Stale version
+        '428':
+          description: Current If-Match required
+        '503':
+          description: Authorization/persistence unavailable; retry safely
+  /api/group-invitations/accept:
+    post:
+      summary: 'Registered account: explicitly accept code; one winner, current-state
+        replay'
+      parameters:
+      - name: Origin
+        in: header
+        required: true
+        schema:
+          type: string
+          const: https://localhost:8443
+      responses:
+        '200':
+          description: No-store authorized response; no GET credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Member'
+        '400':
+          description: Malformed/ambiguous input
+        '401':
+          description: Browser session required
+        '403':
+          description: Registered account or OWNER/same origin required
+        '404':
+          description: Group/member unavailable
+        '409':
+          description: Conflicting state or request intent; OWNER protected
+        '410':
+          description: Invitation revoked/expired/used by another account
+        '412':
+          description: Stale version
+        '428':
+          description: Current If-Match required
+        '503':
+          description: Authorization/persistence unavailable; retry safely
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - code
+              properties:
+                code:
+                  type: string
+                  pattern: ^[A-Za-z0-9_-]{43}$
+  /api/groups/participating:
+    get:
+      summary: Fresh Space grants and bounded ACTIVE Collaboration configuration;
+        advancing candidate cursor
+      parameters:
+      - name: after
+        in: query
+        schema: *id001
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      responses:
+        '200':
+          description: No-store authorized response; no GET credentials
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - items
+                - nextAfter
+                properties:
+                  items:
+                    type: array
+                    maxItems: 100
+                    items:
+                      $ref: '#/components/schemas/Participation'
+                  nextAfter:
+                    type:
+                    - string
+                    - 'null'
+        '400':
+          description: Malformed/ambiguous input
+        '401':
+          description: Browser session required
+        '403':
+          description: Registered account or OWNER/same origin required
+        '404':
+          description: Group/member unavailable
+        '409':
+          description: Conflicting state or request intent; OWNER protected
+        '410':
+          description: Invitation revoked/expired/used by another account
+        '412':
+          description: Stale version
+        '428':
+          description: Current If-Match required
+        '503':
+          description: Authorization/persistence unavailable; retry safely
+  /api/groups/{groupId}/participation:
+    get:
+      summary: Read active authorized Group configuration and current role
+      parameters:
+      - name: groupId
+        in: path
+        required: true
+        schema: *id001
+      responses:
+        '200':
+          description: No-store authorized response; no GET credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Participation'
+        '400':
+          description: Malformed/ambiguous input
+        '401':
+          description: Browser session required
+        '403':
+          description: Registered account or OWNER/same origin required
+        '404':
+          description: Group/member unavailable
+        '409':
+          description: Conflicting state or request intent; OWNER protected
+        '410':
+          description: Invitation revoked/expired/used by another account
+        '412':
+          description: Stale version
+        '428':
+          description: Current If-Match required
+        '503':
+          description: Authorization/persistence unavailable; retry safely
+components:
+  securitySchemes:
+    browserSession:
+      type: apiKey
+      name: __Host-brain_guest
+      in: cookie
+  schemas:
+    Member:
+      type: object
+      required:
+      - groupId
+      - spaceId
+      - principalId
+      - role
+      - state
+      - version
+      properties:
+        groupId: *id001
+        spaceId: *id001
+        principalId: *id001
+        role:
+          enum:
+          - OWNER
+          - MEMBER
+          - VIEWER
+        state:
+          enum:
+          - ACTIVE
+          - RETIRED
+        version:
+          type: integer
+          minimum: 1
+    Invitation:
+      type: object
+      required:
+      - invitationId
+      - groupId
+      - spaceId
+      - creatorPrincipalId
+      - role
+      - state
+      - version
+      - createdAt
+      - expiresAt
+      - acceptedPrincipalId
+      properties:
+        invitationId: *id001
+        groupId: *id001
+        spaceId: *id001
+        creatorPrincipalId: *id001
+        role:
+          enum:
+          - MEMBER
+          - VIEWER
+        state:
+          enum:
+          - PENDING
+          - ACCEPTED
+          - REVOKED
+          - EXPIRED
+        version:
+          type: integer
+          enum:
+          - 1
+          - 2
+        createdAt:
+          type: string
+          format: date-time
+        expiresAt:
+          type: string
+          format: date-time
+        acceptedPrincipalId:
+          type:
+          - string
+          - 'null'
+          format: uuid
+    Issued:
+      type: object
+      required:
+      - invitation
+      - code
+      properties:
+        invitation:
+          $ref: '#/components/schemas/Invitation'
+        code:
+          type:
+          - string
+          - 'null'
+          description: 256-bit credential returned only by authorized issue POST;
+            null once expired/closed
+          pattern: ^[A-Za-z0-9_-]{43}$
+    GroupConfig:
+      type: object
+      required:
+      - groupId
+      - creatorPrincipalId
+      - title
+      - description
+      - state
+      - spaceId
+      - version
+      - createdAt
+      - updatedAt
+      - visibility
+      properties:
+        groupId:
+          type: string
+          format: uuid
+        creatorPrincipalId:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+        state:
+          enum:
+          - PENDING
+          - ACTIVE
+        spaceId:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        version:
+          type: integer
+          enum:
+          - 1
+          - 2
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        visibility:
+          const: PRIVATE
+    Participation:
+      type: object
+      required:
+      - group
+      - role
+      properties:
+        group:
+          $ref: '#/components/schemas/GroupConfig'
+        role:
+          enum:
+          - OWNER
+          - MEMBER
+          - VIEWER
+    MemberRevision:
+      type: object
+      required:
+      - version
+      - role
+      - state
+      - actorId
+      - occurredAt
+      - reason
+      - invitationId
+      properties:
+        version:
+          type: integer
+          minimum: 1
+        role:
+          type: string
+        state:
+          enum:
+          - ACTIVE
+          - RETIRED
+        actorId: *id001
+        occurredAt:
+          type: string
+          format: date-time
+        reason:
+          enum:
+          - BASELINE
+          - OWNER_CREATED
+          - JOINED
+          - ROLE_CHANGED
+          - REMOVED
+          - LEFT
+        invitationId:
+          type:
+          - string
+          - 'null'
+          format: uuid
+    InvitationRevision:
+      type: object
+      required:
+      - version
+      - state
+      - actorId
+      - occurredAt
+      - acceptedPrincipalId
+      properties:
+        version:
+          type: integer
+          minimum: 1
+        state:
+          enum:
+          - PENDING
+          - ACCEPTED
+          - REVOKED
+        actorId: *id001
+        occurredAt:
+          type: string
+          format: date-time
+        acceptedPrincipalId:
+          type:
+          - string
+          - 'null'
+          format: uuid

@@ -1,0 +1,6 @@
+apiVersion: v2
+name: brain-connect
+description: Debezium Connect workers for service-owned transactional outboxes
+type: application
+version: 0.1.0
+appVersion: "3.7.0.Final"

@@ -1,0 +1,95 @@
+replicaCount: 1
+image:
+  repository: knowledge-brain/collaboration-service
+  tag: ''
+  pullPolicy: Never
+  digest: sha256:a106eb9ebea314df5c8c53a57502cfdf6fa0e2c6daecb8a1e8b841fc8610ac87
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: '1'
+    memory: 768Mi
+env:
+- name: BRAIN_COLLABORATION_PERSISTENCE_ENABLED
+  value: 'true'
+- name: BRAIN_COLLABORATION_API_ENABLED
+  value: 'true'
+- name: BRAIN_COLLABORATION_DATABASE_URL
+  value: jdbc:postgresql://brain-postgres.brain-data.svc:5432/brain_collaboration
+- name: BRAIN_COLLABORATION_DATABASE_PASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: brain-collaboration-db
+      key: password
+- name: BRAIN_COLLABORATION_DATABASE_MAXIMUM_POOL_SIZE
+  value: '3'
+- name: BRAIN_COLLABORATION_SPACE_ORIGIN
+  value: https://space-service.brain-apps.svc:8080
+- name: BRAIN_COLLABORATION_SPACE_TRUST_FILE
+  value: /space-trust/ca.crt
+- name: BRAIN_COLLABORATION_SPACE_AUTHORIZATION_KEY
+  valueFrom:
+    secretKeyRef:
+      name: brain-collaboration-space-authorization
+      key: key
+- name: BRAIN_COLLABORATION_BROWSER_ORIGIN
+  value: https://localhost:8443
+- name: SERVER_SSL_ENABLED
+  value: 'true'
+- name: SERVER_SSL_CERTIFICATE
+  value: file:/api-tls/tls.crt
+- name: SERVER_SSL_CERTIFICATE_PRIVATE_KEY
+  value: file:/api-tls/tls.key
+- name: SERVER_FORWARD_HEADERS_STRATEGY
+  value: NONE
+- name: MANAGEMENT_ENDPOINT_HEALTH_GROUP_READINESS_INCLUDE
+  value: readinessState,groupDatabase
+- name: BRAIN_COLLABORATION_STUDY_ROADMAP_ENABLED
+  value: 'true'
+- name: BRAIN_COLLABORATION_LEARNING_ORIGIN
+  value: https://learning-service.brain-apps.svc:8080
+- name: BRAIN_COLLABORATION_LEARNING_TRUST_FILE
+  value: /space-trust/ca.crt
+- name: BRAIN_COLLABORATION_LEARNING_REFERENCE_KEY
+  valueFrom:
+    secretKeyRef:
+      name: brain-collaboration-learning-reference
+      key: key
+- name: BRAIN_COLLABORATION_SUBMISSION_FILES_ENABLED
+  value: 'true'
+- name: BRAIN_COLLABORATION_MEDIA_ORIGIN
+  value: https://media-service.brain-apps.svc:8080
+- name: BRAIN_COLLABORATION_MEDIA_TRUST_FILE
+  value: /space-trust/ca.crt
+- name: BRAIN_COLLABORATION_MEDIA_AUTHORIZATION_KEY
+  valueFrom:
+    secretKeyRef:
+      name: brain-collaboration-media-authorization
+      key: key
+- name: BRAIN_COLLABORATION_REVIEW_EXPORT_ENABLED
+  value: 'true'
+- name: BRAIN_COLLABORATION_REVIEW_EXPORT_KEY
+  valueFrom:
+    secretKeyRef:
+      name: brain-collaboration-review-export
+      key: key
+probeScheme: HTTPS
+restrictGuestApiIngress: true
+extraVolumeMounts:
+- name: api-tls
+  mountPath: /api-tls
+  readOnly: true
+- name: space-trust
+  mountPath: /space-trust
+  readOnly: true
+extraVolumes:
+- name: api-tls
+  secret:
+    secretName: brain-collaboration-api-tls
+- name: space-trust
+  secret:
+    secretName: brain-guest-api-trust
+deploymentStrategy:
+  type: Recreate

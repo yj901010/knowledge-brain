@@ -1,0 +1,45 @@
+2026-10-07 Asia/Seoul: Daily Note / Content Journal milestone; k3d-knowledge-brain
+
+Content final image knowledge-brain/content-service:local-df446dd2fa0609d6, Helm revision 6.
+Gateway image knowledge-brain/gateway-service:local-186792f8f5e97647, Helm revision 5.
+Gateway implementation unchanged during final missing-timezone Content fix.
+Connect revision 6; content.daily-note.v1 KafkaTopic Ready and private scoped ACLs.
+Linux Kubernetes Maven/JDK25 builds; image imports completed on both k3d nodes.
+
+Final full suite backend-validation-1791369198: 13 service modules, 113 tests,
+zero failures/errors/skips. Actual owning PostgreSQL migrations/transactions,
+concurrent open uniqueness, immutable bindings, all-or-nothing Daily Outbox rollback,
+Clock/timezone midnight and DST rules, missing-timezone MVC 400 regression,
+plus raw Outbox -> Debezium -> mTLS Kafka byte identity, headers and version order.
+
+Contract daily-contract-validation-1791368676 Complete: content/daily-note-events v1,
+FULL validity and FULL_TRANSITIVE compatibility; normalized UTF-8 SHA256
+d90b7403b7117b1c272606cc224481a087d016fc0123bc5782f3f418b53c669d.
+Existing Note, Wiki Link and metadata event contract normalized hashes unchanged.
+
+Final common-origin HTTPS runtime Jobs:
+daily-api-validation-1791369503: Complete
+PASS explicit timezone today without mutation, date validation, Origin/privacy, one concurrent creation, no-overwrite reopen, immutable timezone, date pagination and normal Note links/tags/properties
+PASS Content Pod replacement retains exact Daily date/timezone, Note ID, Markdown, metadata, Journal page and revision history
+PASS retirement hides Daily entry and Journal list, prevents accidental recreation, keeps private revision history, and guest revocation denies all Daily reads
+notes-api-validation-1791369597: Complete
+PASS HTTPS guest identity, private Markdown CRUD setup, cross-Space isolation, Origin, bounds and safe pagination
+PASS If-Match required, stale edit rejected, simultaneous edit has one winner, immutable revision snapshots and pagination
+PASS soft deletion keeps private revisions, hides active reads/list, and guest revocation immediately denies Notes while other browser stays active
+wiki-api-validation-1791369597: Complete
+PASS real Wiki parsing, alias/fragment, code exclusions, pagination, stable rename/edit binding, future-note resolution and unchanged source version
+PASS duplicate-title ambiguity, explicit stable-ID selection, cross-Space privacy and declared read-only Gateway routes
+PASS retired targets never retarget, unlink/source retirement clears backlinks, and revoked guest cannot read link metadata
+metadata-api-validation-1791369597: Complete
+PASS HTTPS typed properties, canonical stable tags, Space privacy, Origin, metadata ETags, validation, schema conflict rollback, pagination and concurrent writers
+PASS clear retains definitions with zero usage; retirement retains private history; revocation fails closed
+
+Daily verifier phase 1 paused while old Content Pod was deleted and fully gone.
+Replacement readiness confirmed explicitly before releasing its restart marker:
+old=content-service-58c74b85c6-jn4v7
+new=content-service-58c74b85c6-bhcqm Ready=True.
+Exact binding/date/timezone, Note identity/body, metadata, Journal summaries and
+revision history survived; reads after retirement and guest revocation stay private.
+All Identity/Space/Content/Gateway deployments Ready 1/1.
+Helm lint passed for Connect and Content; OpenAPI Daily routes and local refs valid.
+No new dependency or frontend, cross-domain Activity consumer/projection added.

@@ -1,0 +1,73 @@
+Private Note Learning Evidence validation, 2026-10-15
+Architecture: Learning owns evidence; Content independently authorizes an active
+same-PRIVATE-PERSONAL-Space Note metadata read. No owner DB access or Markdown copy.
+Pins remain immutable through source edit/retirement, with independent evN
+memo/retires/history and UUIDv7 IDs, strict JSON/queries, fresh Space access,
+same-origin writes, root lock, duplicate pin guard and durable idempotent creates.
+Evidence does not auto-complete progress or change a canonical Roadmap or Note.
+
+{
+  "jobs": {
+    "backend": "backend-validation-1792064724",
+    "learningKafka": "backend-validation-1792064381",
+    "browser": "graph-web-validation-1792064469",
+    "browserFocused": "graph-web-validation-1792064367",
+    "registry": "learning-tracking-contract-validation-1792063933",
+    "cdc": "learning-cdc-bootstrap-1792064260",
+    "connector": "learning-connector-config-1792064435"
+  },
+  "backend": {
+    "tests": 438,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 28
+  },
+  "learningKafka": {
+    "tests": 42,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "browserTests": 34,
+  "focusedBrowserTests": 3,
+  "registeredClaimMarkers": 2,
+  "schemaSha256": "432a3664007de5f39da77d077b745c534147c8dc50be424dab4cd04e56ccce2b",
+  "images": {
+    "content": "knowledge-brain/content-service:local-503e32f0a9f10cbc",
+    "learning": "knowledge-brain/learning-service:local-503e32f0a9f10cbc",
+    "gateway": "knowledge-brain/gateway-service:local-1ac429a23e1ea2fc"
+  },
+  "readyServices": 9,
+  "connectorRunning": true,
+  "ownedBuildResourcesRemoved": true,
+  "hostHttpsVerified": true
+}
+
+Feature browser covers actual owner API validation, foreign Space/node/Note
+denial, changed source version, duplicate key/pin, original-key/current replay,
+source retirement, independent root/progress, immutable 5+3 history, lost committed
+create response and same-key retry, concurrent edit and retirement 412/restart,
+preserved sibling drafts, escaped raw memo, late closed reads, 503 and actual
+identity revoke clearing. Desktop/mobile screenshots inspected; 390px fits.
+Full browser adds two real Keycloak registrations/Space claims with retained
+evidence snapshots/IDs followed by registered writes. No private browser storage.
+
+Real Kafka validation compares exact committed Protobuf bytes and headers,
+stable event IDs, pinned node/Note metadata, actor/Space/trace and three versions.
+Registry FULL/FULL_TRANSITIVE rules and immutable v1 hash verified; Outbox-only
+CDC, ten canonical table read denials and twelve other-owner DB denials verified.
+
+Initial Kafka check encountered a topic ACL rollout race and a previously FAILED
+task during asynchronous restart. ACLs reconciled and the same connector resumed
+from saved WAL offsets; all four Learning streams passed the final 42-test run.
+The readiness script now waits the full bounded restart window.
+Two pre-existing live-data test issues were corrected in test code only: Note
+search fixtures use their own schema so the running projector cannot apply them,
+and Note snapshot fixtures use their own schema so pagination does not scan the
+entire growing local database. Each teardown checks the exact generated schema
+name before dropping only its own fixture. Production projection code unchanged.
+
+No new dependency/dataset or license. Existing image/version pins reused.
+Concept/Media evidence, optional Session associations, timeline, public/group
+learning and ratings/ranking remain follow-up. Central observability deployment
+and exporter wiring are still platform scope; counters/readiness/trace verified.

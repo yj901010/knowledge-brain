@@ -1,0 +1,15 @@
+syntax = "proto3";
+package knowledgebrain.content.metadata.v1;
+option java_package = "io.knowledgebrain.contracts.content.metadata.v1";
+option java_multiple_files = true;
+message MetadataEventEnvelopeV1 {
+ string event_id = 1; string event_type = 2; uint32 event_version = 3;
+ int64 occurred_at_epoch_millis = 4; string producer = 5; string aggregate_type = 6;
+ string aggregate_id = 7; string space_id = 8; string actor_id = 9; string trace_id = 10; bytes payload = 11;
+}
+message MetadataTagV1 {string tag_id=1;string name=2;}
+message MetadataPropertyV1 {string property_id=1;string name=2;string value_type=3;string json_value=4;}
+message NoteMetadataChangedPayloadV1 {
+ string note_id=1;uint64 metadata_version=2;uint64 note_version=3;string note_state=4;
+ repeated MetadataTagV1 tags=5;repeated MetadataPropertyV1 properties=6;string revision_id=7;
+}

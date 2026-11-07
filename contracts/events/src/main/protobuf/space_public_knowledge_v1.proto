@@ -1,0 +1,23 @@
+syntax = "proto3";
+package knowledgebrain.space.publicknowledge.v1;
+option java_package = "io.knowledgebrain.contracts.space.publicknowledge.v1";
+option java_multiple_files = true;
+message EventEnvelopeV1 {
+  string event_id = 1;
+  string event_type = 2;
+  uint32 event_version = 3;
+  int64 occurred_at_epoch_millis = 4;
+  string producer = 5;
+  string aggregate_type = 6;
+  string aggregate_id = 7;
+  string space_id = 8;
+  string actor_id = 9;
+  string trace_id = 10;
+  bytes payload = 11;
+}
+message PublicReviewerChangedPayloadV1 {
+  string space_id = 1;
+  string principal_id = 2;
+  string role = 3;
+  string state = 4;
+}

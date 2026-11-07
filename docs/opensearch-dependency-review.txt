@@ -1,0 +1,22 @@
+OpenSearch dependency review - 2026-10-07
+Chosen release: 3.9.0
+OCI manifest index: sha256:adfa61f85025d06b4aeb562e7e74fde7e31c437039c93c3862c17e9acebd6c7c
+Registry image: opensearchproject/opensearch:3.9.0
+License: Apache-2.0; commercial use and redistribution permitted subject to terms.
+Preserve upstream LICENSE, NOTICE, attribution and applicable third-party notices.
+No OpenSearch source modifications, external medical datasets or Java client library added.
+The official distribution retains its own bundled dependencies/notices. Our chart preserves
+upstream LICENSE/NOTICE in files/upstream-*.txt and pins the original upstream image.
+No image is repackaged or re-published in this change.
+
+Primary sources:
+https://opensearch.org/downloads/
+https://opensearch.org/faq/
+https://raw.githubusercontent.com/opensearch-project/OpenSearch/3.9.0/LICENSE.txt
+https://raw.githubusercontent.com/opensearch-project/OpenSearch/3.9.0/NOTICE.txt
+https://docs.opensearch.org/latest/security/configuration/tls/
+https://docs.opensearch.org/latest/security/authentication-backends/client-auth/
+
+Registry digest checked through Docker Registry manifest API for release 3.9.0.
+Manifest includes linux/amd64 and linux/arm64. Security plugin remains enabled;
+no demonstration credentials/certificates are used by the configured node.

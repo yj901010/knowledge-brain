@@ -1,0 +1,60 @@
+replicaCount: 1
+image:
+  repository: knowledge-brain/identity-service
+  tag: ''
+  pullPolicy: Never
+  digest: sha256:89179cd91e877d92b1150449a229027a303b6fa49d26e3e92629cdaaf55b5754
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: '1'
+    memory: 768Mi
+env:
+- name: BRAIN_IDENTITY_PERSISTENCE_ENABLED
+  value: 'true'
+- name: BRAIN_IDENTITY_API_ENABLED
+  value: 'true'
+- name: BRAIN_IDENTITY_DATABASE_URL
+  value: jdbc:postgresql://brain-postgres.brain-data.svc:5432/brain_identity
+- name: BRAIN_IDENTITY_DATABASE_PASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: brain-identity-db
+      key: password
+- name: BRAIN_IDENTITY_DATABASE_MAXIMUM_POOL_SIZE
+  value: '3'
+- name: BRAIN_IDENTITY_INTROSPECTION_KEY
+  valueFrom:
+    secretKeyRef:
+      name: brain-guest-introspection
+      key: key
+- name: MANAGEMENT_ENDPOINT_HEALTH_GROUP_READINESS_INCLUDE
+  value: readinessState,identityDatabase
+- name: SERVER_SSL_ENABLED
+  value: 'true'
+- name: SERVER_SSL_CERTIFICATE
+  value: file:/api-tls/tls.crt
+- name: SERVER_SSL_CERTIFICATE_PRIVATE_KEY
+  value: file:/api-tls/tls.key
+- name: BRAIN_IDENTITY_BROWSER_ORIGIN
+  value: https://localhost:8443
+- name: BRAIN_IDENTITY_LOGIN_ENABLED
+  value: 'true'
+- name: BRAIN_IDENTITY_LOGIN_PUBLIC_ORIGIN
+  value: https://localhost:8445
+- name: BRAIN_IDENTITY_LOGIN_BACKEND_ORIGIN
+  value: https://brain-keycloak.brain-data.svc:8443
+- name: BRAIN_IDENTITY_LOGIN_TRUST_FILE
+  value: /keycloak-trust/tls.crt
+- name: BRAIN_IDENTITY_LOGIN_CLIENT_SECRET
+  valueFrom:
+    secretKeyRef:
+      name: brain-user-login
+      key: client-secret
+- name: BRAIN_IDENTITY_LOGIN_ENCRYPTION_KEY
+  valueFrom:
+    secretKeyRef:
+      name: brain-user-login
+      key: encryption-key

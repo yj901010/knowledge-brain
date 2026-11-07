@@ -1,0 +1,40 @@
+2026-10-15 Personal Learning progress and study-session validation
+Architecture: AGENTS.md/PROJECT.md Learning ownership, PERSONAL PRIVATE, UUIDv7, no cross-service SQL, local ACID/Outbox and same Kubernetes architecture preserved.
+Full backend reactor: backend-validation-1792061468; tests=428, failures=0, errors=0, skipped=27 (environment-gated infrastructure suites).
+Learning with real broker/CDC: backend-validation-1792061464; 33 tests, 0 failures/errors/skips.
+New coverage: 6 actual PostgreSQL integration tests, 5 controller/HTTP boundary tests, 2 real Kafka tests; previous Roadmap suites retained.
+Kafka: learning.progress.v1 and learning.study-session.v1 exact wire bytes, full versions, stable event IDs, Space/actor IDs and trace/schema headers. Read-only validator publish attempt rejected by actual broker.
+DB: pr0 read/no-op makes no persistent progress; independent prN/ssN/rmN, coherent summary, manual completion only, UTC normalization, stale writes/no-ops, concurrent first progress writes and same-key session retries, strict intervals/text/scope and retained node/root/record lifecycle history.
+Idempotency: same canonical request key produces one record/revision/event; conflicting payload409; replay after edits/retirement returns current known record without mutation.
+History: 8-version progress and sessions 5+3 pages; session catalogue22 records 20+2 pages; immutable captured node title and raw note retained.
+Focused deployed verified-HTTPS browser: graph-web-validation-1792062922, 3 passed.
+Full deployed verified-HTTPS browser --public: graph-web-validation-1792062514, 31 passed.
+Real Keycloak registration/guest-Space claiming twice preserves existing progress and session identities/snapshots; registered principal can mutate the same records.
+UI: explicit progress/session save, lost create response + same-key retry does not duplicate; independent unsaved Note/Roadmap/progress drafts preserved; real 412 inspection/restart; retirement collision clears confirmation; original text rendered without HTML execution; session retirement removes recorded time but keeps manual completion; root and Note canonical versions unchanged.
+Delayed old catalog across close/reopen ignored; 503 clears stale rows; real revoked identity clears private content. Resource404 checks current Space to retain legitimate known lifecycle history.
+Desktop/mobile screenshots inspected, 390px no horizontal overflow; no page JavaScript errors in feature test.
+Final focused browser also runs America/New_York: note-only correction of the second 01:15 EST on fall-back day retains exact original UTC endpoints and 1800-second duration.
+The full31 suite preceded the isolated final DST client correction; all3 Learning feature tests including real New York DST edit were rerun on the final deployed image. Backend API/event code unchanged.
+Full regression uses --public --no-images to keep compact result logs below kubelet rotation limits; new-feature screenshots are captured/verified by the focused run.
+Registry: learning-tracking-contract-validation-1792061361, both v1 contracts VALIDITY FULL and COMPATIBILITY FULL_TRANSITIVE.
+learning_progress_v1.proto: SHA256=ef3bf592594564efa67c9ddd1f3b9f3dddb7f6cc5e6fc7d20943464f013c1113
+learning_study_session_v1.proto: SHA256=98b45509343000736c25510aa59fb5cd814a9f2672de5e9dcdd242a2cf55a90e
+CDC: learning-cdc-bootstrap-1792061459 own Outbox SELECT, 8 canonical table SELECT denials, 12 other DB connection denials; publication only Outbox.
+Connector: learning-connector-config-1792061462 connector/task RUNNING.
+All9 brain-apps Deployments 1/1 Ready after rollout; localhost8443 Graph200 and unauthenticated new learning route401 with verified CA.
+Exact-owned Learning/Gateway builder Pods, Services, NetworkPolicies and owner-referenced source ConfigMaps removed after deployed-image/UID/selector checks. Application data/volumes retained.
+All 1139 local OpenAPI JSON references validated.
+No new dependency versions/libraries, medical data or AI. Learning Micrometer operations, Hikari metrics, own-DB readiness and HTTP->Outbox->Kafka trace propagation present; central platform OpenTelemetry exporter/telemetry collection remains pending.
+Later scope: learning evidence, Activity timeline projections, GROUP/enrollment sharing, public Roadmap review/ranking and final graph visual design.
+
+Final Learning module summaries:
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.416 s -- in io.knowledgebrain.learning.LearningStudyStoreIntegrationTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.009 s -- in io.knowledgebrain.learning.RoadmapGraphTest
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.863 s -- in io.knowledgebrain.learning.RoadmapStoreIntegrationTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.713 s -- in io.knowledgebrain.learning.LearningStudyKafkaIntegrationTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.331 s -- in io.knowledgebrain.learning.LearningStudyApiTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.987 s -- in io.knowledgebrain.learning.RoadmapKafkaIntegrationTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.496 s -- in io.knowledgebrain.learning.ServiceBoundaryTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.054 s -- in io.knowledgebrain.learning.RoadmapApiTest
+[INFO] Tests run: 33, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS

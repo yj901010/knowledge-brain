@@ -1,0 +1,11 @@
+enabled: true
+image: cassandra:4.0.21@sha256:0909b1681015a66782ca3286a371145cbea69f5b293bc4ed976af769730f89fe
+keytoolImage: maven:3.10.0-eclipse-temurin-25@sha256:0396dcd8cd0d46a0d2026449b714b2a5bbe53cce030975b5a41f8ffa3f5f0525
+replicas: 1
+heap: 512M
+newHeap: 128M
+storageSize: 10Gi
+resources:
+  requests: {cpu: 250m, memory: 1Gi}
+  limits: {cpu: '2', memory: 2Gi}
+tlsRevision: ""

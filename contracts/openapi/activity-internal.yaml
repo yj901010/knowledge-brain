@@ -1,0 +1,370 @@
+openapi: 3.1.0
+info:
+  title: Scoped Activity authority and canonical owner recovery
+  version: 1.8.0
+  description: Internal HTTPS only. Independent constant-time owner-specific Bearer
+    keys; browser cookies rejected; empty GET bodies and strict singleton parameters.
+    No Gateway routes. Learning, Planning, Content, Knowledge and Integration each
+    export only their own retained Outbox with a fixed high watermark. Activity captures
+    end offsets across all23 configured Kafka topics before the five scans, then tails
+    from those offsets. Readiness waits for every scan and the durable projection
+    queue. Integration export and Space GitHub authority are specified in github-internal.yaml.
+    No canonical owner database access.
+security:
+- serviceBearer: []
+paths:
+  /internal/space/activity-authorization:
+    post:
+      operationId: authorizePrivateTimeline
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - spaceId
+              - token
+              - action
+              properties:
+                spaceId: &id001
+                  type: string
+                  format: uuid
+                  pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+                token:
+                  type: string
+                  pattern: ^[A-Za-z0-9_-]{43}$
+                action:
+                  const: TIMELINE_READ
+      responses:
+        '200':
+          description: Fresh common principal access to PERSONAL PRIVATE Space
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - spaceId
+                - principalId
+                - action
+                - visibility
+                properties:
+                  spaceId: *id001
+                  principalId: *id001
+                  action:
+                    const: TIMELINE_READ
+                  visibility:
+                    const: PRIVATE
+        '400':
+          description: Invalid action/ID
+        '401':
+          description: Invalid service credential/session
+        '403':
+          description: Browser cookie forbidden
+        '404':
+          description: Private Space unavailable
+        '503':
+          description: Authority unavailable
+  /internal/learning/activity-events:
+    get:
+      operationId: exportRetainedLearningActivityEvents
+      parameters:
+      - name: after
+        in: query
+        schema: *id001
+      - name: through
+        in: query
+        schema: *id001
+      responses:
+        '200':
+          description: At most five rows, ascending event UUID. First page fixes inclusive
+            through high watermark. nextAfter is last emitted ID only if more rows
+            exist. Read-only retained own Outbox. Empty history returns null through/nextAfter.
+            Empty body and singleton parameters only. Capture Kafka end offsets before
+            this scan, then tail from those offsets to cover concurrent writes.
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - through
+                - nextAfter
+                - items
+                properties:
+                  through:
+                    oneOf:
+                    - *id001
+                    - type: 'null'
+                  nextAfter:
+                    oneOf:
+                    - *id001
+                    - type: 'null'
+                  items:
+                    type: array
+                    maxItems: 5
+                    items:
+                      type: object
+                      required:
+                      - eventId
+                      - topic
+                      - payload
+                      properties:
+                        eventId: *id001
+                        topic:
+                          type: string
+                          enum:
+                          - learning.roadmap.v1
+                          - learning.progress.v1
+                          - learning.study-session.v1
+                          - learning.evidence.v1
+                          - learning.concept-evidence.v1
+                          - learning.media-evidence.v1
+                          - learning.evidence-session.v1
+                        payload:
+                          type: string
+                          contentEncoding: base64
+                          description: Exact immutable v1 Protobuf envelope
+        '400':
+          description: Invalid query/body/UUID/range
+        '401':
+          description: Invalid service capability or browser cookie
+        '503':
+          description: Canonical recovery unavailable
+  /internal/planning/activity-events:
+    get:
+      operationId: exportRetainedPlanningActivityEvents
+      parameters:
+      - name: after
+        in: query
+        schema: &id002
+          type: string
+          format: uuid
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+      - name: through
+        in: query
+        schema: *id002
+      responses:
+        '200':
+          description: At most five rows, ascending event UUID. First page fixes inclusive
+            through high watermark. nextAfter is last emitted ID only if more rows
+            exist. Read-only retained own Outbox. Empty history returns null through/nextAfter.
+            Empty body and singleton parameters only. Capture Kafka end offsets before
+            this scan, then tail from those offsets to cover concurrent writes.
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - through
+                - nextAfter
+                - items
+                properties:
+                  through:
+                    oneOf:
+                    - *id002
+                    - type: 'null'
+                  nextAfter:
+                    oneOf:
+                    - *id002
+                    - type: 'null'
+                  items:
+                    type: array
+                    maxItems: 5
+                    items:
+                      type: object
+                      required:
+                      - eventId
+                      - topic
+                      - payload
+                      properties:
+                        eventId: *id002
+                        topic:
+                          type: string
+                          enum:
+                          - planning.goal.v1
+                          - planning.task.v1
+                          - planning.schedule.v1
+                        payload:
+                          type: string
+                          contentEncoding: base64
+                          description: Exact immutable v1 Protobuf envelope
+        '400':
+          description: Invalid query/body/UUID/range
+        '401':
+          description: Invalid service capability or browser cookie
+        '503':
+          description: Canonical recovery unavailable
+  /internal/content/activity-events:
+    get:
+      operationId: readContentActivityEvents
+      parameters:
+      - in: query
+        name: after
+        schema: &id003
+          format: uuid
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+          type: string
+      - in: query
+        name: through
+        schema: *id003
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  items:
+                    items:
+                      properties:
+                        eventId: *id003
+                        payload:
+                          contentEncoding: base64
+                          description: Exact immutable v1 Protobuf envelope
+                          type: string
+                        topic:
+                          enum:
+                          - content.bookmark.v1
+                          - content.question.v1
+                          - content.decision.v1
+                          - content.record-concepts.v1
+                          - content.note.v1
+                          - content.daily-note.v1
+                          - content.note-concepts.v1
+                          - content.note-metadata.v1
+                          - content.note-links.v1
+                          - content.note-attachments.v1
+                          type: string
+                      required:
+                      - eventId
+                      - topic
+                      - payload
+                      type: object
+                    maxItems: 5
+                    type: array
+                  nextAfter:
+                    oneOf:
+                    - *id003
+                    - type: 'null'
+                  through:
+                    oneOf:
+                    - *id003
+                    - type: 'null'
+                required:
+                - through
+                - nextAfter
+                - items
+                type: object
+          description: At most five rows, ascending event UUID. First page fixes inclusive
+            through high watermark. nextAfter is last emitted ID only if more rows
+            exist. Read-only retained own Outbox. Empty history returns null through/nextAfter.
+            Empty body and singleton parameters only. Capture Kafka end offsets before
+            this scan, then tail from those offsets to cover concurrent writes.
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '400':
+          description: Invalid query/body/UUID/range
+        '401':
+          description: Invalid service capability or browser cookie
+        '503':
+          description: Canonical recovery unavailable
+      description: 'Scoped service-only HTTPS export of the original retained immutable
+        Content Outbox envelopes. Ten literal streams: content.bookmark.v1, content.question.v1,
+        content.decision.v1, content.record-concepts.v1, content.note.v1, content.daily-note.v1,
+        content.note-concepts.v1, content.note-metadata.v1, content.note-links.v1,
+        content.note-attachments.v1. Preserves original event IDs, bytes, actors,
+        timestamps, traces and all revisions, including archived parents and empty
+        association snapshots. Independent Content key; no browser cookie, Gateway
+        route or write access. Fixed inclusive event-ID watermark, five rows per page;
+        new Kafka tail is captured before owner backfill. Outbox retention is required;
+        no cleanup is introduced.'
+  /internal/knowledge/activity-events:
+    get:
+      operationId: readKnowledgeClaimActivityEvents
+      parameters:
+      - in: query
+        name: after
+        schema: &id004
+          format: uuid
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+          type: string
+      - in: query
+        name: through
+        schema: *id004
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  items:
+                    items:
+                      properties:
+                        eventId: *id004
+                        payload:
+                          contentEncoding: base64
+                          description: Exact original V1 or V2 Claim Protobuf envelope,
+                            according to topic; no synthetic event or current-row
+                            reconstruction.
+                          type: string
+                        topic:
+                          enum:
+                          - knowledge.claim.v1
+                          - knowledge.claim.v2
+                          type: string
+                      required:
+                      - eventId
+                      - topic
+                      - payload
+                      type: object
+                    maxItems: 5
+                    type: array
+                  nextAfter:
+                    oneOf:
+                    - *id004
+                    - type: 'null'
+                  through:
+                    oneOf:
+                    - *id004
+                    - type: 'null'
+                required:
+                - through
+                - nextAfter
+                - items
+                type: object
+          description: At most five rows, ascending event UUID. First page fixes inclusive
+            through high watermark. nextAfter is last emitted ID only if more rows
+            exist. Read-only retained own Outbox. Empty history returns null through/nextAfter.
+            Empty body and singleton parameters only. Capture Kafka end offsets before
+            this scan, then tail from those offsets to cover concurrent writes.
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '400':
+          description: Invalid query/body/UUID/range
+        '401':
+          description: Invalid service capability or browser cookie
+        '503':
+          description: Canonical recovery unavailable
+      description: Scoped service-only HTTPS export of original retained Knowledge
+        Claim V1 and V2 envelopes, exact event IDs, bytes, actors, timestamps, traces
+        and every revision including retired Claims and Concepts. Independent Knowledge
+        activity key. No browser Cookie, Gateway route or mutation. Fixed inclusive
+        watermark and five rows per page; Activity captures Kafka tail positions before
+        backfill. Knowledge reads only its own retained Outbox; its existing Brain
+        snapshot key cannot authorize this endpoint.
+components:
+  securitySchemes:
+    serviceBearer:
+      type: http
+      scheme: bearer

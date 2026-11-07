@@ -1,0 +1,97 @@
+replicaCount: 1
+image:
+  repository: knowledge-brain/notification-service
+  tag: ''
+  pullPolicy: Never
+  digest: sha256:bf541e59072f3d1a313a1f0d2665ba29aa5c3aefe0f8b78c1a71c6172ee0a0dc
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: '1'
+    memory: 768Mi
+env:
+- name: BRAIN_NOTIFICATION_PERSISTENCE_ENABLED
+  value: 'true'
+- name: BRAIN_NOTIFICATION_API_ENABLED
+  value: 'true'
+- name: BRAIN_NOTIFICATION_CONSUMER_ENABLED
+  value: 'true'
+- name: BRAIN_NOTIFICATION_DATABASE_URL
+  value: jdbc:postgresql://brain-postgres.brain-data.svc:5432/brain_notification
+- name: BRAIN_NOTIFICATION_DATABASE_PASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: brain-notification-db
+      key: password
+- name: BRAIN_NOTIFICATION_DATABASE_MAXIMUM_POOL_SIZE
+  value: '3'
+- name: BRAIN_NOTIFICATION_SPACE_ORIGIN
+  value: https://space-service.brain-apps.svc:8080
+- name: BRAIN_NOTIFICATION_TRUST_FILE
+  value: /space-trust/ca.crt
+- name: BRAIN_NOTIFICATION_SPACE_KEY
+  valueFrom:
+    secretKeyRef:
+      name: brain-notification-space-authorization
+      key: key
+- name: BRAIN_NOTIFICATION_PLANNING_ORIGIN
+  value: https://planning-service.brain-apps.svc:8080
+- name: BRAIN_NOTIFICATION_DISPATCH_EXPORT_KEY
+  valueFrom:
+    secretKeyRef:
+      name: brain-planning-dispatch-export
+      key: key
+- name: BRAIN_NOTIFICATION_KAFKA_BOOTSTRAP_SERVERS
+  value: brain-kafka-kafka-bootstrap.brain-events.svc:9093
+- name: BRAIN_NOTIFICATION_BROWSER_ORIGIN
+  value: https://localhost:8443
+- name: SERVER_SSL_ENABLED
+  value: 'true'
+- name: SERVER_SSL_CERTIFICATE
+  value: file:/api-tls/tls.crt
+- name: SERVER_SSL_CERTIFICATE_PRIVATE_KEY
+  value: file:/api-tls/tls.key
+- name: SERVER_FORWARD_HEADERS_STRATEGY
+  value: NONE
+- name: MANAGEMENT_ENDPOINT_HEALTH_GROUP_READINESS_INCLUDE
+  value: readinessState,notificationDatabase,notificationConsumer,groupReviewConsumer
+- name: BRAIN_NOTIFICATION_GROUP_REVIEW_ENABLED
+  value: 'true'
+- name: BRAIN_NOTIFICATION_COLLABORATION_ORIGIN
+  value: https://collaboration-service.brain-apps.svc:8080
+- name: BRAIN_NOTIFICATION_GROUP_REVIEW_SPACE_KEY
+  valueFrom:
+    secretKeyRef:
+      name: brain-notification-group-authorization
+      key: key
+- name: BRAIN_NOTIFICATION_GROUP_REVIEW_EXPORT_KEY
+  valueFrom:
+    secretKeyRef:
+      name: brain-collaboration-review-export
+      key: key
+probeScheme: HTTPS
+restrictGuestApiIngress: true
+extraVolumeMounts:
+- name: api-tls
+  mountPath: /api-tls
+  readOnly: true
+- name: space-trust
+  mountPath: /space-trust
+  readOnly: true
+- name: notification-kafka
+  mountPath: /notification-kafka
+  readOnly: true
+extraVolumes:
+- name: api-tls
+  secret:
+    secretName: brain-notification-api-tls
+- name: space-trust
+  secret:
+    secretName: brain-guest-api-trust
+- name: notification-kafka
+  secret:
+    secretName: brain-notification-kafka
+deploymentStrategy:
+  type: Recreate

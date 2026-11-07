@@ -1,0 +1,11 @@
+# Measured Grafana13.3: 499m CPU at a500m cap,355Mi near384Mi, repeated probe timeouts/restarts.
+# Resource-only local tuning; existing services, image, credentials and PVC stay the same.
+components:
+  grafana:
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: '1'
+        memory: 768Mi

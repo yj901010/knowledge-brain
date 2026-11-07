@@ -1,0 +1,106 @@
+openapi: 3.1.0
+info:
+  title: Space Learning Authorization
+  version: 1.2.0
+  description: 'Dedicated fixed HTTPS internal API, no browser Gateway route. Cookie
+    headers forbidden. Independent constant-time service key. Identity verifies common
+    opaque browser token; Space supplies current PERSONAL PRIVATE role; no cached
+    permission. PUBLIC roadmap browsing/proposal/review/merge uses the existing public
+    domain catalog and live operator membership; guests browse, registered may propose,
+    designated reviewers may review/merge. ROADMAP_RATING_READ/ROADMAP_RATE require
+    a registered principal; Learning enforces original publisher exclusion and rating
+    ownership. Dedicated GROUP_ROADMAP actions require registered active PRIVATE GROUP
+    membership: OWNER/MEMBER/VIEWER read, OWNER writes. PERSONAL actions never authorize
+    GROUP. Missing/retired membership fails closed.'
+paths:
+  /internal/space/learning-authorization:
+    post:
+      operationId: authorizePersonalLearning
+      security:
+      - serviceKey: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - spaceId
+              - token
+              - action
+              properties:
+                spaceId: &id001
+                  type: string
+                  format: uuid
+                  pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+                token:
+                  type: string
+                  pattern: ^[A-Za-z0-9_-]{43}$
+                action:
+                  enum: &id002
+                  - ROADMAP_READ
+                  - ROADMAP_WRITE
+                  - PUBLIC_ROADMAP_READ
+                  - ROADMAP_PROPOSE
+                  - ROADMAP_REVIEW
+                  - ROADMAP_MERGE
+                  - ROADMAP_RATING_READ
+                  - ROADMAP_RATE
+                  - GROUP_ROADMAP_READ
+                  - GROUP_ROADMAP_WRITE
+                  - GITHUB_EVIDENCE_READ
+                  - GITHUB_EVIDENCE_WRITE
+      responses:
+        '200':
+          description: Current authorized principal, OWNER/ADMIN/EDITOR required for
+            writes
+          headers:
+            Cache-Control: &id003
+              description: Every response is private and must not be cached
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                - spaceId
+                - principalId
+                - action
+                - visibility
+                properties:
+                  spaceId: *id001
+                  principalId: *id001
+                  action:
+                    enum: *id002
+                  visibility:
+                    enum:
+                    - PRIVATE
+                    - PUBLIC
+        '400':
+          description: Invalid check
+          headers:
+            Cache-Control: *id003
+        '401':
+          description: Service key or common identity invalid
+          headers:
+            Cache-Control: *id003
+        '403':
+          description: Writer role insufficient
+          headers:
+            Cache-Control: *id003
+        '404':
+          description: Space kind, visibility, membership or resource unavailable
+          headers:
+            Cache-Control: *id003
+        '503':
+          description: Identity or Space database unavailable
+          headers:
+            Cache-Control: *id003
+components:
+  securitySchemes:
+    serviceKey:
+      type: http
+      scheme: bearer

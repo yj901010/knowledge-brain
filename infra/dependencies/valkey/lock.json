@@ -1,0 +1,32 @@
+{
+  "reviewDate": "2026-11-06",
+  "sources": [
+    {
+      "name": "valkey-java-5.5.0-LICENSE.txt",
+      "url": "https://raw.githubusercontent.com/valkey-io/valkey-java/ddbb69da56520d40e63f728af76b223c50fa1e75/LICENSE",
+      "license": "MIT",
+      "sha256": "15e61c6762b478fc64f323576a19645206391993c016005ce75d8fa6a3a4f415"
+    },
+    {
+      "name": "json-20240303-LICENSE.txt",
+      "url": "https://raw.githubusercontent.com/stleary/JSON-java/20240303/LICENSE",
+      "license": "Public Domain",
+      "sha256": "86cc84f1773e3318ba26fd61b3ae508a167df38b361695e105f6e499e7a2736f"
+    },
+    {
+      "name": "Valkey9.0.7",
+      "url": "https://raw.githubusercontent.com/valkey-io/valkey/9.0.7/COPYING",
+      "license": "BSD-3-Clause (Valkey and inherited Redis notices)",
+      "sha256": "1a53dca3aab7ce048e91e77b03c0342f3075366f9dede8ec4d19d0cf229e12a0",
+      "image": "valkey/valkey:9.0.7-alpine3.24",
+      "index": "sha256:2d04268dfa26ab31cfa3fdc538866e76438b2d00e41db41b8cb86d780ac5a416",
+      "amd64": "sha256:ba88e813493c4c449b0127b571240323ce862c12c98a78ec25da53859bc0a5b1"
+    },
+    {
+      "name": "gson-2.13.2-LICENSE.txt",
+      "url": "https://raw.githubusercontent.com/google/gson/gson-parent-2.13.2/LICENSE",
+      "license": "Apache-2.0",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    }
+  ]
+}

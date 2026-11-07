@@ -1,0 +1,16 @@
+2026-10-07 local k3d-knowledge-brain
+Headlamp app/chart 0.45.0, Helm release brain-headlamp revision 2, namespace brain-ops.
+headlamp-validation-1791373998 Complete.
+PASS HTTPS Headlamp HTML served with the local CA
+PASS frontend JavaScript assets served from the same trusted HTTPS origin
+PASS authenticated Headlamp proxy lists two nodes, application Pods/deployments, metrics and Pod logs without printing resource contents
+PASS Secret read, create/patch/delete, Pod exec and service-account token issuance are denied; backend account has no cluster-admin binding
+Host localhost TCP connection and in-app browser both timed out despite an active foreground listener and granted network permission. User-terminal forward required; no browser-login success is claimed.
+Ready Pod: brain-headlamp-5cb596fb49-xt82m
+Image: ghcr.io/headlamp-k8s/headlamp:v0.45.0@sha256:db3f0e0fc58d358d41daa3fe7fc852437552c7ee873c3645470f7b86a8e0db49
+Chart SHA-256: 38c619e0ed5db4164b02c353bcbb24e8157c1d98d961b292f99d68cc9316b8eb
+No backend workload ClusterRoleBinding; viewer uses view + brain-headlamp-observer.
+Headlamp temporary extracted assets measured ~32.4 MiB; bounded temporary volume increased from 32 MiB to 128 MiB before acceptance.
+Login tokens are short-lived (requested 1 hour), not stored in a Secret or repository file.
+Foreground loopback listener launched, but tool-session host reachability failed; stopped it before handing off user-terminal Start-LocalHeadlamp.ps1.
+No application service image, event contract, database or domain data was changed.

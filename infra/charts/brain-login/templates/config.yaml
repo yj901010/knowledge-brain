@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: brain-login-proxy
+data:
+  nginx.conf: |
+    worker_processes 1;
+    pid /tmp/nginx.pid;
+    error_log /dev/stderr warn;
+    events { worker_connections 256; }
+    http {
+      access_log off;
+      client_body_temp_path /tmp/client;
+      proxy_temp_path /tmp/proxy;
+      fastcgi_temp_path /tmp/fastcgi;
+      uwsgi_temp_path /tmp/uwsgi;
+      scgi_temp_path /tmp/scgi;
+      client_max_body_size 64k;
+      server {
+        listen 8443 ssl;
+        server_name {{ required "publicHost required" .Values.publicHost }};
+        ssl_certificate /tls/tls.crt;
+        ssl_certificate_key /tls/tls.key;
+        ssl_protocols TLSv1.2 TLSv1.3;
+        location = /healthz { return 200 'ready'; }
+        location ~ ^/(realms/brain-users/|resources/) {
+          proxy_pass https://{{ .Values.backendHost }}:8443;
+          proxy_ssl_verify on;
+          proxy_ssl_trusted_certificate /trust/tls.crt;
+          proxy_ssl_server_name on;
+          proxy_ssl_name {{ .Values.backendHost }};
+          proxy_set_header Host {{ .Values.backendHost }}:8443;
+          proxy_set_header Authorization '';
+          proxy_set_header Forwarded '';
+          proxy_set_header X-Forwarded-Host '';
+          proxy_set_header X-Forwarded-Proto '';
+          proxy_set_header X-Forwarded-For '';
+          proxy_connect_timeout 3s;
+          proxy_read_timeout 15s;
+          proxy_send_timeout 15s;
+          proxy_redirect off;
+        }
+        location / { return 404; }
+      }
+    }

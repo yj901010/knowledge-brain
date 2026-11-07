@@ -1,0 +1,204 @@
+openapi: 3.1.0
+info:
+  title: Internal Content Note Snapshot API
+  version: 1.0.0
+servers:
+- url: https://content-service.brain-apps.svc:8080
+security:
+- snapshotCredential: []
+paths:
+  /internal/content/note-snapshots:
+    get:
+      operationId: listCanonicalNoteSnapshots
+      description: Restricted service credential over HTTPS. Cookies are forbidden.
+        Keyset pages include PRIVATE ACTIVE notes and RETIRED tombstones with empty
+        title and markdown. Capture Kafka positions before the first page and replay
+        the concurrent tail after scanning; this is not a point-in-time database snapshot.
+        Never expose through Gateway.
+      parameters:
+      - name: after
+        in: query
+        schema:
+          type: string
+          format: uuid
+        description: Previous nextAfter UUIDv7; requires through.
+      - name: through
+        in: query
+        schema:
+          type: string
+          format: uuid
+        description: Fixed inclusive upper UUIDv7 returned by the first page.
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 5
+          default: 5
+      responses:
+        '200':
+          description: No-store bounded canonical page
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - through
+                - nextAfter
+                - items
+                properties:
+                  through:
+                    type:
+                    - string
+                    - 'null'
+                    format: uuid
+                  nextAfter:
+                    type:
+                    - string
+                    - 'null'
+                    format: uuid
+                  items:
+                    type: array
+                    maxItems: 5
+                    items:
+                      type: object
+                      required:
+                      - noteId
+                      - spaceId
+                      - revisionId
+                      - version
+                      - visibility
+                      - state
+                      - title
+                      - markdown
+                      properties:
+                        noteId:
+                          type: string
+                          format: uuid
+                        spaceId:
+                          type: string
+                          format: uuid
+                        revisionId:
+                          type: string
+                          format: uuid
+                        version:
+                          type: integer
+                          minimum: 1
+                          format: int64
+                        visibility:
+                          type: string
+                          const: PRIVATE
+                        state:
+                          type: string
+                          enum:
+                          - ACTIVE
+                          - RETIRED
+                        title:
+                          type: string
+                          maxLength: 200
+                        markdown:
+                          type: string
+                          description: At most 32768 UTF-8 bytes; empty for RETIRED.
+        '400':
+          description: Invalid query or HTTPS required
+        '401':
+          description: Missing or invalid service credential
+        '403':
+          description: Browser cookie forbidden
+        '500':
+          description: Canonical storage or revision unavailable; no usable snapshot
+  /internal/content/note-link-snapshots:
+    get:
+      operationId: listCanonicalNoteLinkSnapshots
+      description: Restricted operator credential over HTTPS; cookies forbidden. Canonical
+        latest link revisions, including empty retired-source links. Use the same
+        fixed through bound as note snapshots and replay both content.note.v1 and
+        content.note-links.v1 Kafka tails captured before scanning. Never expose through
+        Gateway.
+      parameters:
+      - name: after
+        in: query
+        schema:
+          type: string
+          format: uuid
+        description: Previous nextAfter UUIDv7; requires through.
+      - name: through
+        in: query
+        schema:
+          type: string
+          format: uuid
+        description: Fixed inclusive upper UUIDv7 returned by the first page.
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 5
+          default: 5
+      responses:
+        '200':
+          description: No-store bounded canonical page
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - through
+                - nextAfter
+                - items
+                properties:
+                  through:
+                    type:
+                    - string
+                    - 'null'
+                    format: uuid
+                  nextAfter:
+                    type:
+                    - string
+                    - 'null'
+                    format: uuid
+                  items:
+                    type: array
+                    maxItems: 5
+                    items:
+                      type: object
+                      required:
+                      - noteId
+                      - spaceId
+                      - revisionId
+                      - linkVersion
+                      - payloadBase64
+                      properties:
+                        noteId:
+                          type: string
+                          format: uuid
+                        spaceId:
+                          type: string
+                          format: uuid
+                        revisionId:
+                          type: string
+                          format: uuid
+                        linkVersion:
+                          type: integer
+                          minimum: 1
+                          format: int64
+                        payloadBase64:
+                          type: string
+                          contentEncoding: base64
+                          description: Exact canonical NoteLinksChangedPayload Protobuf
+                            bytes.
+        '400':
+          description: Invalid query or HTTPS required
+        '401':
+          description: Missing or invalid service credential
+        '403':
+          description: Browser cookie forbidden
+        '500':
+          description: Canonical storage or revision unavailable; no usable snapshot
+components:
+  securitySchemes:
+    snapshotCredential:
+      type: http
+      scheme: bearer
+      description: Separate operator credential scoped to canonical search and graph
+        rebuild; absent from live Query consumers.

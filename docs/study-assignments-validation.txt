@@ -1,0 +1,17 @@
+Study Assignment validation — 2026-10-23
+
+collaboration: 63 passed, no failures/errors/skips; backend-validation-1792759128391763200-5e5e9eda
+gateway: 92 passed, no failures/errors/skips; backend-validation-1792759357265406200-42651c64
+Browser: six actual-account Group scenarios passed; graph-web-validation-1792759577548844900
+Assignment UI verified committed creation reply-loss recovery, literal title/instructions, OWNER edit/open/close/archive, immutable history, 412 stale/missing 428/wrong-domain ETag, independent Study version, wrong Study scope and parent archive freeze.
+Current MEMBER/VIEWER reads and denied writes, guest denial, removed-member access/cache clearing and private-note isolation passed with real Keycloak accounts. Mobile overflow, page errors and empty browser storage checks passed.
+Existing Group creation, membership/invitation/role/leave, Group roadmap, Study lifecycle and reference roadmap scenarios passed together.
+Database integration covers exact original intent after child/parent archive and restart, no-op events, lifecycle, scoped pagination, concurrent retry/edit one winner, parent archive race and full snapshot/revision/Outbox rollback.
+Actual Debezium/Connect Kafka delivery matched five new Assignment Outbox snapshots byte for byte, stable event IDs, aggregate key and trace/schema headers. Unacknowledged replay matched again. Future consumers must deduplicate eventId and apply increasing versions; no new downstream projector is introduced.
+Assignment V4 has only Collaboration-local Study and Assignment foreign keys. Space authorization stays remote and fresh; no cross-service SQL, personal sharing, distributed transaction or direct application Kafka producer.
+Registry collaboration/assignment-events/1 is immutable with SHA256 cfedcdd987723d053bacdcb014aaedb6902360254f3f4a745b663737e46a2e30, FULL validity/FULL_TRANSITIVE compatibility. Topic and scoped producer/reader ACLs were Ready before canonical writes.
+Live literal Kafka ACLs permit only Connect writes and Group validator reads. CDC cannot SELECT Assignment/current revision or Study/current revision tables; Outbox remains readable. Existing nine connector/tasks RUNNING; no offsets/slot/publication reset.
+OpenAPI: 62 documents and 1643 references resolve; new path parameter declarations exactly match templates. Next/TypeScript static build passed.
+Both exact Collaboration/Gateway images imported on both k3d nodes and rolled out. Own-module and shared event source bytes matched staged build archives. Two owned temporary builder resource sets removed; unrelated service image tags unchanged.
+All 13 application Deployments Ready; trusted host HTTPS /graph and /graph/groups 200 with no-store/CSP. Collaboration schema V4.
+No applied migration or published Protobuf rewrite, new dependency/dataset, AI, deadline, submission/grading, member learning completion or automatic private-content sharing.

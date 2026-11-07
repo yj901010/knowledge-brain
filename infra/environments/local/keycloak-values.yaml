@@ -1,0 +1,5 @@
+replicas: 1
+hostname: https://brain-keycloak.brain-data.svc:8443
+resources:
+  requests: {cpu: 100m, memory: 768Mi}
+  limits: {cpu: "1", memory: 1536Mi}

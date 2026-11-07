@@ -1,0 +1,19 @@
+# Group shared roadmap links
+
+Registered active Group OWNER explicitly inspects and attaches the current reviewed public roadmap version. Active OWNER, MEMBER and VIEWER can read the pinned graph and its link history. Space owns live membership authorization; Learning owns links, snapshots, revisions and events in its own database. Collaboration Group configuration ownership is unchanged. The destination is a PRIVATE GROUP Space. Existing PERSONAL learning APIs still reject GROUP.
+
+POST `/api/spaces/{spaceId}/group-roadmaps` accepts only sourceSpaceId, sourceRoadmapId and sourceVersion. It freshly authorizes the Group write and public read with the same principal. It never reads personal roadmap, progress, evidence, session or attachment tables. Public source root locking serializes merge/attach and duplicate attaches. First stale version returns 409; exact repeated requests return the existing link, even after public updates or retirement. A newer source version requires another explicit link. Public graph node IDs remain source IDs; a link is not an editable personal adoption.
+
+GET catalog is bounded UUID keyset pagination (default20/max100), including retired links; detail and descending history (default5/max10) reauthorize every request. DELETE uses strong If-Match `"grN"`; stale412, missing428. It retires rather than deletes, keeps the pinned graph and audit trail, and never automatically restores. Owner transfer, shared progress, personal-to-Group sharing and roadmap editing are outside this slice. Fresh authorization precedes each local transaction; revocation races follow existing request authorization semantics, with no distributed transaction.
+
+Learning migration V10 adds only Learning-owned FKs to reviewed public roadmap and revision tables. Link mutation + immutable revision + Protobuf Outbox commit together. The existing Learning CDC connector publishes raw bytes to `learning.group-roadmap.v1` with Registry artifact `learning/group-roadmap-events/1`. Events contain the full pinned public graph, Group Space ID, stable eventId, link version, actor and trace. Consumers must deduplicate eventId and reject non-increasing link versions. Private Group event topics require explicit consumer ACLs; no public Group listing is added.
+
+The Group page supports public domain/catalog pagination, graph preview, explicit checkbox, attachment retry, Group catalog/detail/history and owner retirement. Components keep data only in memory and abort/clear on unmount or hidden tab; refresh rechecks current membership. Exact HTTPS Origin is required for writes; API errors never trust browser-supplied roles or actors. UI remains a functional prototype pending the agreed graph design phase.
+
+## Local verification
+
+Prepare the new Registry contract with `scripts/Run-GroupRoadmapContractValidation.py`. Upgrade the existing Connect chart with base/local values and wait for the topic and producer/validator KafkaUsers to be Ready before running canonical writers. Reuse the existing Learning connector, slot, publication and offsets.
+
+Run `scripts/Run-BackendValidation.py --learning --learning-kafka`, and separate `--space` and `--gateway` runs. `scripts/Run-GraphWebValidation.py --group-roadmaps --group-membership` exercises the deployed Group creation, membership and roadmap flows with actual Keycloak registrations. `scripts/Verify-GroupRoadmapCdcIsolation.sh` is a read-only database permission check inside the local cluster using the existing Learning CDC credential.
+
+Build the Gateway through `scripts/Build-LocalSpaceImage.py --service gateway` so the pinned TypeScript/Next export and CSP hashes are included. Build Space and Learning separately, import each image on both nodes and use the existing service chart with base/local values. No new service credential or dependency is needed. Evidence is recorded in `docs/group-roadmaps-validation.txt` and `.local/group-roadmaps-validation.json`.

@@ -1,0 +1,76 @@
+apiVersion: v1
+kind: Service
+metadata: {name: brain-kafka-kafka-exporter, namespace: brain-events}
+spec:
+  selector: {strimzi.io/name: brain-kafka-kafka-exporter}
+  ports: [{name: metrics, port: 9404, targetPort: 9404}]
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata: {name: brain-observability-observer}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata: {name: brain-observability-observer}
+rules:
+- apiGroups: ['']
+  resources: [pods, persistentvolumeclaims]
+  verbs: [get, list]
+- apiGroups: [apps]
+  resources: [deployments, statefulsets]
+  verbs: [get, list]
+{{- range $namespace := list "brain-apps" "brain-data" "brain-events" "brain-ops" "brain-observability" }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata: {name: brain-observability-observer, namespace: {{ $namespace }}}
+roleRef: {apiGroup: rbac.authorization.k8s.io, kind: ClusterRole, name: brain-observability-observer}
+subjects: [{kind: ServiceAccount, name: brain-observability-observer, namespace: brain-observability}]
+{{- end }}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: {name: brain-observability-private}
+spec:
+  podSelector: {}
+  policyTypes: [Ingress]
+  ingress:
+  - from:
+    - podSelector: {matchLabels: {brain-observability: 'true'}}
+    - podSelector: {matchLabels: {brain-observability-validation: 'true'}}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: {name: brain-otel-ingest}
+spec:
+  podSelector: {matchLabels: {app: brain-otel-collector}}
+  policyTypes: [Ingress]
+  ingress:
+  - from:
+    - namespaceSelector: {matchLabels: {kubernetes.io/metadata.name: brain-apps}}
+      podSelector: {matchLabels: {brain-telemetry: 'true'}}
+    ports: [{protocol: TCP, port: 4318}]
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: {name: brain-connect-observer, namespace: brain-events}
+spec:
+  podSelector: {matchLabels: {app: brain-connect}}
+  policyTypes: [Ingress]
+  ingress:
+  - from:
+    - namespaceSelector: {matchLabels: {kubernetes.io/metadata.name: brain-observability}}
+      podSelector: {matchLabels: {app: brain-platform-observer}}
+    ports: [{protocol: TCP, port: 8083}]
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: {name: brain-kafka-metrics-observer, namespace: brain-events}
+spec:
+  podSelector: {matchLabels: {strimzi.io/name: brain-kafka-kafka-exporter}}
+  policyTypes: [Ingress]
+  ingress:
+  - from:
+    - namespaceSelector: {matchLabels: {kubernetes.io/metadata.name: brain-observability}}
+      podSelector: {matchLabels: {app: brain-prometheus}}
+    ports: [{protocol: TCP, port: 9404}]

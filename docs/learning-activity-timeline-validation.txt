@@ -1,0 +1,153 @@
+Learning Activity timeline validation, 2026-10-15
+
+Private timeline is deployed as the independent Activity service with its own
+PostgreSQL durable Inbox and ClickHouse derived query table. Seven existing
+Learning Protobuf v1 contracts are unchanged; no new domain event or canonical
+owner was introduced. Source facts remain owned by Learning.
+
+{
+  "jobs": {
+    "backend": "backend-validation-1792072614",
+    "activityFinal": "backend-validation-1792072911",
+    "learningKafka": "backend-validation-1792073536",
+    "browser": "graph-web-validation-1792073646",
+    "focusedBrowser": "graph-web-validation-1792073092",
+    "registry": "learning-tracking-contract-validation-1792073018",
+    "storage": "activity-storage-bootstrap-1792073504",
+    "databaseIsolation": "brain-postgres-isolation-test"
+  },
+  "backend": {
+    "tests": 497,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 31
+  },
+  "activityFinal": {
+    "tests": 16,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "learningKafka": {
+    "tests": 77,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "browserTests": 46,
+  "focusedBrowserTests": 3,
+  "schemaHashes": {
+    "association": "1e210a4b741051d23b1e560384c6b9adfde008ccc91b28594495c846fec034a7",
+    "media": "570c5ed12f35a119b9bda059c98a2fea913e19cf329adaa964b96de97f1bbc52",
+    "note": "432a3664007de5f39da77d077b745c534147c8dc50be424dab4cd04e56ccce2b",
+    "concept": "defd2827328024b6fee71e56a3a40c650f335f0359d03dcf62ef0d6a2b31ef04",
+    "progress": "ef3bf592594564efa67c9ddd1f3b9f3dddb7f6cc5e6fc7d20943464f013c1113",
+    "study": "98b45509343000736c25510aa59fb5cd814a9f2672de5e9dcdd242a2cf55a90e",
+    "roadmap": "a2c1db67ceded3c5c965b92797b2caa0e7224aeb71386e71899d2edd4db5e1a9"
+  },
+  "allSevenImmutableContractsUnchanged": true,
+  "openapiReferences": 1199,
+  "newOperations": [
+    "readPrivateLearningActivity",
+    "authorizePrivateTimeline",
+    "exportRetainedLearningActivityEvents"
+  ],
+  "images": {
+    "space": "knowledge-brain/space-service:local-39c48fa29194883a",
+    "learning": "knowledge-brain/learning-service:local-1afa11d5bd4df88e",
+    "activity": "knowledge-brain/activity-service:local-a6c43661d5a55348",
+    "gateway": "knowledge-brain/gateway-service:local-0f40c440185c28a7"
+  },
+  "readyDeployments": 10,
+  "exactSevenTopicReadOnlyAcls": true,
+  "postgresOwnerLogins": 13,
+  "postgresOtherDatabaseDenials": 156,
+  "replayRows": 7388,
+  "recovery": {
+    "spaceId": "01a13fe6-cd8e-7f77-9394-80d3889246b8",
+    "roadmapId": "01a13fe6-daf7-7eed-adf6-ca6de129b292",
+    "eventIds": [
+      "01a13fe6-f36a-75f5-82c1-902386bc4c74",
+      "01a13fe6-eb48-7533-9de7-3efb5d977456",
+      "01a13fe6-e321-7f5f-b986-b97608664e64",
+      "01a13fe6-daf8-7a1b-bd5c-757b2d94eef9"
+    ],
+    "replayJob": "activity-timeline-replay-1792073473",
+    "observedRecovery503": true,
+    "identicalPageAfterReplay": true,
+    "canonicalFactsUnchanged": true,
+    "clickhouseOldPodUid": "ba877312-12e2-4e3a-9b97-d0304b44a4c9",
+    "clickhouseNewPodUid": "b775004a-0a77-4a2f-a07a-e80b6e34bf2d",
+    "persistentVolumeUid": "6d1af554-f485-40f6-8651-3e88b28bcea1",
+    "clickhouseRestartPreservedPage": true,
+    "activityRestartPreservedPage": true
+  },
+  "replayHasSeparateServiceSelectorAndMinimalCapabilities": true,
+  "clickhouseReady": true,
+  "clickhouseTlsAndReaderProjectorBoundariesVerified": true,
+  "learningConnectorRunning": true,
+  "ownedBuilderSetsRemoved": 5,
+  "hostGatewayAndMinioHttpsVerified": true,
+  "lightLoadMemoryMiB": {
+    "clickhouse": 223,
+    "activity": 235
+  },
+  "memoryObservationIsBenchmark": false
+}
+
+The full 497-test reactor had zero failures/errors and 31 environment-gated
+storage/Kafka skips. The final 16 Activity tests ran with actual own PostgreSQL,
+verified ClickHouse HTTPS and scoped seven-topic Kafka TLS, with zero skips.
+The final 77 Learning tests ran with actual PostgreSQL/Kafka, with zero skips.
+Other unchanged storage/Kafka integrations retain their previously recorded
+validation; no claim is made that all 31 skips were rerun in this step.
+
+Activity checks cover all seven wire contracts and trusted metadata, malformed
+producer/actor/Space/aggregate/revision/state/version, duplicate bytes and conflicting
+IDs/source versions, durable staged/applied state, pause/replay readiness, actual
+ClickHouse batch replay/FINAL dedup, equal-time lexical UUID keyset order, scoped
+filters, 23/25-hour DST dates, cursor filter/Space binding, fresh authority per
+page, no-store and empty strict GET boundaries. Gateway routes expose only the
+exact timeline GET, while service-only export/authority routes remain denied.
+
+Learning canonical export has a fixed UUID high watermark, strict narrow capability,
+five-row pagination over retained own Outbox, exact Protobuf envelopes and no
+browser cookie. Space supports live common guest/registered principals and visible
+private viewers under a dedicated read-only Activity action. Database isolation
+checks include all 13 owner logins and all 156 cross-owner CONNECT denials.
+
+All 46 deployed browser tests passed, including the three new timeline scenarios:
+seven actual Learning streams, 24-event keyset paging, date/type filters, foreign
+Space denial, original fact/version invariance, escaped historical metadata,
+retired canonical source lookup, independent unsaved Note draft, 390px fit,
+late closed-panel replies, 503 recovery and actual revoked-session clearing.
+Existing Note/Concept/Claim/Source/Media/Journal/graph/search/learning/contribution
+and guest-to-registered flows passed in the same final regression run.
+
+The operator replay rebuilt 7,388 retained rows while real Learning Kafka tests
+could create new events. A synthetic private fixture retained exactly the same
+four activity IDs, row contents, Roadmap/progress/session/summary after replay,
+ClickHouse StatefulSet restart with the same PVC UID, and Activity/Kafka process
+restart. Recovery 503 was observed. The replay Pod has a separate selector and
+only the projector/trust mounts plus required database/export secret env; it does
+not enter the Activity API Service. No PVC, table, source fact, broker offset,
+CDC slot or topic was deleted/reset. Retention-gap detection is unit-tested;
+no destructive broker-retention fault was induced.
+
+The first startup exposed slow one-row inserts over approximately 7,300 historical
+events. Projection/replay now use bounded 100-row inserts and transactional batch
+marks; the final batch path was retested against actual ClickHouse. The reported
+223 MiB ClickHouse / 235 MiB Activity observations are local light-load samples,
+not capacity, latency, HA or production benchmark claims. Persistent storage and
+the anonymous/reader/projector TLS privilege boundaries were verified.
+
+TypeScript, pinned Next export, local OpenAPI references, all unchanged Learning
+schema hashes/Registry rules, 10 Ready deployments and the running Learning CDC
+connector were checked. Five exact owned builder Pod/Service/NetworkPolicy/source
+sets were removed after source-owner UID, selector, successful init and deployed
+image verification. The live host HTTPS Gateway and MinIO forwards remain usable.
+
+Remaining scope is documented in learning-activity-timeline.md: this is Learning
+activity only, with eventual updates and save/change chronology. Other domain
+activity, central observability deployment/dashboards and production scaling are
+separate work. No frontend redesign or AI feature is included.

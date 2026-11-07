@@ -1,0 +1,33 @@
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaUser
+metadata:
+  name: brain-network-projector
+  namespace: brain-events
+  labels: {strimzi.io/cluster: brain-kafka}
+spec:
+  authentication: {type: tls}
+  authorization:
+    type: simple
+    acls:
+    - resource: {type: topic, name: content.note.v1, patternType: literal}
+      operations: [Read, Describe]
+    - resource: {type: topic, name: content.note-links.v1, patternType: literal}
+      operations: [Read, Describe]
+    - resource: {type: topic, name: content.note-concepts.v1, patternType: literal}
+      operations: [Read, Describe]
+    - resource: {type: topic, name: knowledge.concept.v1, patternType: literal}
+      operations: [Read, Describe]
+    - resource: {type: topic, name: knowledge.claim.v1, patternType: literal}
+      operations: [Read, Describe]
+    - resource: {type: topic, name: knowledge.claim.v2, patternType: literal}
+      operations: [Read, Describe]
+    - resource: {type: topic, name: content.bookmark.v1, patternType: literal}
+      operations: [Read, Describe]
+    - resource: {type: topic, name: content.question.v1, patternType: literal}
+      operations: [Read, Describe]
+    - resource: {type: topic, name: content.decision.v1, patternType: literal}
+      operations: [Read, Describe]
+    - resource: {type: topic, name: content.record-concepts.v1, patternType: literal}
+      operations: [Read, Describe]
+    - resource: {type: group, name: brain-query-network-v1, patternType: literal}
+      operations: [Read, Describe]

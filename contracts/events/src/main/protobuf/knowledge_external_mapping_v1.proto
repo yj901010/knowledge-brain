@@ -1,0 +1,49 @@
+syntax = "proto3";
+package knowledgebrain.knowledge.mapping.v1;
+option java_package = "io.knowledgebrain.contracts.knowledge.mapping.v1";
+option java_multiple_files = true;
+
+// Independently published as knowledge/external-mapping-events version 1.
+// Existing Concept, Alias, Claim and Source event versions remain immutable.
+message EventEnvelopeV1 {
+  string event_id = 1;
+  string event_type = 2;
+  uint32 event_version = 3;
+  int64 occurred_at_epoch_millis = 4;
+  string producer = 5;
+  string aggregate_type = 6;
+  string aggregate_id = 7;
+  string space_id = 8;
+  string actor_id = 9;
+  string trace_id = 10;
+  bytes payload = 11;
+}
+
+// Complete PRIVATE candidate snapshot; Concept/Source pins retain original meaning.
+// Empty system_version means unknown edition; empty source_url means null.
+// This event neither verifies a Claim nor confirms an official external mapping.
+// Deduplicate event_id and order mapping_id/version; existing event schemas are unchanged.
+message ExternalMappingChangedPayloadV1 {
+  string mapping_id = 1;
+  string concept_id = 2;
+  string concept_revision_id = 3;
+  uint64 concept_version = 4;
+  string concept_title = 5;
+  string concept_description = 6;
+  string system = 7;
+  string code = 8;
+  string system_version = 9;
+  string label = 10;
+  string source_id = 11;
+  string source_revision_id = 12;
+  uint64 source_version = 13;
+  string source_title = 14;
+  string source_url = 15;
+  string source_citation = 16;
+  string source_license_note = 17;
+  string revision_id = 18;
+  uint64 version = 19;
+  string state = 20;
+  string visibility = 21;
+  string mapping_state = 22;
+}

@@ -1,0 +1,17 @@
+Note retirement UI validation - 2026-10-09
+AGENTS.md and PROJECT.md read before implementation. Existing Content RETIRED lifecycle, UUIDv7, local ACID/outbox, Space authority and event-driven read-model boundaries preserved.
+No backend source, API/schema/event, migration or new dependency change.
+Next.js production compile, TypeScript and static export passed; inline-script CSP hashes and publisher license notices retained.
+Static build Job: graph-static-build-1791540717775487000.
+Gateway image: knowledge-brain/gateway-service:local-eea09313410a8901.
+Both node import Jobs complete: gateway-image-import-1791540785-0 and gateway-image-import-1791540785-1.
+Initial deployed full browser Job graph-web-validation-1791540828: 11 passed (1.7m), including editor/Markdown/attachment/graph/Journal/Wiki/library/metadata/search/public and retirement.
+Retirement exercises real Content DELETE, 412 concurrency, explicit latest/re-acknowledgement, cancelled confirmation without writes, 503 no false success, RETIRED v3 plus original v1/v2 history, stable Wiki target marked TARGET_RETIRED, canonical list/Journal exclusion, real graph/search projection convergence, immutable retired Daily binding, foreign 404, Note-switch reset, mobile width and revoked session clearing.
+Trusted local CA used, without TLS bypass. Temporary designated reviewer revoked by runner.
+Visual QA found generic editor input selector forcing confirmation checkbox to full width. Corrected with a scoped 16px checkbox rule; added browser geometry assertion. Final build/deployment and focused revalidation follow below.
+Final static build graph-static-build-1791541002476140700: production compile/TypeScript/export passed.
+Final imports gateway-image-import-1791541072-0 and gateway-image-import-1791541073-1: both complete.
+Final deployed Gateway Ready=1: knowledge-brain/gateway-service:local-fc98a1d419739861.
+Final focused browser Job graph-web-validation-1791541098: 1 passed (9.1s), including checkbox width <=20px and all retirement workflows. Only scoped checkbox CSS changed after the 11-scenario full pass.
+Final retirement.png and retirement-mobile.png visually inspected: checkbox/text/buttons readable, confirmation width correct, no page horizontal overflow at 390px; existing inspector scroll behavior retained.
+Owned builders gateway-image-build-1791540758 and gateway-image-build-1791541045 Pods/Services/ConfigMaps/NetworkPolicies removed after final deployment Ready. Persistent application/user resources retained.

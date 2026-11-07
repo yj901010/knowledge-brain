@@ -1,0 +1,6 @@
+package io.knowledgebrain.collaboration;
+import java.util.*;import org.junit.jupiter.api.*;import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;import static org.junit.jupiter.api.Assertions.*;
+@EnabledIfEnvironmentVariable(named="BRAIN_TEST_COLLABORATION_DATABASE_URL",matches=".+")
+class CourseSharingContextIntegrationTest {
+ @Test void batchIntersectsSpaceActiveMembersWithCurrentLocalEnrollment(){var f=new CourseEnrollmentStoreIntegrationTest();f.setup();var en=f.change(0,"ENROLLED");var a=new GroupSpaceClient.Sharing(f.f.owner,f.group,f.space,"OWNER",1,3,true,"OWNER",List.of(new GroupSpaceClient.Member(f.participant,2),new GroupSpaceClient.Member(f.f.ids.next(),1)));var first=f.store.sharingContext(f.course,a);assertEquals(1,first.eligibleParticipants().size());assertEquals(en.enrollmentId(),first.eligibleParticipants().getFirst().enrollmentId());assertEquals(2,first.eligibleParticipants().getFirst().membershipVersion());f.change(1,"WITHDRAWN");assertTrue(f.store.sharingContext(f.course,a).eligibleParticipants().isEmpty());f.change(2,"ENROLLED");assertEquals(3,f.store.sharingContext(f.course,a).eligibleParticipants().getFirst().enrollmentVersion());var removed=new GroupSpaceClient.Sharing(f.f.owner,f.group,f.space,"OWNER",1,3,true,"OWNER",List.of());assertTrue(f.store.sharingContext(f.course,removed).eligibleParticipants().isEmpty());}
+}

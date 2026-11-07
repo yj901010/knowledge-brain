@@ -1,0 +1,63 @@
+openapi: 3.1.0
+info:
+  title: Knowledge reference authority
+  version: 1.1.0
+paths:
+  /internal/knowledge/concept-check:
+    post:
+      description: Scoped Content credential plus common guest/registered session token;
+        spaceId is the PRIVATE destination Note Space. Fresh Space CONCEPT_READ is
+        required there. Accepts ACTIVE same-Space PRIVATE Concepts or canonical PUBLIC
+        Concepts with fresh PUBLIC_CONCEPT_READ for each distinct public catalog Space.
+        Every authorization must resolve the same principal. Foreign private, retired,
+        unknown and unmerged proposal-only IDs are unavailable. Returns only validated
+        IDs in original order; no text is copied. Never routed by Gateway.
+      security:
+      - serviceKey: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - spaceId
+              - token
+              - conceptIds
+              properties:
+                spaceId: &id001
+                  type: string
+                  format: uuid
+                  pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+                token:
+                  type: string
+                  pattern: ^[A-Za-z0-9_-]{43}$
+                conceptIds:
+                  type: array
+                  maxItems: 20
+                  uniqueItems: true
+                  items: *id001
+      responses:
+        '200':
+          description: IDs only, no-store
+          content:
+            application/json:
+              schema:
+                type: array
+                maxItems: 20
+                items: *id001
+        '401':
+          description: Invalid service/session credential
+        '400':
+          description: Malformed UUIDv7, duplicate IDs or batch over 20
+        '403':
+          description: Principal lacks destination or public Space permission
+        '404':
+          description: Space/Concept unavailable
+        '503':
+          description: Authority/storage unavailable
+components:
+  securitySchemes:
+    serviceKey:
+      type: http
+      scheme: bearer

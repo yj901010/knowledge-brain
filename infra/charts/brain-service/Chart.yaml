@@ -1,0 +1,6 @@
+apiVersion: v2
+name: brain-service
+description: Deploy one independently built Knowledge/Brain service.
+type: application
+version: 0.1.0
+appVersion: "0.1.0"

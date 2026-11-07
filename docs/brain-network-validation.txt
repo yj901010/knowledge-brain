@@ -1,0 +1,28 @@
+Knowledge/Brain private integrated network validation
+Date: 2026-10-14 KST
+AGENTS.md/PROJECT.md checked: ownership, event contracts, privacy and service boundaries unchanged.
+No dependency/dataset addition; no Git initialization, commit or push.
+
+PASS backend-validation-1791982507: 369/393 executed; 24 environment-specific optional skips; zero failures/errors
+PASS backend-validation-1791983650: 52/52 executed; 0 environment-specific optional skips; zero failures/errors
+PASS backend-validation-1791984021: 163/169 executed; 6 environment-specific optional skips; zero failures/errors
+PASS graph-web-validation-1791984292: full 25-test browser suite, including public designated-reviewer workflow and registered/guest Note reference behavior.
+PASS actual network: five Kafka streams, 28 typed nodes/all five edge roles, body/description/triple search, 20+5 filtered pages, bounded/foreign requests rejected, canonical read/editor with draft preservation, rename fan-out without Claim revision changes, retirement hiding graph/search, 503 recovery and ignored late read, real revocation, 390px fit, verified HTTPS, no private browser storage or JS/CSP errors.
+PASS canonical operator recovery brain-network-rebuild-1791982525: typed graph/fixed index isolated reset, 26,439 canonical snapshots staged from owner APIs, five captured Kafka tails and durable queue drained/checkpointed; old Note stores preserved.
+PASS concurrent-source proof brain-network-recovery-proof-1791983128: rename/new Note/retirement after source scan reflected after recovery; canonical Note/reference/Claim history unchanged.
+PASS bounded bulk storage and retry: one graph transaction per batch, checked fixed-index bulk response IDs/status, same-version conflicts, older/duplicate writes, whole local-marker rollback after external failure and idempotent retry.
+PASS brain-network-feed-validation-1791984818: current Content/Knowledge feed five kinds, bounded Protobuf pages/no-store; wrong key, Cookie, duplicate/oversized query and GET body denied.
+PASS host https://localhost:8443/graph with local CA verification and CSP.
+PASS eight brain-apps Deployments Ready 1/1.
+brain-login nginx:1.28.3-alpine@sha256:a8b39bd9cf0f83869a2162827a0caf6137ddf759d50a171451b335cecc87d236
+brain-query-service knowledge-brain/brain-query-service:local-050a3dd96eda5bce
+content-service knowledge-brain/content-service:local-bbcc1fc94b41e815
+gateway-service knowledge-brain/gateway-service:local-7318fe348fbe398d
+identity-service knowledge-brain/identity-service:local-d55abb435d1b95ec
+knowledge-service knowledge-brain/knowledge-service:local-8ce2bf3b44107209
+media-service knowledge-brain/media-service:local-6ddaf0af077315cf
+space-service knowledge-brain/space-service:local-bbcc1fc94b41e815
+
+Limits: PERSONAL/PRIVATE and Concept-object/DRAFT Claims only; public Concept references omitted from this network. Circular functional SVG; the agreed later force-directed dark redesign remains planned. Search result window 1,000; graph 200 nodes/1,000 selected-endpoint edges. Eventual projection delay is explicit.
+Micrometer event/request/failure counters and private-safe event_id/trace_id logs are instrumented. Central OpenTelemetry/metrics export remains separate platform work.
+PASS eight current/superseded owned build Pods, Services, NetworkPolicies and Pod-owned source ConfigMaps verified absent; application Deployments/PVCs preserved.

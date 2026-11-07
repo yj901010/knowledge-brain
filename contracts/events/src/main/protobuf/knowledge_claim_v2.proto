@@ -1,0 +1,40 @@
+syntax = "proto3";
+package knowledgebrain.knowledge.claim.v2;
+option java_package = "io.knowledgebrain.contracts.knowledge.claim.v2";
+option java_multiple_files = true;
+
+// Independently published as knowledge/claim-events-v2 version 1 (event version 2).
+// Existing Concept and Alias event versions remain immutable.
+message EventEnvelopeV2 {
+  string event_id = 1;
+  string event_type = 2;
+  uint32 event_version = 3;
+  int64 occurred_at_epoch_millis = 4;
+  string producer = 5;
+  string aggregate_type = 6;
+  string aggregate_id = 7;
+  string space_id = 8;
+  string actor_id = 9;
+  string trace_id = 10;
+  bytes payload = 11;
+}
+
+// Complete PRIVATE DRAFT Claim revision snapshot. Subject is immutable.
+// Objects are CONCEPT IDs or STRING/NUMBER/DATE/BOOLEAN canonical text.
+// Consumers deduplicate event_id and order snapshots by claim_id/version.
+// Visibility requires each actual same-Space Concept reference to remain ACTIVE.
+// Concept retirement does not mutate Claim state/version or emit ClaimRetired.
+// Literal values are exact canonical text. Inapplicable Concept IDs are empty.
+message ClaimChangedPayloadV2 {
+  string claim_id = 1;
+  string subject_concept_id = 2;
+  string predicate_concept_id = 3;
+  string object_type = 4;
+  string object_concept_id = 5;
+  string revision_id = 6;
+  uint64 version = 7;
+  string state = 8;
+  string visibility = 9;
+  string verification_state = 10;
+  string object_value = 11;
+}

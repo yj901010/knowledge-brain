@@ -1,0 +1,9 @@
+replicas: 2
+image: nginx:1.28.3-alpine@sha256:a8b39bd9cf0f83869a2162827a0caf6137ddf759d50a171451b335cecc87d236
+publicHost: ''
+backendHost: brain-keycloak.brain-data.svc
+tlsSecret: brain-login-tls
+backendTrustConfigMap: brain-user-login-trust
+resources:
+  requests: {cpu: 25m, memory: 32Mi}
+  limits: {cpu: 250m, memory: 96Mi}

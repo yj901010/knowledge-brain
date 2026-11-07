@@ -1,0 +1,42 @@
+# Private Planning goals
+
+Planning Service now owns private Personal Space goals, their immutable revisions and Transactional Outbox. This activates the existing planned service/DB boundary; it does not move Learning, Content, Identity or Space ownership. It reuses current Java 25/Spring/JDBC/Flyway/Protobuf/Kafka/Next dependencies and container pins, without a new dependency version, dataset or AI feature.
+
+## User flow
+
+Graph page → **개인 목표 열기** → **새 목표 작성**. Enter a title, plain-text description, manual progress status and optional target date. Browse current goals by status, load older UUID pages, edit a selected goal, inspect versions, or explicitly confirm retirement. **목표 보관 상태 → 폐기된 목표** rediscovers retired goals and their preserved history after reopening the page.
+
+Progress is NOT_STARTED / IN_PROGRESS / COMPLETED, separate from ACTIVE / RETIRED lifecycle. Completion, reopening and date clearing are explicit user edits. A completed Goal remains active until retired. A target date is literal Gregorian YYYY-MM-DD, year 0001..9999, with no timezone/instant conversion, overdue automation, recurrence, reminder or automatic Learning progress/session change. Null means no date. Task-to-Goal linking is available through the separate [Task API/UI](private-tasks.md); Goal status/version remain independent.
+
+Text is escaped and preserves whitespace; no automatic remote fetch or Markdown execution. Goal forms and selected history are separate from Note/Roadmap/Learning editors. A 412 keeps the original draft, fetches latest only on request, and requires an explicit restart from latest. Retirement is a separate acknowledgement step, reset after conflicts. Errors preserve write drafts; unavailable catalogs clear stale rows and allow retry. Closing/filter/scope changes cancel reads and discard late replies. A live 401/403 or missing private Space clears private surfaces. No private data or request key is stored in browser local/session storage.
+
+## API and data
+
+See [private Goal API](../contracts/openapi/private-goals.yaml) and [Space capability](../contracts/openapi/space-planning-authorization.yaml). `GET/POST /api/spaces/{spaceId}/goals`, `GET/PUT/DELETE …/{goalId}`, and `GET …/{goalId}/revisions` are the only Goal browser routes. HTTPS, no-store, strict singleton query, empty GET/DELETE body, exact same-origin writes and fresh Space permission checks use the existing common guest/registered credential. Views are PERSONAL/PRIVATE only. Domain objects, actors, revisions and events use UUIDv7. Gateway forwards only the declared Goal routes and bounded bodies/headers.
+
+Input has exactly title, description, status and nullable targetDate. Title is nonblank, at most 200 Unicode codepoints / 800 UTF-8 bytes; description is at most 32768 UTF-8 bytes with CR/LF/tab allowed. Unknown/duplicate JSON fields, trailing input, server-owned IDs/state/actor and invalid calendar dates are rejected. Strong `"glN"` ETags are independent of other domains. Writes check the expected version before no-op comparison, so a stale unchanged PUT still fails 412. A current no-op creates no revision or event.
+
+Create requires one unpredictable 32-lowercase-hex `Idempotency-Key`. A unique (space_id, request_key) plus SHA-256 of the validated four-field intent handles concurrency and lost responses. First create returns 201; identical retry returns 200 with the **original v1 snapshot and gl1**, even after later changes/retirement or guest-to-account Space claim. Different intent for the same key is 409. Original revision/actor/event stay unchanged. After a lost response, the open form freezes inputs and retries the same key. Closing/reloading does not persist a pending form; inspect the catalog before starting a different creation intent. GET reads the current Goal separately.
+
+Planning-owned PostgreSQL tables are goal, goal_revision and outbox_event; Flyway migrations are local to brain_planning. V1 creates the tables; V2 repairs any legacy JDBC hybrid-calendar date mismatch using the latest immutable Goal revision, without changing IDs, versions, revision bytes or existing events. The current JDBC 4.2 path binds and reads LocalDate directly, preserving literal Gregorian dates including 1582-10-10 and years 0001/9999 across database timezones. Goal creation/update/retirement, immutable revision and exact Protobuf event commit or roll back together. Own-row locking serializes writers; no cross-owner SQL, join, foreign key or distributed transaction is used. Goal→revision is an owner-local FK. Catalog is a current view, not a snapshot across concurrent changes: refresh starts from the beginning and UI resets cursors on filters. History is descending immutable version pagination. Retired Goal GET/writes return 404 while private archived discovery and known history remain available.
+
+## Events and deployment
+
+Planning transaction → Outbox → planning_outbox publication → Debezium planning-outbox connector → **planning.goal.v1**. Producer is planning-service; aggregate Goal; event types GoalCreated / GoalUpdated / GoalRetired. Registry group planning / artifact goal-events / immutable version 1 has FULL validity and FULL_TRANSITIVE compatibility. The complete private revision payload has empty target_date for no date. Required event/Space/actor/trace IDs are carried in the standard envelope; Kafka key is the Goal ID and exact Outbox bytes/schema/trace headers are validated. At-least-once delivery remains the contract; future consumers must deduplicate by stable event ID. Learning event v1 contracts and its existing activity projection are unchanged. Goal changes now join the **활동** timeline; see [Planning activity](planning-activity-timeline.md).
+
+Local rollout order (existing k3d-knowledge-brain context only):
+
+1. `python scripts/Provision-LocalPlanning.py`: create/reuse dedicated Planning API TLS and Space capability, copy only Planning's own DB credential. Values are not printed. Renewed subPath TLS secrets need a workload rollout.
+2. `python scripts/Run-GoalContractValidation.py`: inspect the named authenticated Registry Job.
+3. Build/import/install Space then Planning with the existing Build-LocalSpaceImage.py / Import-LocalSpaceImage.py and Install-LocalRoadmaps.py `--space-only` / `--planning-only --helm <helm.exe>`. Wait for imports on both nodes and Ready.
+4. `python scripts/Provision-PlanningCdc.py`: inspect its named Job. The dedicated non-superuser replication role has only own DB CONNECT/schema USAGE/Outbox SELECT; both Goal canonical tables and 12 other owner DBs are denied. Publication is restricted to public.outbox_event; existing unexpected publication scope is refused.
+5. Helm upgrade brain-connect from infra/charts/brain-connect with the local connect values. This adds the Planning credential file, exact topic configuration and producer ACL, without replacing old connectors/slots/offsets. Wait for Connect and the new Kafka user/topic Ready. `python scripts/Provision-PlanningValidationClient.py` copies the dedicated read-only TLS verifier credential with the broker CA.
+6. `python scripts/Run-PlanningConnectorConfiguration.py`: configure only planning-outbox; inspect its named Job and connector/task RUNNING.
+7. Build/import/install Gateway `--gateway`, then reconnect the local HTTPS forward with Start-LocalGateway.ps1. Refresh /graph to load **개인 목표 열기**.
+
+Planning remains an independently deployed service with TLS, restrictive ingress, nonroot/read-only filesystem, virtual threads, own DB pool metrics and database readiness. Source availability depends on its canonical DB; Kafka/Connect outages do not replace the local atomic Outbox or require a distributed write. Local replicas/resources are configuration. The service preserves HTTP→Outbox→Kafka trace IDs and bounded operation metrics; central OpenTelemetry/Prometheus/Loki/Tempo/Grafana deployment/export dashboards remain platform work, not a completed stack claim.
+
+Validation: [private-goals-validation.txt](private-goals-validation.txt). Public Goal publishing, scheduling and notifications remain separate scope. Task links are managed through the Task API; Goal inputs remain unchanged.
+
+
+Planning Goal/Task/Schedule events now join the [unified private activity timeline](planning-activity-timeline.md); this extends the earlier Learning-only scope without changing canonical ownership or existing event versions. The panel is now **활동 열기**.

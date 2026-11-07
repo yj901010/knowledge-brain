@@ -1,0 +1,533 @@
+openapi: 3.1.0
+info:
+  title: Private Concept External Mappings
+  version: 1.1.0
+  description: Manual private candidate references with pinned Concept and Source
+    revisions. Fresh CONCEPT_READ/WRITE Space authority; common guest/registered application
+    session. No download, import, license determination or official confirmation.
+    system/code/edition are trimmed case-sensitive identifiers. Empty edition means
+    unknown, never latest. Updating Concept/Source does not repin existing mappings.
+    A write explicitly supplies inspected versions of both. Retired Source pins remain
+    readable, but cannot be selected for new writes. Retired parent blocks active
+    reads/writes; known mapping history remains accessible. Independent xm ETags,
+    strict JSON and 16384-byte body bound. Duplicate active system/code/edition per
+    Concept returns 409. Existing verification and public review are unchanged.
+paths:
+  /api/spaces/{spaceId}/concepts/{conceptId}/external-mappings:
+    parameters:
+    - name: spaceId
+      in: path
+      required: true
+      schema: &id001
+        type: string
+        format: uuid
+        pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+    - name: conceptId
+      in: path
+      required: true
+      schema: *id001
+    get:
+      operationId: listExternalMappings
+      description: >-
+        Default ACTIVE requires an ACTIVE PRIVATE parent. Explicit state=RETIRED
+        lists only directly retired PRIVATE CANDIDATE mappings under a known
+        same-Space PRIVATE Concept, including retired parents and Sources.
+        Returns immutable Concept/Source pins and exact system/code/edition.
+        No restore, repin, publication, confirmation or external lookup occurs.
+        UUIDv7 ascending order and exclusive after cursor; only after, limit and
+        state are accepted once each. Unknown, public or foreign parent is 404.
+      responses:
+        '200':
+          description: Success; private no-store response
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Page'
+        '400':
+          description: Invalid UUID, exact JSON, value, query or strong ETag
+        '401':
+          description: Session unavailable
+        '403':
+          description: Space or origin denied
+        '404':
+          description: Private Concept, Source or mapping unavailable
+        '409':
+          description: Duplicate external identifier and edition, or version overflow
+        '412':
+          description: Mapping, inspected Concept or Source version changed.
+        '413':
+          description: Body exceeds 16384 bytes
+        '415':
+          description: JSON required
+        '428':
+          description: If-Match required
+      parameters:
+      - name: state
+        in: query
+        schema:
+          type: string
+          enum: [ACTIVE, RETIRED]
+          default: ACTIVE
+      - in: query
+        name: limit
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      - in: query
+        name: after
+        schema: *id001
+    post:
+      operationId: createExternalMapping
+      responses:
+        '201':
+          description: Success; private no-store response
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"xm[1-9][0-9]*"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Mapping'
+        '400':
+          description: Invalid UUID, exact JSON, value, query or strong ETag
+        '401':
+          description: Session unavailable
+        '403':
+          description: Space or origin denied
+        '404':
+          description: Private Concept, Source or mapping unavailable
+        '409':
+          description: Duplicate external identifier and edition, or version overflow
+        '412':
+          description: Mapping, inspected Concept or Source version changed.
+        '413':
+          description: Body exceeds 16384 bytes
+        '415':
+          description: JSON required
+        '428':
+          description: If-Match required
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Edit'
+      parameters:
+      - in: header
+        name: Origin
+        required: true
+        schema:
+          type: string
+        description: Configured browser origin; Sec-Fetch-Site, when present, must
+          be same-origin.
+  /api/spaces/{spaceId}/concepts/{conceptId}/external-mappings/{mappingId}:
+    parameters:
+    - name: spaceId
+      in: path
+      required: true
+      schema: *id001
+    - name: conceptId
+      in: path
+      required: true
+      schema: *id001
+    - name: mappingId
+      in: path
+      required: true
+      schema: *id001
+    get:
+      operationId: getExternalMapping
+      responses:
+        '200':
+          description: Success; private no-store response
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"xm[1-9][0-9]*"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Mapping'
+        '400':
+          description: Invalid UUID, exact JSON, value, query or strong ETag
+        '401':
+          description: Session unavailable
+        '403':
+          description: Space or origin denied
+        '404':
+          description: Private Concept, Source or mapping unavailable
+        '409':
+          description: Duplicate external identifier and edition, or version overflow
+        '412':
+          description: Mapping, inspected Concept or Source version changed.
+        '413':
+          description: Body exceeds 16384 bytes
+        '415':
+          description: JSON required
+        '428':
+          description: If-Match required
+    put:
+      operationId: updateExternalMapping
+      responses:
+        '200':
+          description: Success; private no-store response
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"xm[1-9][0-9]*"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Mapping'
+        '400':
+          description: Invalid UUID, exact JSON, value, query or strong ETag
+        '401':
+          description: Session unavailable
+        '403':
+          description: Space or origin denied
+        '404':
+          description: Private Concept, Source or mapping unavailable
+        '409':
+          description: Duplicate external identifier and edition, or version overflow
+        '412':
+          description: Mapping, inspected Concept or Source version changed.
+        '413':
+          description: Body exceeds 16384 bytes
+        '415':
+          description: JSON required
+        '428':
+          description: If-Match required
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Edit'
+      parameters:
+      - in: header
+        name: If-Match
+        required: true
+        schema:
+          type: string
+          pattern: ^"xm[1-9][0-9]*"$
+      - in: header
+        name: Origin
+        required: true
+        schema:
+          type: string
+        description: Configured browser origin; Sec-Fetch-Site, when present, must
+          be same-origin.
+    delete:
+      operationId: retireExternalMapping
+      responses:
+        '204':
+          description: Success; private no-store response
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"xm[1-9][0-9]*"$
+        '400':
+          description: Invalid UUID, exact JSON, value, query or strong ETag
+        '401':
+          description: Session unavailable
+        '403':
+          description: Space or origin denied
+        '404':
+          description: Private Concept, Source or mapping unavailable
+        '409':
+          description: Duplicate external identifier and edition, or version overflow
+        '412':
+          description: Mapping, inspected Concept or Source version changed.
+        '413':
+          description: Body exceeds 16384 bytes
+        '415':
+          description: JSON required
+        '428':
+          description: If-Match required
+      parameters:
+      - in: header
+        name: If-Match
+        required: true
+        schema:
+          type: string
+          pattern: ^"xm[1-9][0-9]*"$
+      - in: header
+        name: Origin
+        required: true
+        schema:
+          type: string
+        description: Configured browser origin; Sec-Fetch-Site, when present, must
+          be same-origin.
+  /api/spaces/{spaceId}/concepts/{conceptId}/external-mappings/{mappingId}/revisions:
+    parameters:
+    - name: spaceId
+      in: path
+      required: true
+      schema: *id001
+    - name: conceptId
+      in: path
+      required: true
+      schema: *id001
+    - name: mappingId
+      in: path
+      required: true
+      schema: *id001
+    get:
+      operationId: listExternalMappingRevisions
+      responses:
+        '200':
+          description: Success; private no-store response
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                type: array
+                maxItems: 10
+                items:
+                  $ref: '#/components/schemas/Revision'
+        '400':
+          description: Invalid UUID, exact JSON, value, query or strong ETag
+        '401':
+          description: Session unavailable
+        '403':
+          description: Space or origin denied
+        '404':
+          description: Private Concept, Source or mapping unavailable
+        '409':
+          description: Duplicate external identifier and edition, or version overflow
+        '412':
+          description: Mapping, inspected Concept or Source version changed.
+        '413':
+          description: Body exceeds 16384 bytes
+        '415':
+          description: JSON required
+        '428':
+          description: If-Match required
+      parameters:
+      - in: query
+        name: limit
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 5
+      - in: query
+        name: before
+        schema:
+          type: integer
+          format: int64
+          minimum: 1
+security:
+- guestSession: []
+components:
+  schemas:
+    Edit:
+      type: object
+      additionalProperties: false
+      required:
+      - system
+      - code
+      - systemVersion
+      - label
+      - sourceId
+      - sourceVersion
+      - conceptVersion
+      properties:
+        system: &id004
+          type: string
+          maxLength: 100
+          minLength: 1
+        code: &id005
+          type: string
+          maxLength: 200
+          minLength: 1
+        systemVersion: &id006
+          type: string
+          maxLength: 100
+        label: &id007
+          type: string
+          maxLength: 200
+        sourceId: &id003
+          type: string
+          format: uuid
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+        sourceVersion: &id002
+          type: integer
+          format: int64
+          minimum: 1
+        conceptVersion: *id002
+    ConceptSnapshot:
+      type: object
+      additionalProperties: false
+      required:
+      - revisionId
+      - version
+      - title
+      - description
+      properties:
+        revisionId: *id003
+        version: *id002
+        title:
+          type: string
+          maxLength: 200
+          minLength: 1
+        description:
+          type: string
+          description: Original canonical Concept description, at most 32768 UTF-8
+            bytes.
+    SourceSnapshot:
+      type: object
+      additionalProperties: false
+      required:
+      - sourceId
+      - revisionId
+      - version
+      - title
+      - url
+      - citation
+      - licenseNote
+      properties:
+        sourceId: *id003
+        revisionId: *id003
+        version: *id002
+        title:
+          type: string
+          maxLength: 200
+          minLength: 1
+        url:
+          type:
+          - string
+          - 'null'
+          maxLength: 2048
+        citation:
+          type: string
+          maxLength: 4000
+        licenseNote:
+          type: string
+          maxLength: 1000
+    Mapping:
+      type: object
+      additionalProperties: false
+      required:
+      - mappingId
+      - spaceId
+      - conceptId
+      - concept
+      - system
+      - code
+      - systemVersion
+      - label
+      - source
+      - mappingState
+      - visibility
+      - state
+      - version
+      - createdAt
+      - updatedAt
+      properties:
+        mappingId: *id003
+        spaceId: *id003
+        conceptId: *id003
+        concept: &id009
+          $ref: '#/components/schemas/ConceptSnapshot'
+        system: *id004
+        code: *id005
+        systemVersion: *id006
+        label: *id007
+        source: &id010
+          $ref: '#/components/schemas/SourceSnapshot'
+        mappingState: &id011
+          const: CANDIDATE
+        visibility:
+          const: PRIVATE
+        state:
+          enum:
+          - ACTIVE
+          - RETIRED
+        version: *id002
+        createdAt: &id008
+          type: string
+          format: date-time
+        updatedAt: *id008
+    Revision:
+      type: object
+      additionalProperties: false
+      required:
+      - revisionId
+      - mappingId
+      - version
+      - state
+      - concept
+      - system
+      - code
+      - systemVersion
+      - label
+      - source
+      - mappingState
+      - actorId
+      - occurredAt
+      properties:
+        revisionId: *id003
+        mappingId: *id003
+        version: *id002
+        state:
+          enum:
+          - ACTIVE
+          - RETIRED
+        concept: *id009
+        system: *id004
+        code: *id005
+        systemVersion: *id006
+        label: *id007
+        source: *id010
+        mappingState: *id011
+        actorId: *id003
+        occurredAt: *id008
+    Page:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - nextAfter
+      properties:
+        items:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/Mapping'
+        nextAfter:
+          anyOf:
+          - *id003
+          - type: 'null'
+  securitySchemes:
+    guestSession:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest
+      description: Common opaque application session for guest and Keycloak-linked
+        registered principals.

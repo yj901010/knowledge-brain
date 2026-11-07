@@ -1,0 +1,127 @@
+Central observability bundle — verified 2026-11-01 (KST)
+
+Authority and preserved architecture
+- AGENTS.md/PROJECT.md reviewed before implementation; this implements the existing
+  prescribed observability stack, with no conflict requiring a new architecture.
+- Source context: k3d-knowledge-brain; source kube-system UID:
+  ee84ca44-bb83-4712-a572-10169a6e2542.
+-13 MSA boundaries/per-owner DBs, private defaults, REST, Protobuf/Registry,
+  Outbox/Connect-only domain publication and idempotent projections preserved.
+- No domain API/event schema/database migration, AI or external dataset added.
+
+Deployment
+-13 Java services instrumented sequentially with agent2.33.1, HTTP/protobuf mTLS,
+ 10% parent-based trace sampling, bounded queues and15s metrics export.
+- All service Deployment UIDs preserved; separate login release remains Ready.
+-7 Ready monitoring Deployments: Collector, Prometheus, Alertmanager, Loki, Tempo,
+  Grafana, metadata-only observer. Strimzi Kafka exporter Ready.
+- Grafana HTTPS8446;18 provisioned dashboard panels,7 valid Prometheus alert rules.
+- Kafka/Connect schemas/offsets/slots/topics were not reset or recreated.
+- New Gateway image knowledge-brain/gateway-service:local-8767662d9c93aa9f;
+  other12 images remain local-410fab42e0d2bab3.
+- Gateway source archive SHA256:
+  30b106161772ee73f1481f4e6cc46705fa9048e264f2ac0de8ec135e6d731eea.
+- Gateway image archive SHA256:
+  8d379bcdbc97ebfc8e431f2c7bae688ab09ee683106fa991dbfe691bf6370edc.
+- Build/init success, source-map ownership, two node import successes and their
+  immutable identities captured before deleting only the owned temporary builder.
+  Its19 source ConfigMaps were garbage-collected with the owning Pod.
+
+Checks
+- Gateway Maven Job backend-validation-1793519019297238700-6c17c96d:
+ 239 tests,0 failures/errors/skips; includes4 new TelemetryTraceFilter tests.
+- Static UI build graph-static-build-1793519027475267200: succeeded.
+- Helm lint: brain-observability/brain-service/brain-kafka,3 passed.
+- Runtime promtool config check: valid config and7 alert rules.
+- Backup recovery unit suite:10 tests passed, including authentication, corruption,
+  target identity guards and recovery source-kit traversal checks.
+
+Actual runtime acceptance
+- Job observability-acceptance-1793520810;
+  UID547df4fb-2fb4-4c1d-91e7-70492f1aba18.
+- All13 distinct services have JVM metrics and sanitized logs.
+- Kafka consumer lag is collected;10 Outbox connector/tasks RUNNING.
+- Genuine HTTP trace includes Gateway, Identity, Space and Content.
+- Gateway response X-Trace-Id matches the active root trace when the browser did
+  not send traceparent; valid remote-parent behavior is retained.
+- Existing asynchronous event traceId is correlated in consumer domain_trace_id
+  logs. A full HTTP-to-Kafka parent-child span tree is NOT claimed.
+- Real trace aee6ffd02661c58ad223f6dbc1ad96a0.
+- Synthetic trace eb0ed4f68af2dbfdc7bf21dc7bdc62a5.
+- Injected sensitive canaries in trace name/status/attributes/events/links/SQL/URL
+  and log body were absent from stored Tempo/Loki records; positive telemetry
+  survived. Private Note content was absent; foreign Space access denied.
+- Missing client certificate rejected; no TLS verification bypass.
+- Anonymous Grafana access denied; provisioned dashboard has18 panels.
+
+Browser and authority
+- Actual operator login and rendered dashboard: monitoring-ui-1793520887,
+  UIDe90ef0a8-25ee-41b5-a37c-ffc955c2c56e;1 Playwright scenario passed.
+- Screenshot saved to .local/observability-ui.png and visually inspected.
+- monitoring-network-1793520880, UID4dbd7b08-70e6-4df3-af0a-b4209ca019ff:
+  unlabeled Pod cannot access private Grafana.
+- Observer impersonation: get Pods in brain-apps allowed; read Secrets in
+  brain-data, patch Deployments, and read kube-system Pods denied.
+- Operator credentials never printed; no clipboard changed by validation.
+
+Actual bounded fault/recovery
+- Integration original replica1 ->0: Gateway502; BrainServiceUnavailable fired
+  at08:17:14Z; Alertmanager received it. Restored original replica1 and waited Ready.
+- Prometheus alert resolved at08:17:54Z; subsequent Alertmanager resolution checked.
+- Collector original replica1 ->0: private Note POST201, GET200 still worked.
+- Collector restored to original replica1/Ready; new Note eventually appeared in
+  Activity through unchanged Outbox/Connect/Kafka, and all13 JVM metrics resumed.
+- Both temporary fault writers guarded source/Deployment UIDs and restored replicas
+  in finally. No original data/PVC, broker identity, offset or slot was deleted.
+- External alert receivers remain unconfigured: no Slack/email/webhook sent.
+
+Bounded load, limitations
+- In-cluster authenticated Note GET:40 requests/concurrency4/errors0;
+  median100.4ms/p95170.1ms, measured after instrumentation.
+- Same host HTTPS script before:40 requests/concurrency4/errors0;
+  median2069.2ms/p952100.1ms,20.76s total.
+- Same host HTTPS script after:40 requests/concurrency4/errors0;
+  median2077.1ms/p952091.6ms,20.93s total.
+- Host measurements include localhost connection/TLS/address setup overhead;
+  do not compare their absolute values with in-cluster measurements.
+- These small sequential local samples show functional continuity, not causal
+  performance improvement, sustained capacity, an SLO or a production benchmark.
+
+Final source/backup state
+- Original2 nodes running;14/14 application Deployments Ready,7/7 monitoring
+  Deployments Ready. All13 service Deployment UIDs unchanged; no firing alerts.
+- Read-only runtime Job recovery-runtime-1793521314,
+  UID5845d001-54e3-49fa-bc4f-fb7763d3a288: all76 existing Registry artifact bytes
+  and validity/compatibility rules match;10 connectors/all tasks RUNNING.
+- Kafka consumer lag0; Linux/WSL available memory23.9% at final health capture.
+- Read-only cold-backup inventory:13 Bound PVCs across five namespaces, including
+  six new monitoring volumes; scoped observer RBAC and pinned agent image present.
+ 34 distinct workload/init image identities resolved in local containerd.
+- Earlier encrypted7-PVC backup and successful isolated restore remain intact;
+  no new13-PVC cold backup/restore was performed. Restore clone remains stopped.
+- Graph8443, login8445, Headlamp8444, Media9443 and Grafana8446 all return HTTPS200
+  with verified project CA; anonymous dashboard API401. Source forwards running.
+
+Evidence (private operator files, ignored by git)
+.local/observability-validation.json
+.local/observability-installation.json
+.local/observability-gateway-image.json
+.local/observability-builder-evidence/gateway-image-build-1793519080.json
+.local/observability-canary-validation.json
+.local/observability-acceptance-validation.json
+.local/observability-boundary-validation.json
+.local/observability-fault-validation.json
+.local/observability-load-before.json
+.local/observability-load-after.json
+.local/observability-final-health.json
+.local/observability-host-validation.json
+.local/recovery-runs/knowledge-brain-runtime.json
+
+Completed earlier failed validation attempts remain historical evidence. The final
+passing Jobs above supersede the initial missing PSA seccomp setting, strict TLS
+AKI/SKI validation, missing Kafka exporter Service/topic regex and too-short log
+lookback. Those issues were corrected without disabling TLS/privacy boundaries.
+
+Remaining: broader sustained load/resource tests, multi-host HA/failures,
+production retention/storage sizing/SLOs/external alerting, delivery automation,
+off-host backup/PITR, public Knowledge and agreed frontend design phase.

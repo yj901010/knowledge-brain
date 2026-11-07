@@ -1,0 +1,17 @@
+package io.knowledgebrain.brainquery;
+import java.util.*;
+import java.net.URI;
+import java.net.http.*;
+import java.nio.file.*;
+import java.security.KeyStore;
+import java.security.cert.CertificateFactory;
+import javax.net.ssl.*;
+import java.time.Duration;
+import tools.jackson.databind.JsonNode;
+
+final class PublicCanonicalClient {
+ record Item(UUID entityId,String kind,String title,long version,String state,JsonNode content,JsonNode qualifierPins,boolean currentContext,String effectiveLevel,boolean needsReview){}
+ private final URI origin;private final String key;private final HttpClient http;
+ PublicCanonicalClient(String endpoint,String trustFile,String key)throws Exception{origin=URI.create(endpoint);if(!"https".equals(origin.getScheme())||origin.getHost()==null||origin.getRawUserInfo()!=null||origin.getRawQuery()!=null||origin.getRawFragment()!=null||!origin.getRawPath().isEmpty()||!key.matches("[A-Za-z0-9_-]{43}"))throw new IllegalArgumentException("Fixed Knowledge HTTPS origin required");this.key=key;var trust=KeyStore.getInstance("PKCS12");trust.load(null,null);try(var stream=Files.newInputStream(Path.of(trustFile))){int n=0;for(var cert:CertificateFactory.getInstance("X.509").generateCertificates(stream))trust.setCertificateEntry("ca-"+n++,cert);}var managers=TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());managers.init(trust);var tls=SSLContext.getInstance("TLS");tls.init(null,managers.getTrustManagers(),null);http=HttpClient.newBuilder().sslContext(tls).connectTimeout(Duration.ofSeconds(3)).followRedirects(HttpClient.Redirect.NEVER).build();}
+ Map<UUID,Item> check(UUID space,Collection<UUID> ids,String trace){var result=new HashMap<UUID,Item>();var ordered=new ArrayList<>(new LinkedHashSet<>(ids));if(ordered.size()>100)throw PublicProjection.invalid();try{for(int offset=0;offset<ordered.size();offset+=8){var batch=ordered.subList(offset,Math.min(offset+8,ordered.size()));var req=HttpRequest.newBuilder(origin.resolve("/internal/knowledge/public-check")).timeout(Duration.ofSeconds(8)).header("Authorization","Bearer "+key).header("Content-Type","application/json").header("traceparent",trace).POST(HttpRequest.BodyPublishers.ofString(PublicProjection.JSON.writeValueAsString(Map.of("spaceId",space,"ids",batch)))).build();var response=http.send(req,info->new NoteSearchClient.BoundedBody());if(response.statusCode()!=200)throw new NoteSearchClient.Unavailable();var rows=PublicProjection.JSON.readTree(response.body());if(!rows.isArray()||rows.size()>batch.size())throw new NoteSearchClient.Unavailable();for(var row:rows){var value=PublicProjection.JSON.treeToValue(row,Item.class);if(value==null||!batch.contains(value.entityId())||result.containsKey(value.entityId())||!PublicProjection.KINDS.contains(value.kind())||value.version()<1||value.title()==null||value.title().isBlank()||value.title().codePointCount(0,value.title().length())>200||!Set.of("ACTIVE","RETIRED").contains(value.state())||value.content()==null||!value.content().isObject()||value.qualifierPins()==null||!value.qualifierPins().isObject()||!Set.of("","DRAFT","SOURCED","COMMUNITY_REVIEWED","EXPERT_VERIFIED").contains(value.effectiveLevel()))throw new NoteSearchClient.Unavailable();result.put(value.entityId(),value);}}return Map.copyOf(result);}catch(InterruptedException e){Thread.currentThread().interrupt();throw new NoteSearchClient.Unavailable();}catch(Exception e){throw new NoteSearchClient.Unavailable();}}
+}

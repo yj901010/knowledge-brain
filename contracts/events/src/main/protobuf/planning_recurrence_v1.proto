@@ -1,0 +1,23 @@
+syntax = "proto3";
+package planning.recurrence.v1;
+option java_package = "io.knowledgebrain.contracts.planning.recurrence.v1";
+option java_multiple_files = true;
+message RecurrenceEventEnvelopeV1 {
+ string event_id=1;string event_type=2;uint32 event_version=3;int64 occurred_at_epoch_millis=4;
+ string producer=5;string aggregate_type=6;string aggregate_id=7;string space_id=8;
+ string actor_id=9;string trace_id=10;bytes payload=11;
+}
+// Finite DAILY/WEEKLY series and original occurrence pins. Child Schedules retain
+// independent v1 identities/revisions/events. Empty Task ID means no link.
+message RecurrenceOccurrenceV1 {
+ uint32 ordinal=1;string schedule_id=2;string starts_at=3;string ends_at=4;
+ string starts_local=5;string ends_local=6;string starts_offset=7;string ends_offset=8;
+}
+message RecurrenceChangedPayloadV1 {
+ string recurrence_id=1;string revision_id=2;uint64 version=3;string visibility=4;string state=5;
+ string title=6;string description=7;string starts_local=8;string ends_local=9;string time_zone=10;
+ string task_id=11;string frequency=12;uint32 interval=13;uint32 count=14;
+ string starts_overlap=15;string ends_overlap=16;string preview_hash=17;
+ repeated RecurrenceOccurrenceV1 occurrences=18;string created_at=19;string updated_at=20;
+ uint32 retired_from_ordinal=21;string cancellation_hash=22;
+}

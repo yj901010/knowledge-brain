@@ -1,0 +1,10 @@
+PostgreSQL deployment configuration — 2026-10-06
+Installed in C:\dev\knowledge-brain
+PostgreSQL version: 17.11-bookworm
+Base/local Helm lint and rendering passed.
+Rendered: ConfigMap, Service, StatefulSet with PVC, Helm test Job.
+12 service-owned databases plus a separate Keycloak database; 13 unique external Secret references; no embedded passwords.
+PUBLIC access revoked for service databases; owner roles lack superuser/role creation/database creation/replication/RLS bypass privileges.
+Prepared integration test: 13 positive logins and 156 rejected cross-database connections.
+Live DB initialization and isolation test: NOT RUN. Docker Desktop Linux engine pipe denies access to current execution account.
+Kubernetes deployment, image retrieval/scan, backup/restore, production HA/TLS and CDC accounts/publications remain pending.

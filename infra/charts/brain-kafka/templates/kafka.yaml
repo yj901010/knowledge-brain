@@ -1,0 +1,46 @@
+{{- if gt (int .Values.replicationFactor) (int .Values.brokers.replicas) }}
+{{- fail "replicationFactor must not exceed broker replicas" }}
+{{- end }}
+{{- if or (lt (int .Values.minInSyncReplicas) 1) (gt (int .Values.minInSyncReplicas) (int .Values.replicationFactor)) }}
+{{- fail "minInSyncReplicas must be between 1 and replicationFactor" }}
+{{- end }}
+apiVersion: kafka.strimzi.io/v1
+kind: Kafka
+metadata:
+  name: {{ .Values.clusterName }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  {{- if .Values.kafkaExporter.enabled }}
+  kafkaExporter:
+    groupRegex: '^brain-.*'
+    topicRegex: '^(identity|space|knowledge|content|learning|planning|collaboration|integration|notification|media)\..*'
+    logging: warn
+    enableSaramaLogging: false
+    resources: {requests: {cpu: 25m, memory: 64Mi}, limits: {cpu: 250m, memory: 192Mi}}
+  {{- end }}
+  kafka:
+    version: {{ .Values.kafkaVersion | quote }}
+    metadataVersion: {{ .Values.metadataVersion | quote }}
+    listeners:
+      - name: tls
+        port: 9093
+        type: internal
+        tls: true
+        authentication:
+          type: tls
+    authorization:
+      type: simple
+    config:
+      auto.create.topics.enable: false
+      default.replication.factor: {{ .Values.replicationFactor }}
+      min.insync.replicas: {{ .Values.minInSyncReplicas }}
+      offsets.topic.replication.factor: {{ .Values.replicationFactor }}
+      transaction.state.log.replication.factor: {{ .Values.replicationFactor }}
+      transaction.state.log.min.isr: {{ .Values.minInSyncReplicas }}
+  entityOperator:
+    topicOperator:
+      resources:
+{{ toYaml .Values.entityOperatorResources | indent 8 }}
+    userOperator:
+      resources:
+{{ toYaml .Values.entityOperatorResources | indent 8 }}

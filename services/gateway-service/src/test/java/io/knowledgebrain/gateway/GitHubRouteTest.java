@@ -1,0 +1,5 @@
+package io.knowledgebrain.gateway;
+import org.junit.jupiter.api.Test;import static org.junit.jupiter.api.Assertions.*;
+class GitHubRouteTest {String id="019a0000-0000-7000-8000-000000000001",root="/api/spaces/"+id+"/github/repositories";
+ @Test void exactIntegrationMethodsAndBoundedPrivatePaths(){for(String path:java.util.List.of(root,root+"/"+id,root+"/"+id+"/revisions",root+"/"+id+"/commits",root+"/"+id+"/commits/"+id))assertEquals("integration",GatewayRoute.select("GET",path).service());assertEquals("integration",GatewayRoute.select("POST",root).service());assertEquals("integration",GatewayRoute.select("POST",root+"/"+id+"/sync").service());assertEquals("integration",GatewayRoute.select("DELETE",root+"/"+id).service());}
+ @Test void externalTargetsExtraSegmentsAndUnsupportedWritesStayClosed(){for(String method:java.util.List.of("PUT","PATCH"))assertNull(GatewayRoute.select(method,root+"/"+id));for(String path:java.util.List.of(root+"/invalid",root+"/"+id+"/commits/all",root+"/"+id+"/sync/extra",root.replace(id,"invalid"),"/internal/integration/activity-events"))assertNull(GatewayRoute.select("GET",path));}}

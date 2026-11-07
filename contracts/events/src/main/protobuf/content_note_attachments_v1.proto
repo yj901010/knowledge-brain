@@ -1,0 +1,10 @@
+syntax="proto3";
+package knowledgebrain.content.attachments.v1;
+option java_package="io.knowledgebrain.contracts.content.attachments.v1";
+option java_multiple_files=true;
+message AttachmentEventEnvelopeV1 {
+ string event_id=1;string event_type=2;uint32 event_version=3;int64 occurred_at_epoch_millis=4;
+ string producer=5;string aggregate_type=6;string aggregate_id=7;string space_id=8;string actor_id=9;string trace_id=10;bytes payload=11;
+}
+message NoteAttachmentV1 {string attachment_id=1;string media_id=2;string filename=3;string mime_type=4;uint64 byte_size=5;string sha256=6;}
+message NoteAttachmentsChangedPayloadV1 {string note_id=1;uint64 attachment_version=2;uint64 note_version=3;string note_state=4;repeated NoteAttachmentV1 attachments=5;string revision_id=6;}

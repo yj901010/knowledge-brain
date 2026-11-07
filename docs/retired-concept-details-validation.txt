@@ -1,0 +1,20 @@
+Retired private Alias and External Mapping archive validation — 2026-10-21
+
+knowledge: 233 passed, 0 failed/error/skipped; backend-validation-1792592466967691900-d0d02c96
+gateway: 68 passed, 0 failed/error/skipped; backend-validation-1792592466968703500-634f0052
+Browser: 21 passed (6 new archive scenarios + 15 existing Alias/Mapping/Concept/Claim/Citation/Qualifier regressions); graph-web-validation-1792592759926977500
+Pinned frontend build and TypeScript checks passed: graph-static-build-1792592465441753700
+OpenAPI references resolved: 1468
+Retired 20+2 pagination, repeated labels/tuples distinguished by UUID, fresh Space authorization and default ACTIVE listing passed.
+Reopen/reload retained seven immutable revisions, exact labels, case-sensitive systems, leading-zero codes and optional editions.
+Historical Concept/Source pins, including a different prior Source, survived later edits and retirement.
+Retired Concept -> retired Alias/Mapping navigation survives reload; hidden ACTIVE children remain excluded.
+Archive browsing issued no writes and preserved independent Concept/Alias/Mapping drafts; no browser storage or automatic external requests.
+Foreign requests and malformed/repeated/misplaced state filters denied; wrong scope/state/pins, invalid cursors and duplicate/mismatched histories clear stale data and permit explicit retry.
+Late closed-list and switched-history responses cannot restore previous snapshots; real session revocation from archive history clears private UI.
+Hostile HTML-like values render as inert text; external HTTP(S) links are explicit; 390px viewport has no horizontal overflow.
+Isolated PostgreSQL tests preserved rows/history and byte-identical Outbox entries through archive reads and fresh store construction.
+V17 partial retired-row indexes observed in deployed Knowledge startup; no canonical rewrite, event changes, projection rebuild or checkpoint reset.
+Knowledge/Gateway exact images imported on both nodes and rolled out; owned temporary build resources removed.
+All 12 application Deployments ready; host HTTPS /graph 200.
+Scope: read-only rediscovery of directly retired private Aliases and candidate External Mappings; no restoration, repinning, verification or publication.

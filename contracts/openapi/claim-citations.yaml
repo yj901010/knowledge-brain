@@ -1,0 +1,624 @@
+openapi: 3.1.0
+info:
+  title: Private Claim Citation API
+  version: 1.1.0
+  description: Knowledge-owned private Claim-to-Source citations with independent
+    UUIDv7 identities, citeN ETags and immutable revision pins. Fresh CONCEPT_READ/CONCEPT_WRITE
+    authority serves the common guest/registered principal within an authorized PERSONAL
+    Space. Responses use no-store. Writes require HTTPS and exact browser Origin.
+    The API preserves Claim/Source versions, verification, ownership and existing
+    event contracts.
+servers:
+- url: https://localhost:8443
+security:
+- sessionCookie: []
+paths:
+  /api/spaces/{spaceId}/concepts/{subjectConceptId}/claims/{claimId}/citations:
+    parameters:
+    - &id001
+      $ref: '#/components/parameters/SpaceId'
+    - &id002
+      $ref: '#/components/parameters/SubjectConceptId'
+    - &id003
+      $ref: '#/components/parameters/ClaimId'
+    get:
+      operationId: listClaimCitations
+      description: List PRIVATE citations in ascending citation UUIDv7 order, default
+        state ACTIVE. ACTIVE requires an effective ACTIVE PRIVATE Claim and subject,
+        predicate and, only for CONCEPT objects, object Concept. Explicit RETIRED
+        discovers only directly unlinked citations under the retained PRIVATE Claim
+        and subject in this Space, including retired parents and Sources. It excludes
+        hidden ACTIVE citations and returns the original immutable Claim and Source
+        pins. Reads never restore, repin, publish or change history. after is exclusive.
+        Only state, after and limit are accepted; unknown or repeated keys are invalid.
+        This filter is not supported on item, revision, write or Source-based citation routes.
+      parameters:
+      - name: state
+        in: query
+        schema:
+          type: string
+          enum: [ACTIVE, RETIRED]
+          default: ACTIVE
+      - name: after
+        in: query
+        schema:
+          $ref: '#/components/schemas/UuidV7'
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      responses:
+        '200':
+          description: Authorized pinned citation page
+          headers: &id008
+            Cache-Control: &id007
+              $ref: '#/components/headers/NoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Page'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/Unavailable'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+    post:
+      operationId: createClaimCitation
+      description: Create one independent citation to a current ACTIVE PRIVATE Source
+        for the current effective ACTIVE PRIVATE Claim. Require exact requested current
+        Claim/Source versions and pin corresponding immutable revisions. One ACTIVE
+        citation per Claim/Source; no count cap. Citation, revision and ClaimCitationCreated
+        outbox event commit atomically. Claim/Source versions and verification remain
+        unchanged.
+      parameters:
+      - &id004
+        $ref: '#/components/parameters/Origin'
+      requestBody: &id005
+        $ref: '#/components/requestBodies/Reference'
+      responses:
+        '201':
+          description: Created ACTIVE PRIVATE citation at version 1, with independent
+            strong "cite1" ETag
+          headers:
+            ETag:
+              $ref: '#/components/headers/CitationETag'
+            Cache-Control:
+              $ref: '#/components/headers/NoStore'
+            Location:
+              description: Canonical created citation API path
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Citation'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/Unavailable'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '412':
+          $ref: '#/components/responses/PreconditionFailed'
+        '413':
+          $ref: '#/components/responses/TooLarge'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+  /api/spaces/{spaceId}/concepts/{subjectConceptId}/claims/{claimId}/citations/{citationId}:
+    parameters:
+    - *id001
+    - *id002
+    - *id003
+    - $ref: '#/components/parameters/CitationId'
+    get:
+      operationId: getClaimCitation
+      description: Read an ACTIVE PRIVATE citation under an effective ACTIVE PRIVATE
+        Claim. Source retirement does not hide this pinned citation. Return pinned
+        snapshots only; current referenced states must be fetched separately. No query
+        parameters.
+      responses:
+        '200':
+          $ref: '#/components/responses/Citation'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/Unavailable'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+    put:
+      operationId: updateClaimCitation
+      description: Explicitly replace the Source reference or re-pin to the latest
+        Claim/Source snapshots using one matching citeN ETag and exact current reference
+        versions. Require effective ACTIVE PRIVATE Claim and current ACTIVE PRIVATE
+        Source. The citation identity/Space/Claim remain immutable. Citation, revision
+        and ClaimCitationUpdated outbox event commit atomically. No implicit re-pin
+        or verification promotion. No query parameters.
+      parameters:
+      - *id004
+      - &id006
+        $ref: '#/components/parameters/IfMatch'
+      requestBody: *id005
+      responses:
+        '200':
+          $ref: '#/components/responses/Citation'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/Unavailable'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '412':
+          $ref: '#/components/responses/PreconditionFailed'
+        '413':
+          $ref: '#/components/responses/TooLarge'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '428':
+          $ref: '#/components/responses/PreconditionRequired'
+    delete:
+      operationId: retireClaimCitation
+      description: Unlink by logical retirement using one matching citeN ETag. Require
+        effective ACTIVE Claim, but the previously pinned Source may be RETIRED. Preserve
+        pins and known history. Atomically commit citation retirement, immutable revision
+        and ClaimCitationRetired event. No body or query parameters. A later re-link
+        creates a new citation UUIDv7.
+      parameters:
+      - *id004
+      - *id006
+      responses:
+        '204':
+          description: RETIRED citation with incremented independent version
+          headers:
+            ETag:
+              $ref: '#/components/headers/CitationETag'
+            Cache-Control: *id007
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/Unavailable'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '412':
+          $ref: '#/components/responses/PreconditionFailed'
+        '428':
+          $ref: '#/components/responses/PreconditionRequired'
+  /api/spaces/{spaceId}/concepts/{subjectConceptId}/claims/{claimId}/citations/{citationId}/revisions:
+    parameters:
+    - *id001
+    - *id002
+    - *id003
+    - $ref: '#/components/parameters/CitationId'
+    get:
+      operationId: listClaimCitationRevisions
+      description: Read retained immutable citation snapshots in descending citation
+        version order. Known authorized history remains readable after Citation, Claim,
+        any referenced Concept or Source retirement. before is exclusive and defaults
+        to Long.MAX_VALUE. Only before and limit are accepted; unknown or repeated
+        keys and noncanonical/overflowed positive numbers are invalid.
+      parameters:
+      - name: before
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 9223372036854775807
+          default: 9223372036854775807
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 5
+      responses:
+        '200':
+          description: Authorized retained citation revision history
+          headers: *id008
+          content:
+            application/json:
+              schema:
+                type: array
+                maxItems: 10
+                items:
+                  $ref: '#/components/schemas/Revision'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/Unavailable'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest
+      description: Secure HttpOnly common guest/registered session cookie
+  parameters:
+    SpaceId:
+      name: spaceId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/UuidV7'
+    SubjectConceptId:
+      name: subjectConceptId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/UuidV7'
+    ClaimId:
+      name: claimId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/UuidV7'
+    CitationId:
+      name: citationId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/UuidV7'
+    Origin:
+      name: Origin
+      in: header
+      required: true
+      description: Exactly one configured HTTPS browser origin; Sec-Fetch-Site, when
+        present, must be same-origin
+      schema:
+        type: string
+        example: https://localhost:8443
+    IfMatch:
+      name: If-Match
+      in: header
+      required: true
+      description: Exactly one independent strong citeN ETag. Weak/list/wildcard/other-aggregate
+        tags and values above signed Long.MAX_VALUE are invalid.
+      schema:
+        type: string
+        pattern: ^"cite[1-9][0-9]{0,18}"$
+  headers:
+    CitationETag:
+      description: Independent citation version ETag, for example "cite1"
+      schema:
+        type: string
+        pattern: ^"cite[1-9][0-9]{0,18}"$
+    NoStore:
+      schema:
+        type: string
+        const: no-store
+  responses:
+    BadRequest:
+      description: Invalid canonical UUIDv7, bounded single-valued query, strict JSON
+        or independent citeN ETag.
+      content: &id009
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: Missing, duplicate, expired or revoked session credential.
+      content: *id009
+    Forbidden:
+      description: TLS, browser origin, fetch-site or Space permission denied.
+      content: *id009
+    Unavailable:
+      description: Unknown, foreign, public or unavailable required Space/Claim/Concept/Source/Citation;
+        lifecycle filtering applies as described by each operation.
+      content: *id009
+    Conflict:
+      description: An ACTIVE citation for this Claim and Source already exists, or
+        citation version cannot increment beyond Long.MAX_VALUE.
+      content: *id009
+    PreconditionFailed:
+      description: Citation, requested current Claim or requested current Source version
+        differs. Inspect latest separately and explicitly restart; no partial write.
+      content: *id009
+    TooLarge:
+      description: JSON request exceeds 4096 bytes.
+      content: *id009
+    UnsupportedMediaType:
+      description: application/json required.
+      content: *id009
+    PreconditionRequired:
+      description: If-Match is missing.
+      content: *id009
+    BadGateway:
+      description: Gateway cannot reach Knowledge.
+      content: *id009
+    ServiceUnavailable:
+      description: Persistence or fresh Space/Identity authority unavailable; no partial
+        mutation.
+      content: *id009
+    GatewayTimeout:
+      description: Gateway complete-response timeout.
+      content: *id009
+    Citation:
+      description: Authorized ACTIVE PRIVATE citation with pinned immutable snapshots
+      headers:
+        ETag:
+          $ref: '#/components/headers/CitationETag'
+        Cache-Control:
+          $ref: '#/components/headers/NoStore'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Citation'
+  schemas:
+    UuidV7:
+      type: string
+      format: uuid
+      pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+    Version:
+      type: integer
+      minimum: 1
+      maximum: 9223372036854775807
+    State:
+      type: string
+      enum:
+      - ACTIVE
+      - RETIRED
+    Timestamp:
+      type: string
+      format: date-time
+    Error:
+      type: object
+      required:
+      - error
+      properties:
+        error:
+          type: string
+    ObjectValue:
+      $ref: personal-concept-claims.yaml#/components/schemas/ClaimObject
+    Reference:
+      type: object
+      additionalProperties: false
+      required:
+      - sourceId
+      - sourceVersion
+      - claimVersion
+      properties:
+        sourceId:
+          $ref: '#/components/schemas/UuidV7'
+        sourceVersion:
+          $ref: '#/components/schemas/Version'
+        claimVersion:
+          $ref: '#/components/schemas/Version'
+      description: Exactly three keys. sourceVersion and claimVersion are JSON integer
+        tokens, not strings, decimals or exponent notation. They must identify the
+        current ACTIVE PRIVATE Source and effective ACTIVE PRIVATE Claim in the same
+        Space. The server pins their corresponding immutable revision identities;
+        clients cannot select arbitrary historical pins.
+    ClaimSnapshot:
+      type: object
+      additionalProperties: false
+      required:
+      - revisionId
+      - version
+      - subjectConceptId
+      - predicateConceptId
+      - object
+      properties:
+        revisionId:
+          $ref: '#/components/schemas/UuidV7'
+        version:
+          $ref: '#/components/schemas/Version'
+        subjectConceptId:
+          $ref: '#/components/schemas/UuidV7'
+        predicateConceptId:
+          $ref: '#/components/schemas/UuidV7'
+        object:
+          $ref: '#/components/schemas/ObjectValue'
+      description: Immutable relation snapshot pinned at this citation revision, unaffected
+        by later Claim/Concept changes.
+    SourceSnapshot:
+      type: object
+      additionalProperties: false
+      required:
+      - sourceId
+      - revisionId
+      - version
+      - title
+      - url
+      - citation
+      - licenseNote
+      properties:
+        sourceId:
+          $ref: '#/components/schemas/UuidV7'
+        revisionId:
+          $ref: '#/components/schemas/UuidV7'
+        version:
+          $ref: '#/components/schemas/Version'
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+          pattern: ^[^\u0000]*$
+          description: Canonical Java-stripped title. Unicode code point bounds; NUL
+            and unpaired surrogates are invalid.
+        url:
+          anyOf:
+          - type: string
+            minLength: 1
+            maxLength: 2048
+          - type: 'null'
+          description: Nullable user-supplied reference metadata. Java strip removes
+            outer whitespace; empty becomes null. A nonnull value must be ASCII, at
+            most 2048 characters, absolute http or https, with a host, no userinfo,
+            whitespace, control characters or backslash, and no port or a port from
+            1 through 65535. Explicitly empty ports are invalid. Authority must not
+            contain percent signs; encoded hosts and IPv6 scope/zone identifiers are
+            rejected. Fragments are allowed. No automatic fetching, URL canonicalization
+            or content import.
+        citation:
+          type: string
+          maxLength: 4000
+          pattern: ^[^\u0000]*$
+          description: Bibliographic text preserved exactly, including newlines/outer
+            whitespace. Nonblank Java-stripped citation is required when URL is null.
+            Unicode code point bounds; NUL and unpaired surrogates are invalid.
+        licenseNote:
+          type: string
+          maxLength: 1000
+          pattern: ^[^\u0000]*$
+          description: User-supplied rights/provenance note preserved exactly. Empty
+            allowed. This is not an assertion of a dataset license or redistribution
+            rights. Unicode code point bounds; NUL and unpaired surrogates are invalid.
+      description: Immutable source metadata snapshot pinned at this citation revision,
+        unaffected by later Source changes or retirement.
+    Citation:
+      type: object
+      additionalProperties: false
+      required:
+      - citationId
+      - spaceId
+      - claimId
+      - subjectConceptId
+      - claim
+      - source
+      - visibility
+      - state
+      - version
+      - createdAt
+      - updatedAt
+      properties:
+        citationId:
+          $ref: '#/components/schemas/UuidV7'
+        spaceId:
+          $ref: '#/components/schemas/UuidV7'
+        claimId:
+          $ref: '#/components/schemas/UuidV7'
+        subjectConceptId:
+          $ref: '#/components/schemas/UuidV7'
+        claim:
+          $ref: '#/components/schemas/ClaimSnapshot'
+        source:
+          $ref: '#/components/schemas/SourceSnapshot'
+        visibility:
+          type: string
+          const: PRIVATE
+        state:
+          $ref: '#/components/schemas/State'
+        version:
+          $ref: '#/components/schemas/Version'
+        createdAt:
+          $ref: '#/components/schemas/Timestamp'
+        updatedAt:
+          $ref: '#/components/schemas/Timestamp'
+      description: Independent ClaimCitation aggregate. Pinned snapshots only; no
+        volatile current Claim/Source status fields under this ETag.
+    Revision:
+      type: object
+      additionalProperties: false
+      required:
+      - revisionId
+      - citationId
+      - version
+      - state
+      - claim
+      - source
+      - actorId
+      - occurredAt
+      properties:
+        revisionId:
+          $ref: '#/components/schemas/UuidV7'
+        citationId:
+          $ref: '#/components/schemas/UuidV7'
+        version:
+          $ref: '#/components/schemas/Version'
+        state:
+          $ref: '#/components/schemas/State'
+        claim:
+          $ref: '#/components/schemas/ClaimSnapshot'
+        source:
+          $ref: '#/components/schemas/SourceSnapshot'
+        actorId:
+          $ref: '#/components/schemas/UuidV7'
+        occurredAt:
+          $ref: '#/components/schemas/Timestamp'
+    Page:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - nextAfter
+      properties:
+        items:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/Citation'
+        nextAfter:
+          anyOf:
+          - $ref: '#/components/schemas/UuidV7'
+          - type: 'null'
+          description: Last returned citation UUIDv7 when another active page exists,
+            otherwise null
+  requestBodies:
+    Reference:
+      required: true
+      description: Strict application/json body at most 4096 bytes, exactly sourceId,
+        sourceVersion and claimVersion. Duplicate/unknown keys and trailing tokens
+        are invalid. UUIDv7s are canonical lowercase. Versions are positive signed
+        64-bit integer tokens.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Reference'

@@ -1,0 +1,115 @@
+openapi: 3.1.0
+info:
+  title: Private immutable submission review notification target
+  version: 1.0.0
+  description: Fresh existing Space participation and author/current OWNER submission
+    authorization before reading only Collaboration-owned original Outbox provenance.
+    No arbitrary recipient, score/opinion/reason/answer/file content. Resolves exact
+    historical review version, separately from annotation sourceVersion and submitted
+    attempt. Historical retraction/restoration never labels newer opinions or scores.
+    GET-only, empty request body/query, no-store, canonical UUIDv7 IDs; Group MEMBER/VIEWER
+    peers get404, current VIEWER authors retain own reads, removed participants denied.
+servers:
+- url: https://localhost:8443
+security:
+- browserSession: []
+paths:
+  /api/groups/{groupId}/studies/{studyId}/assignments/{assignmentId}/submissions/{submissionId}/review-events/{eventId}:
+    parameters:
+    - name: groupId
+      in: path
+      required: true
+      schema: &id001
+        type: string
+        format: uuid
+        pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+    - name: studyId
+      in: path
+      required: true
+      schema: *id001
+    - name: assignmentId
+      in: path
+      required: true
+      schema: *id001
+    - name: submissionId
+      in: path
+      required: true
+      schema: *id001
+    - name: eventId
+      in: path
+      required: true
+      schema: *id001
+    get:
+      operationId: getPrivateReviewEventTarget
+      responses:
+        '200':
+          description: Exact immutable source target
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Target'
+        '400':
+          description: Invalid UUID/query/body
+        '401':
+          description: Secure singleton browser session required
+        '403':
+          description: Registered account required
+        '404':
+          description: No current membership/own source or mismatched event scope
+        '503':
+          description: Authority unavailable
+components:
+  securitySchemes:
+    browserSession:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest
+  schemas:
+    Target:
+      type: object
+      additionalProperties: false
+      required:
+      - groupId
+      - spaceId
+      - studyId
+      - assignmentId
+      - submissionId
+      - sourceEventId
+      - sourceAggregateId
+      - reviewId
+      - sourceVersion
+      - reviewVersion
+      - submissionVersion
+      - kind
+      properties:
+        groupId: *id001
+        spaceId: *id001
+        studyId: *id001
+        assignmentId: *id001
+        submissionId: *id001
+        sourceEventId: *id001
+        sourceAggregateId: *id001
+        reviewId: *id001
+        sourceVersion: &id002
+          type: integer
+          format: int64
+          minimum: 1
+        reviewVersion: *id002
+        submissionVersion: *id002
+        kind:
+          type: string
+          enum:
+          - FEEDBACK
+          - GRADE
+          - RESUBMISSION_REQUESTED
+          - RESUBMISSION_CANCELLED
+          - RESUBMISSION_RESOLVED
+          - FEEDBACK_RETRACTED
+          - FEEDBACK_RESTORED
+          - GRADE_RETRACTED
+          - GRADE_RESTORED

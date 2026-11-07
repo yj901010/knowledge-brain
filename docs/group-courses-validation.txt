@@ -1,0 +1,20 @@
+Group Course validation — 2026-10-23
+
+collaboration: 111 passed, no failures/errors/skips; backend-validation-1792764795304513900-0da88e31
+gateway: 101 passed, no failures/errors/skips; backend-validation-1792765000356253000-015e806f
+Browser: nine actual-account Group scenarios passed; graph-web-validation-1792765589909481800
+Course owner UI created one Course after a committed response was lost, selected/reordered same-Group Studies, and opened current Study content while original selection-time title/version stayed pinned.
+MEMBER and VIEWER read Courses/history/curriculum but could not create/edit/archive. Source/parent Group isolation, duplicate IDs, extra/spoofed fields, missing428 and stale412 were checked. Removal denied access and cleared the private UI.
+Course start required nonempty nonarchived sources. Start/complete/archive UI passed; started curriculum was fixed, completed/retired Course could not reopen. Exact create retry returned current RETIRED snapshot without restoration; changed intent409.
+Full Course revisions paginated3/2, oversized history rejected. Source rename/archive did not rewrite Course history; a retired source blocked draft start, and explicit removal remained possible.
+Personal Note unchanged and unreadable to other accounts; no personal progress, evidence, Submission or graph copy. Current Study permissions apply when opened from a Course. Guest denial, literal text, mobile overflow, empty persistent browser storage and page-error checks passed.
+All eight existing Group, membership, shared-roadmap, Study, roadmap-binding, Assignment, Submission and Discussion scenarios passed together with the new Course scenario.
+Backend coverage includes max50 curriculum, scoped keysets/history, original create retries after restart/edit/archive, one-winner concurrent create/edit/curriculum, source-retirement versus start serialization, provenance refresh, lifecycle/no-ops and atomic snapshot/revision/curriculum/Outbox rollback.
+Actual Debezium/Connect delivery of four Course snapshots matched canonical Outbox bytes with stable IDs, aggregate key and trace/schema headers; unacknowledged replay matched again. The original test log label mentions five discussion/reply snapshots, but the Course test explicitly asserts four expected Course events. The label is corrected in source.
+Collaboration V7 only adds own Course/current ordered curriculum/full revision tables and local Study-revision/Group/Space constraints. Space remains the live role authority. Group -> Course -> Study locks serialize source changes without network calls while locked.
+Immutable Registry collaboration/course-events/1 SHA256 6a487118ac222736f92ac1e3b40f442e257482a56fbb55bec84280008aa93faa, FULL validity/FULL_TRANSITIVE compatibility; literal topic Connect writer/Group validator reader only.
+CDC credentials denied SELECT on Course/revision/curriculum/Study tables; Outbox stayed readable. Nine existing connector/tasks RUNNING, no offsets/slot/publication reset.
+OpenAPI: 65 documents/1772 references resolved, new path parameter templates matched. Pinned Next/TypeScript static export passed.
+Exact Collaboration/Gateway images imported on both nodes and rolled out. Their source bytes matched build archives, and both owned temporary builder sets were removed. Unrelated service images unchanged.
+All 13 application Deployments Ready; trusted HTTPS /graph and /graph/groups200/no-store/CSP, Collaboration schemaV7.
+No old migration/Protobuf rewrite, new dependency/dataset, AI, public publication, enrollment or automatic personal completion policy. Enrollment and per-person Course progress remain subsequent work.

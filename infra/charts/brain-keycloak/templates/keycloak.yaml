@@ -1,0 +1,87 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: brain-keycloak-realm
+data:
+  brain-platform-realm.json: |
+{{ .Files.Get "files/brain-platform-realm.json" | indent 4 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: brain-keycloak
+spec:
+  selector: {app: brain-keycloak}
+  ports: [{name: https, port: 8443, targetPort: https}]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: brain-keycloak
+spec:
+  replicas: {{ .Values.replicas }}
+  selector:
+    matchLabels: {app: brain-keycloak}
+  template:
+    metadata:
+      labels: {app: brain-keycloak}
+    spec:
+      automountServiceAccountToken: false
+      securityContext: {runAsNonRoot: true, runAsUser: 1000, fsGroup: 1000}
+      containers:
+        - name: keycloak
+          image: {{ .Values.image | quote }}
+          args: [start, --import-realm]
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities: {drop: [ALL]}
+          ports:
+            - {name: https, containerPort: 8443}
+            - {name: management, containerPort: 9000}
+            - {name: cache, containerPort: 7800}
+          env:
+            - {name: KC_DB, value: postgres}
+            - {name: KC_DB_URL, value: "jdbc:postgresql://{{ .Values.databaseHost }}:5432/brain_keycloak"}
+            - {name: KC_DB_USERNAME, value: brain_keycloak}
+            - {name: KC_DB_POOL_MAX_SIZE, value: "10"}
+            - name: KC_DB_PASSWORD
+              valueFrom:
+                secretKeyRef: {name: brain-keycloak-db, key: password}
+            - {name: KC_HOSTNAME, value: {{ required "hostname must be supplied" .Values.hostname | quote }}}
+            - {name: KC_HTTP_ENABLED, value: "false"}
+            - {name: KC_HTTPS_CERTIFICATE_FILE, value: /tls/tls.crt}
+            - {name: KC_HTTPS_CERTIFICATE_KEY_FILE, value: /tls/tls.key}
+            - {name: KC_HEALTH_ENABLED, value: "true"}
+            - {name: KC_METRICS_ENABLED, value: "true"}
+            - {name: KC_HTTP_MANAGEMENT_SCHEME, value: http}
+            - {name: KC_BOOTSTRAP_ADMIN_USERNAME, value: bootstrap-admin}
+            - name: KC_BOOTSTRAP_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef: {name: brain-keycloak-admin, key: password}
+            - name: REGISTRY_PUBLISHER_SECRET
+              valueFrom:
+                secretKeyRef: {name: brain-registry-clients, key: publisher}
+            - name: REGISTRY_READER_SECRET
+              valueFrom:
+                secretKeyRef: {name: brain-registry-clients, key: reader}
+            - name: REGISTRY_UNPRIVILEGED_SECRET
+              valueFrom:
+                secretKeyRef: {name: brain-registry-clients, key: unprivileged}
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+          startupProbe:
+            httpGet: {path: /health/ready, port: management}
+            periodSeconds: 5
+            failureThreshold: 120
+          readinessProbe:
+            httpGet: {path: /health/ready, port: management}
+          livenessProbe:
+            httpGet: {path: /health/live, port: management}
+          volumeMounts:
+            - {name: tls, mountPath: /tls, readOnly: true}
+            - {name: realm, mountPath: /opt/keycloak/data/import, readOnly: true}
+      volumes:
+        - name: tls
+          secret: {secretName: brain-keycloak-tls}
+        - name: realm
+          configMap: {name: brain-keycloak-realm}

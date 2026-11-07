@@ -1,0 +1,16 @@
+Knowledge/Brain Platform
+Copyright 2026 Knowledge/Brain Platform contributors
+
+Original project software is licensed under the Apache License, Version 2.0.
+See the accompanying LICENSE file.
+
+Third-party components retain their own copyright, license and attribution
+notices. Applicable notices are retained in the component files, in
+infra/dependencies, infra/runtime/legal, and apps/graph-web/THIRD-PARTY-NOTICES.txt.
+
+Starter metadata and factual authoring material have separate provenance and
+rights records in data/public-starter and data/public-curation. The project
+software license does not relicense cited works or grant rights to external
+medical terminology, clinical datasets, images, logos or trademarks.
+
+This notice is informational and does not modify the Apache License.

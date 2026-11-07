@@ -1,0 +1,48 @@
+replicaCount: 2
+probeScheme: HTTPS
+image:
+  repository: ''
+  tag: ''
+  pullPolicy: IfNotPresent
+resources:
+  requests:
+    cpu: 250m
+    memory: 384Mi
+  limits:
+    cpu: '1'
+    memory: 768Mi
+env:
+- name: BRAIN_GATEWAY_API_ENABLED
+  value: 'true'
+- name: BRAIN_GATEWAY_IDENTITY_ORIGIN
+  value: https://identity-service.brain-apps.svc:8080
+- name: BRAIN_GATEWAY_SPACE_ORIGIN
+  value: https://space-service.brain-apps.svc:8080
+- name: BRAIN_GATEWAY_TRUST_FILE
+  value: /backend-trust/ca.crt
+- name: SERVER_SSL_ENABLED
+  value: 'true'
+- name: SERVER_SSL_CERTIFICATE
+  value: file:/api-tls/tls.crt
+- name: SERVER_SSL_CERTIFICATE_PRIVATE_KEY
+  value: file:/api-tls/tls.key
+- name: SERVER_FORWARD_HEADERS_STRATEGY
+  value: none
+- name: BRAIN_GATEWAY_CONTENT_ORIGIN
+  value: https://content-service.brain-apps.svc:8080
+- name: BRAIN_GATEWAY_QUERY_ORIGIN
+  value: https://brain-query-service.brain-apps.svc:8080
+extraVolumeMounts:
+- name: api-tls
+  mountPath: /api-tls
+  readOnly: true
+- name: backend-trust
+  mountPath: /backend-trust
+  readOnly: true
+extraVolumes:
+- name: api-tls
+  secret:
+    secretName: brain-gateway-api-tls
+- name: backend-trust
+  secret:
+    secretName: brain-guest-api-trust

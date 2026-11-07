@@ -1,0 +1,19 @@
+syntax = "proto3";
+package knowledgebrain.learning.courseprogressshare.v1;
+option java_package = "io.knowledgebrain.contracts.learning.courseprogressshare.v1";
+option java_multiple_files = true;
+message CourseProgressShareEnvelopeV1 {
+ string event_id = 1; string event_type = 2; uint32 event_version = 3;
+ int64 occurred_at_epoch_millis = 4; string producer = 5; string aggregate_type = 6;
+ string aggregate_id = 7; string space_id = 8; string actor_id = 9; string trace_id = 10; bytes payload = 11;
+}
+// Explicit snapshot publication, separate from participant-only private progress.
+// Consumers must recheck current policy/membership/enrollment before disclosure.
+// Deduplicate event_id, apply increasing versions; withdrawal removes visibility.
+message CourseProgressShareSnapshotV1 {
+ string share_id = 1; string group_id = 2; string space_id = 3; string course_id = 4;
+ string participant_id = 5; int64 version = 6; string state = 7; int64 policy_version = 8;
+ int64 membership_version = 9; string enrollment_id = 10; int64 enrollment_version = 11;
+ int64 course_version = 12; int64 progress_version = 13; uint32 completed_studies = 14;
+ uint32 total_studies = 15; string audience = 16; string updated_at = 17;
+}

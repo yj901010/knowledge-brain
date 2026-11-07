@@ -1,0 +1,17 @@
+Private Concept and Source revision comparison — 2026-10-22
+
+Pinned Next.js static export and TypeScript check passed: graph-static-build-1792666993405256000
+Real HTTPS browser tests: 25 passed, 0 failed/skipped; graph-web-validation-1792667619528232000
+6 new comparison scenarios + 19 existing Concept/Source editor, retirement, archive, Claim and evidence comparison regressions.
+Exact title/body/URL/citation/license/state comparison, blank vs absent values, Unicode, whitespace and URL spelling passed.
+Stored revision ID, actor and timestamp per side; seven-revision paging, stable selected pair, refresh, one-version empty state, same/reversed pair rejection and identical-content revisions passed.
+Active history and retired Concept/Source archives compare retained versions, including lifecycle-only changes.
+History and independent External Mapping pins remained identical; independent drafts retained and zero comparison writes observed.
+Wrong IDs, malformed actor/date/state/text, duplicate IDs within/across pages and duplicate versions rejected; failed initial/next pages clear comparisons and retry explicitly.
+Late closed/switched replies cannot restore comparison; real guest revocation clears active Concept and archived Source flows.
+Escaped long Unicode/HTML strings, no automatic external requests or browser storage, and 390px width assertion passed.
+Gateway exact image imported on both nodes and deployed: knowledge-brain/gateway-service:local-34dbe216aa595595
+Knowledge image remained knowledge-brain/knowledge-service:local-189015abb40dd499; 690 backend/contract files verified unchanged by SHA-256.
+Temporary owned Gateway builder Pod, Service, NetworkPolicy and source ConfigMaps removed.
+All 12 application Deployments ready; host HTTPS /graph 200.
+No new API, event, schema, canonical backend implementation, dependency or architecture change.

@@ -1,0 +1,154 @@
+openapi: 3.1.0
+info:
+  title: Private Concept Claim Usage API
+  version: 1.0.0
+  description: Knowledge-owned read-only discovery of current PRIVATE ACTIVE DRAFT
+    Claims using a known private Concept as their OBJECT or PREDICATE. Requires HTTPS
+    and fresh CONCEPT_READ authority in the authorized PERSONAL Space.
+servers:
+- url: https://localhost:8443
+security:
+- sessionCookie: []
+paths:
+  /api/spaces/{spaceId}/concepts/{conceptId}/claim-usages:
+    parameters:
+    - name: spaceId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/UuidV7'
+    - name: conceptId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/UuidV7'
+    get:
+      operationId: listPersonalConceptClaimUsages
+      description: Return effective current Claims using this Concept in exactly the
+        selected role. All three current referenced Concepts and the Claim must be
+        ACTIVE PRIVATE in the same Space. A known retired private Concept returns
+        an empty page; unknown/foreign/public Concept identities return 404. Duplicate
+        positions are returned once per Claim per role. Sort ascending by claimId;
+        after is exclusive and need not identify a currently existing Claim. Only
+        singleton role/after/limit query keys are accepted. UUIDs must be canonical
+        lowercase UUIDv7, limits canonical positive decimal without signs/leading
+        zeros/whitespace. A nonempty body returns 400. No ETag is emitted because
+        titles are current metadata independent of Claim version. Reads never create
+        canonical revisions or events. Existing nested Claim item/history endpoints
+        use the returned subjectConceptId and claimId; known history remains readable
+        after Claim or Concept retirement.
+      parameters:
+      - name: role
+        in: query
+        schema:
+          type: string
+          enum:
+          - OBJECT
+          - PREDICATE
+          default: OBJECT
+      - name: after
+        in: query
+        schema:
+          $ref: '#/components/schemas/UuidV7'
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      responses:
+        '200':
+          description: Current usage page for the authorized private Concept
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsagePage'
+        '400':
+          description: Non-HTTPS, noncanonical ID, invalid/repeated/unknown query
+            or nonempty GET body
+          content:
+            application/json:
+              schema:
+                $ref: personal-concept-claims.yaml#/components/schemas/Error
+        '401':
+          $ref: personal-concept-claims.yaml#/components/responses/Unauthorized
+        '403':
+          $ref: personal-concept-claims.yaml#/components/responses/Forbidden
+        '404':
+          description: Unknown/foreign/public Concept identity or non-Personal/private
+            Space
+          content:
+            application/json:
+              schema:
+                $ref: personal-concept-claims.yaml#/components/schemas/Error
+        '502':
+          $ref: personal-concept-claims.yaml#/components/responses/BadGateway
+        '503':
+          $ref: personal-concept-claims.yaml#/components/responses/ServiceUnavailable
+        '504':
+          $ref: personal-concept-claims.yaml#/components/responses/GatewayTimeout
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest
+      description: Secure HttpOnly common guest/registered session credential
+  schemas:
+    UuidV7:
+      $ref: personal-concept-claims.yaml#/components/schemas/UuidV7
+    Usage:
+      type: object
+      additionalProperties: false
+      required:
+      - claim
+      - subjectTitle
+      - predicateTitle
+      - objectTitle
+      properties:
+        claim:
+          allOf:
+          - $ref: personal-concept-claims.yaml#/components/schemas/Claim
+          - type: object
+            properties:
+              state:
+                const: ACTIVE
+        subjectTitle:
+          $ref: '#/components/schemas/CurrentTitle'
+        predicateTitle:
+          $ref: '#/components/schemas/CurrentTitle'
+        objectTitle:
+          type: string
+          minLength: 1
+          maxLength: 1000
+          description: Current Concept title for CONCEPT objects; exact canonical
+            scalar value otherwise. OBJECT usage matches only Concept objects; PREDICATE
+            usage includes all five kinds.
+    CurrentTitle:
+      type: string
+      minLength: 1
+      maxLength: 200
+      description: Current Concept title at the collection query snapshot; not a historical
+        title
+    UsagePage:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - nextAfter
+      properties:
+        items:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/Usage'
+        nextAfter:
+          oneOf:
+          - $ref: '#/components/schemas/UuidV7'
+          - type: 'null'

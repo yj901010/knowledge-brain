@@ -1,0 +1,96 @@
+openapi: 3.1.0
+info:
+  title: Content-owned Concept-to-Note reference lookup
+  version: 1.0.0
+servers:
+- url: https://localhost:8443
+security:
+- brainSession: []
+paths:
+  /api/spaces/{spaceId}/concept-references/{conceptId}/notes:
+    get:
+      description: >-
+        Read Content-owned references in a freshly authorized PERSONAL PRIVATE
+        Space. Returns only current ACTIVE PRIVATE Note IDs and titles, including
+        Daily Notes. This does not query Knowledge, return Concept definitions,
+        verify target existence or change Note or reference revisions. An absent,
+        foreign or retired Concept ID is treated identically: return the active
+        Notes in this authorized Space that retain that immutable ID, or an empty
+        page. Concept retirement does not remove Content references. Retired Notes
+        and removed references are excluded immediately from canonical reads.
+        Each page is an independent read; concurrent changes can affect later
+        pages. No global count or Note bodies are returned.
+      parameters:
+      - name: spaceId
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/UuidV7'
+      - name: conceptId
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/UuidV7'
+      - name: after
+        in: query
+        description: Exclusive Note UUIDv7 cursor in ascending creation order.
+        schema:
+          $ref: '#/components/schemas/UuidV7'
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      responses:
+        '200':
+          description: Fresh NOTE_READ authorization; Cache-Control no-store.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConceptNotePage'
+        '400':
+          description: Invalid UUIDv7, limit, duplicate or unknown query parameter.
+        '401':
+          description: Missing or revoked guest or registered session.
+        '404':
+          description: Personal Space unavailable to this principal.
+        '503':
+          description: Authority or storage unavailable; no private data returned.
+components:
+  securitySchemes:
+    brainSession:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest
+      description: Common application session for guests and registered principals.
+  schemas:
+    UuidV7:
+      type: string
+      format: uuid
+      pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$'
+    ConceptNotePage:
+      type: object
+      additionalProperties: false
+      required: [items, nextAfter]
+      properties:
+        items:
+          type: array
+          maxItems: 100
+          items:
+            type: object
+            additionalProperties: false
+            required: [noteId, title]
+            properties:
+              noteId:
+                $ref: '#/components/schemas/UuidV7'
+              title:
+                type: string
+                minLength: 1
+                maxLength: 200
+        nextAfter:
+          description: Last returned Note ID when more rows exist; otherwise null.
+          oneOf:
+          - $ref: '#/components/schemas/UuidV7'
+          - type: 'null'

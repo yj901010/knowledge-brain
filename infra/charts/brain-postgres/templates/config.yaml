@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-scripts
+data:
+  initialize.sh: |
+{{ .Files.Get "files/initialize.sh" | indent 4 }}
+  verify-isolation.sh: |
+{{ .Files.Get "files/verify-isolation.sh" | indent 4 }}

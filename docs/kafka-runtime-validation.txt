@@ -1,0 +1,17 @@
+2026-10-06 local Kubernetes/Kafka runtime validation
+User confirmed Docker cgroup v2; two nodes Ready.
+Strimzi 1.2.0 deployed; Kafka 4.3.1 Ready condition passed.
+Controller/broker storage Bound; internal TLS listener enabled.
+NOT RUN: authenticated producer/consumer and negative ACL tests, failover, backups, performance or monitoring.
+
+NAME                                               READY   STATUS    RESTARTS   AGE
+pod/brain-kafka-brokers-0                          1/1     Running   0          99s
+pod/brain-kafka-controllers-1                      1/1     Running   0          100s
+pod/brain-kafka-entity-operator-66bf5b99b9-h9rx2   2/2     Running   0          36s
+pod/strimzi-cluster-operator-5b7cf875f4-mg2fk      1/1     Running   0          2m40s
+
+NAME                                                     STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
+persistentvolumeclaim/data-0-brain-kafka-brokers-0       Bound    pvc-4c51affe-80a3-4875-8253-63d4759a90d8   5Gi        RWO            local-path     <unset>                 102s
+persistentvolumeclaim/data-0-brain-kafka-controllers-1   Bound    pvc-23792470-f0ec-4e4a-91de-32568467552f   2Gi        RWO            local-path     <unset>                 102s
+
+[{"lastTransitionTime":"2026-10-06T11:07:29.599244336Z","status":"True","type":"Ready"}]

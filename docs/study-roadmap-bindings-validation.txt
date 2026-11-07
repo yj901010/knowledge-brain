@@ -1,0 +1,21 @@
+Study reference-roadmap binding validation — 2026-10-23
+
+collaboration: 49 passed, no failed/errors/skipped; backend-validation-1792757684890322700-60ba222d
+learning: 119 passed, no failed/errors/skipped; backend-validation-1792757509611453700-e834abc7
+gateway: 91 passed, no failed/errors/skipped; backend-validation-1792757509625732700-fd914ee6
+Browser: 5 actual-account Group scenarios passed; graph-web-validation-1792758085466147900
+Study roadmap UI verified explicit graph preview/confirmation, owner binding, committed reply-loss GET recovery, stale conditional writes, reference replacement, unlink/relink, same binding aggregate and independent Study st version.
+Actual Learning HTTPS capability calls matched Group Space, opaque-token principal, link ID, active state and observed version. Private roadmap IDs failed. Cross-Group Study lookup failed. MEMBER/VIEWER could read but not mutate; guest and removed-member access failed.
+Retiring a source Group roadmap did not erase or rewrite the audited relationship; current graph inspection displayed retirement. Archived Study relationships stayed readable and immutable. Personal roadmap state was unchanged and foreign principals remained denied.
+Existing Group creation, invitation/role/leave, Group shared roadmaps and Study lifecycle flows passed together. Mobile overflow, literal text, page errors and empty browser storage checks passed.
+Unit/integration coverage includes bounded strict capability/client responses, same principal and Space checks, wrong/retired/stale references, source-unavailable no-write behavior, archived Study denial, concurrent one-winner binding, retirement race, history pagination and transactional Outbox rollback.
+Actual CDC delivered three byte-exact relation snapshots and stable event IDs with trace/schema headers; unacknowledged replay matched canonical Outbox bytes. No new downstream projector is introduced; future consumers must deduplicate eventId and apply increasing aggregate versions.
+Collaboration V3 owns only relationship/provenance and own Study/Group/Space FKs. Graph, progress and evidence remain Learning-owned. Source validation is a point-in-time read before one local transaction; no network call while holding its Group/Study locks, no cross-service SQL/FK, no distributed transaction.
+New internal Learning reference capability has singleton constant-time service bearer checks, no Cookie/Origin/query, fresh Space Group read authorization and metadata-only response. Fixed HTTPS client verifies CA/hostname, rejects redirects, bounds JSON16KiB with3s connect/5s read deadlines. Gateway has no internal route.
+Live capability Secret is referenced only by Learning and Collaboration workloads; Learning ingress explicitly permits the Collaboration caller. Existing public CA is reused without mounting a private CA key.
+Registry collaboration/study-roadmap-events/1 has immutable expected bytes, FULL validity and FULL_TRANSITIVE compatibility. Kafka topic/producer/validator Ready preceded canonical writes. Live literal producer/reader ACLs are Connect/Group validator only, and offsets/slot/publication were not reset.
+Collaboration CDC account cannot SELECT binding, binding revision, Study or Study revision tables; Outbox remains readable. All nine connector/tasks RUNNING after deployment/browser mutations.
+OpenAPI: 61 documents, 1608 local/relative references resolve. Pinned Next/TypeScript static build passed.
+All three exact service images imported on both k3d nodes and rolled out. Module/shared event-contract source bytes match build archives; three owned temporary builder sets removed.
+All 13 application Deployments Ready; host trusted HTTPS /graph and /graph/groups200 with no-store/CSP.
+No prior migration/Protobuf rewrite, new dependency, AI, automatic personal sharing, automatic source sync/detach, shared progress or Course/Assignment/Discussion/Submission implementation.

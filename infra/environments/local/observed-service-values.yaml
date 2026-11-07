@@ -1,0 +1,4 @@
+observability:
+  enabled: true
+  sampleRatio: "0.10"
+  environmentName: local

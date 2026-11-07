@@ -1,0 +1,19 @@
+# Note Concept association activity
+
+Refresh `/graph`, open **활동 열기**, and select **노트 개념 연결**. This private timeline now consumes the existing `content.note-concepts.v1` events. Seventeen literal streams across Learning, Planning and Content are supported.
+
+Content continues to own canonical Note/Concept relationships and their independent audit. Activity stores only immutable derived facts in its own Inbox and ClickHouse projection. The frozen v1 envelope, event ID, actor, timestamp and trace stay unchanged. Knowledge owns Concepts; no Knowledge reads or cross-owner database operations are introduced. No dependency or dataset is added.
+
+Each entry keeps the Note ID, association revision ID, conceptVersion, Note body version, lifecycle and up to20 ordered link/Concept IDs. Source version means the association version, not the Note body version. Reordering retains link IDs, removal snapshots may be empty, and re-adding a previously detached Concept may create a new link ID. Note retirement emits the existing retained empty association snapshot only when an association history exists. A Note body edit alone does not invent a relationship change.
+
+The source event has no Note title, Concept title or Concept visibility. The timeline uses a generic label and displays original IDs in order. It never hydrates current titles into historical snapshots. Personal data remains private even when a linked Concept is public. The browser renders text only and performs no automatic owner hydration or writes.
+
+**현재 활동 원본 확인** explicitly reads the exact same-Space `notes/{noteId}/concepts` endpoint, checking Note ID, bounded unique links, current conceptVersion and its strong `"cN"` ETag. This canonical endpoint returns no spaceId; the fixed authorized request path supplies the tenancy boundary. Current and historical snapshots remain visibly separate. Archived Note404 retains activity and Content audit. Failed/malformed responses clear prior current summaries. Close/filter/Space changes discard delayed replies, revoked credentials clear private state, and sibling editor drafts are preserved.
+
+The scoped Content HTTPS retained-event export now includes seven original streams, five rows per page with a fixed watermark. It preserves exact original bytes and IDs, including empty/archived association snapshots. No browser cookie, Gateway internal route or canonical write capability is granted. The one new Kafka ACL is literal Read/Describe for `content.note-concepts.v1`; the existing Activity consumer group prefix stays unchanged. No contract registration, connector restart/slot change or new group is needed.
+
+Additive V5 only requests full canonical warmup by changing Activity seed/readiness flags. Existing Inbox rows and Kafka checkpoints remain. A missing noteConcepts field in old durable JSON reads as null. Roll out Content, Activity and Gateway through the existing exact two-node image import scripts. Allow the existing900s Activity wait for retained history. The operator `Rebuild-LocalActivity.py` retains the bounded own-database pool and three-owner source scans, no Kafka capability and no API Service selector. Never reset canonical data, Inbox, ClickHouse, PVCs, topics, CDC slots or checkpoints to enable this feature.
+
+Verification includes own PostgreSQL/ClickHouse, all seventeen actual Kafka streams, original Content export bytes, out-of-order durable replay and wire conflicts,25 relationship versions paged20+5, archive404, independent body versions, desktop/390px mobile, current-response ETag and delayed/revoked isolation, and two actual registered Space claims. Completed results are recorded in `note-concept-activity-validation.txt` and `.local/note-concept-activity-proof.json`. Central telemetry and the agreed visual redesign remain separate work.
+
+Current operational scope: [metadata activity](metadata-activity.md) adds the eighteenth stream. The prior increment evidence above remains historical.

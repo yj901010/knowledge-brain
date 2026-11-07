@@ -1,0 +1,8 @@
+{
+  "version": "4.0.21",
+  "image": "cassandra:4.0.21@sha256:0909b1681015a66782ca3286a371145cbea69f5b293bc4ed976af769730f89fe",
+  "license": "Apache-2.0",
+  "licenseUrl": "https://raw.githubusercontent.com/apache/cassandra/cassandra-4.0.21/LICENSE.txt",
+  "noticeUrl": "https://raw.githubusercontent.com/apache/cassandra/cassandra-4.0.21/NOTICE.txt",
+  "reviewedAt": "2026-10-07"
+}

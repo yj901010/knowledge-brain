@@ -1,0 +1,26 @@
+Public Roadmap ratings and deterministic ranking — 2026-10-20
+
+Full backend backend-validation-1792494267992179500: 766 total, 755 passed, 11 environment-gated exclusions,0 failures/errors,BUILD SUCCESS.
+Learning PostgreSQL/real Kafka backend-validation-1792494046489761700:97/97 passed.
+Full verified-HTTPS browser graph-web-validation-1792494803:103/103 passed; actual Keycloak author/reviewer, own private votes, edit/withdraw/reactivate,5+3 audit, public-version re-pin and reviewer-role-independent rating after revocation.
+Focused browser graph-web-validation-1792494879847481500:2/2 passed; guest aggregate visibility, strict auth/query boundaries, stale412 draft, malformed summary, late response and revocation clearing.
+Final TypeScript/Next/license/CSP static export graph-static-build-1792494568217189300: passed.
+Earlier static builds caught a missing JSX fragment close and BigInt literal incompatibility with the existing TS target; fixed using the existing BigInt constructor before deployment.
+An initial parallel browser launch shared a second-based name. The retained actual full Job ran all103 tests; the focused2 tests were separately launched with the corrected nanosecond ID. No test fixture or domain source was reset.
+
+OpenAPI references resolved: 1419; frozen7 private/2 public Learning stream contracts retained.
+New rating schema LF SHA256: 22c810dde304272c7227f3c713aba9cb96207e6bd4cfc32f140ab341f3d6a158.
+Registry roadmap-rating-contract-validation-1792494044:FULL/FULL_TRANSITIVE; installer contracts:public-roadmap-contract-validation-1792494711,roadmap-contribution-contract-validation-1792494717,roadmap-rating-contract-validation-1792494723
+Deployed space: knowledge-brain/space-service:local-eaf6bb5b741dd786; builder space-image-build-1792494267; exact node imports space-image-import-1792494451-0,space-image-import-1792494452-1
+Deployed learning: knowledge-brain/learning-service:local-eaf6bb5b741dd786; builder learning-image-build-1792494267; exact node imports learning-image-import-1792494450-0,learning-image-import-1792494450-1
+Deployed gateway: knowledge-brain/gateway-service:local-086ddfd314717f88; builder gateway-image-build-1792494625; exact node imports gateway-image-import-1792494665-0,gateway-image-import-1792494666-1
+
+12 app Deployments Ready;8 connectors/tasks RUNNING. Existing Learning connector config/CDC slot/checkpoint unchanged.
+One new literal Kafka topic and scoped writer/reader ACL; no private Activity20 stream/export change.
+Actual Learning Pod restart changes UID and retains exact whole-row/revision/Outbox fingerprint for rr10 (10 immutable vote revisions/events) and graph v3/v2/v1. Proof Jobs use PostgreSQL default_transaction_read_only with no Kafka capability and return hashes/counts only.
+Public graph/history/summary before and after restart are exactly equal; current summary4.00/one vote remains separate from REVIEWED verification.
+No private graph copy, canonical source/Inbox/PVC/topic/CDC slot/checkpoint deletion, or Activity projection replay.
+Three owned image builder Pod/Service/NetworkPolicy/ConfigMap sets removed after deployment and exact imports.
+Host CA-verified /graph/roadmaps=200; no-session ranking=401; internal authority=403.
+
+Machine-readable proof: .local/roadmap-ratings-proof.json, .local/roadmap-ratings-runtime-proof.json, .local/roadmap-ratings-contract-proof.json.

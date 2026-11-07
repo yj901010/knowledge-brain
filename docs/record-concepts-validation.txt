@@ -1,0 +1,155 @@
+Private record Concept association validation, 2026-10-18
+
+687 backend tests, zero failures/errors,25 unchanged environment-gated skips
+(662 passed). Content129 uses actual own PostgreSQL and all ten literal Content
+Kafka topics, no skips; Gateway54 no skips; Space35 has two existing skips. Six
+new real-store tests cover all three typed parents, independent head versions,
+stable retained/reordered links and new IDs after detach/re-add, initial empty and
+current no-ops, stale-before-no-op, original source preservation, source version/
+actor audit, restart reconstruction, archival/foreign-kind guards, full Outbox
+rollback of head/current links/audit and concurrent first-write serialization.
+Reverse20+3 cursor binding covers Space/Concept/type/lifecycle and current titles.
+Four API tests cover strict body/Origin/TLS/session/query/tag/capability, only-added
+target validation, current authority failure and archived-source denial. One real
+Kafka test verifies nine immutable full revisions across the three kinds, exact
+Outbox bytes/UUIDv7 IDs/ordered links/actor/source versions and trace/schema headers.
+Two Gateway tests guard the four declared operations, enums and bounded queries.
+
+Initial focused browser run passed API and mobile checks and caught a same-value
+record-type selection clearing the reverse catalog without changing its scope.
+The new type/lifecycle handlers now keep the current request and rows for an
+unchanged selection. Focused3 and full84 pass against the final deployed image.
+Failed Job retained as diagnostic evidence; no reset was used to pass validation.
+
+Real browser tests cover all three source types, current private/public Concept
+authority, retained retired targets and rejected re-adds, foreign private target
+denial, unchanged original source fields/versions, independent association audit,
+typed active/archived reverse discovery,23-source20+3 paging and scoped cursors.
+Three record editors retain unsaved body drafts, page23 private Concept choices,
+recover a lost committed link write through explicit latest inspection, preserve
+selections through a true412 and open immutable link history. Concept library
+reverse navigation reads current canonical Bookmark/Question/Decision fields.
+Mobile390px fit, no JS errors/private browser storage/automatic external request,
+failed catalogs/closed late responses and real session revocation verified.
+Desktop/mobile screenshots inspected. Two real Keycloak registrations preserve
+three typed association/link/revision IDs/guest actors each; later changes record
+registered actors, detach/re-add retains aggregate ID, and source archival retains
+association history. A real Content-only Pod restart preserves all three source
+association heads, ordered links, actors/audit and active/archived reverse discovery
+with original source bodies and independent Note unchanged. Synthetic sources
+are explicitly archived afterward; relation heads/audit remain readable.
+
+New Registry source/FULL/FULL_TRANSITIVE and nine old Content schema bytes verified
+against Registry. Prior Learning/Planning/Notification hashes unchanged. Four new
+OpenAPI operations and all local references resolve; existing eight Content Space
+capability actions retained. CDC selects only Outbox; Note and nine Record/Concept
+canonical SELECTs plus twelve other owner DB CONNECTs denied; one-table publication,
+existing connector/slot/offsets retained. All twelve app Deployments Ready, all
+eight Connector/task states RUNNING. Exact Content/Gateway images imported on both
+nodes, Space/Knowledge binaries unchanged. Three owned temporary builder sets
+(including the superseded UI image) removed after exact source/UID/labels/init-exit/
+deployment checks. No parent data/PVC/topic/slot reset, new dependency/dataset,
+cross-owner SQL, automatic publication/fetch or AI introduced. Integrated record
+association Graph/search/activity projection remains a separate event-driven increment.
+
+{
+  "date": "2026-10-18",
+  "jobs": {
+    "backend": "backend-validation-1792317564993771000",
+    "focusedBrowser": "graph-web-validation-1792318627",
+    "browser": "graph-web-validation-1792318767",
+    "registry": "record-concepts-contract-validation-1792317559",
+    "contentCdc": "content-cdc-bootstrap-1792318126"
+  },
+  "initialUiFailure": "graph-web-validation-1792318209",
+  "backend": {
+    "tests": 687,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 25
+  },
+  "passedBackend": 662,
+  "contentActualPostgresAndTenKafkaTopicsTests": 129,
+  "gatewayTests": 54,
+  "spaceTests": 35,
+  "focusedBrowserTests": 3,
+  "browserTests": 84,
+  "registeredAssociationClaimChecks": 6,
+  "registryRecordConceptSha256": "ebb8f33baa465b8704f737691dc531937a7003bb5c92c165040d78de742ca147",
+  "unchangedContentSchemaHashes": {
+    "note": "e62519e0ec755f41dabb2aafcec3b5503cbfbcea6934f1669978a8e9b80fd8d9",
+    "links": "69fa68736670be833ae97f6b72f9aa4e95e117bc4bb19e4b50b9ff3285331416",
+    "metadata": "80ceaaa95dec8f9a4bb71fed2ff2100d882310b53d0ca09da87913d2c946ffa4",
+    "daily": "d90b7403b7117b1c272606cc224481a087d016fc0123bc5782f3f418b53c669d",
+    "attachments": "ab2b00c4fbad16250b0d9bfefdf28f081d4c4db725ab77e565585bb19fee2007",
+    "concepts": "2d096a96ce77b1d3a5f56b2ce733412022ce89e7d6625385bdac4bc9c6cec3ac",
+    "bookmark": "fd8734005c8d77a0768e807bc86d30efea8aad389eeb6a1524d6812f9bcf1af5",
+    "question": "ae6e0a2dd6264b023a9d8e0372350de05ba0b495fa9c2f9f9016597f58d78e8e",
+    "decision": "22cad4537af4c3f476f856f4fcba22f05f66b610c9f57bd2b8daeee5fe7dc27c"
+  },
+  "otherPriorLearningPlanningNotificationSchemasUnchanged": true,
+  "openapiReferences": 1328,
+  "newOperations": [
+    "getPrivateRecordConcepts",
+    "replacePrivateRecordConcepts",
+    "getPrivateRecordConceptRevisions",
+    "listPrivateConceptRecords"
+  ],
+  "readyDeployments": 12,
+  "runningConnectors": [
+    "space-outbox",
+    "planning-outbox",
+    "notification-outbox",
+    "knowledge-outbox",
+    "media-outbox",
+    "content-outbox",
+    "learning-outbox",
+    "identity-outbox"
+  ],
+  "contentConnectorAndSlotUnchanged": true,
+  "images": {
+    "content": "knowledge-brain/content-service:local-17a186e918e5a979",
+    "gateway": "knowledge-brain/gateway-service:local-2cf82a313ad5d1bf"
+  },
+  "exactNodeImports": {
+    "content": [
+      "content-image-import-1792317805-0",
+      "content-image-import-1792317806-1"
+    ],
+    "gateway": [
+      "gateway-image-import-1792318429-0",
+      "gateway-image-import-1792318429-1"
+    ]
+  },
+  "runtime": {
+    "spaceId": "01a14e8c-632b-793e-a60a-7d56fcaa5a29",
+    "sourceKinds": [
+      "BOOKMARK",
+      "QUESTION",
+      "DECISION"
+    ],
+    "sourceIds": [
+      "01a14e8c-8889-7158-83c1-0c27c4679f82",
+      "01a14e8c-d8f7-7043-8492-cd48f9ee2ae7",
+      "01a14e8d-29a1-7606-a423-81cdb90e5376"
+    ],
+    "associationIds": [
+      "01a14e8c-9896-7838-b4e7-2089548ed088",
+      "01a14e8c-e921-7ef5-856a-04816daf177b",
+      "01a14e8d-39e1-7ac2-ba54-5b16fefb37d3"
+    ],
+    "contentRestart": {
+      "old": "dcab5882-7efe-46f3-aa42-1f5f80b3d354",
+      "new": "e28d45a1-1211-474e-bae2-31f67131f6b1"
+    },
+    "orderedLinksAndStableAssociationIdsPreserved": true,
+    "immutableRevisionsAndActorsPreserved": true,
+    "activeArchivedReverseDiscoveryPreserved": true,
+    "sourceBodyVersionsUnaffected": true,
+    "noteSourceUnchanged": true,
+    "replicasPreserved": 1,
+    "keysTokensOnlyInMemory": true
+  },
+  "ownedBuilderSetsRemoved": 3,
+  "hostHttpsVerified": true
+}

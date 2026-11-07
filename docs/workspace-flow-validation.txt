@@ -1,0 +1,65 @@
+Focused personal workspace and Note composing validation — 2026-11-02 (Asia/Seoul)
+State: COMPLETE
+Cluster UID: ee84ca44-bb83-4712-a572-10169a6e2542
+Gateway image: knowledge-brain/gateway-service:local-538197a628237def
+
+Delivered
+- Ten allowlisted task areas, explicit selector and notes/knowledge/learning/planning
+  shortcuts, safe category-only hash links and browser Back/Forward.
+- Unseen areas mount on first focus. Visited hidden/inert areas preserve drafts,
+  with their existing timers/read behavior; full overview remains available.
+- Space/private-session keys unmount all retained local state on the original
+  owner/session/visibility boundaries. No new browser storage for identity/content.
+- Guest/unavailable GitHub direct links fall back to overview with login guidance.
+  Task-specific Note map tools appear in graph/notes/overview only.
+- Full-width Note editor and stacked390px layout. Layout switching/Escape preserve
+  the same draft; selecting another Note retains original input-clearing rules.
+- Selection-based heading/bold/italic/Wiki/code/task syntax, Ctrl/Cmd+B/I, explicit
+  Ctrl/Cmd+S save, existing byte limits and safe optional side-by-side preview.
+- Formatting is local input only; no automatic save, publication or progress update.
+  IME composition does not trigger save/format shortcuts. Selection is restored
+  in the committed layout phase before subsequent typing.
+
+25 exact-image HTTPS browser scenarios passed, no TLS bypass.
+  graph-web-validation-1793622247804850600 / 905bf881-a413-44e9-83a1-21ed4c25d992 : 25 passed
+
+New scenarios verify unseen-area deferral, Goal/Roadmap draft retention across
+task/history changes, unavailable navigation, rapid formatting-to-typing, safe
+preview/no external image loads, zero writes before explicit save, one Ctrl+S
+versioned save, CAS conflict retention and hidden-draft clearing on real revocation.
+Real Keycloak registration/guest claiming/multiple personal Spaces confirms hidden
+Note and unpublished planning drafts clear when the owner Space changes.
+
+Existing checks reverify private five-stream graph/search, canonical Note editor,
+all six restore cases (including Daily Note binding and denied/stale source),
+Markdown/GFM HTML/URL/image restrictions, graph privacy/revocation, three Roadmap
+and three Goal contract/editor/failure cases and the four workspace design checks.
+No reviewer/expert/operator capability was granted by this validation.
+
+Pinned TypeScript/Next export, static CSP hashes and license notices passed.
+145 frontend files and815 scoped runtime files
+match immutable build source archives. Both existing nodes imported the image.
+Owned builders were cleaned only after source/image/import evidence capture.
+Two nodes,14 apps,7 monitoring,13 JVMs and10 CDC connector/tasks healthy.
+Original14 app/7 monitoring Deployment identities,13 other app images and all13
+PVC UIDs unchanged; no firing alerts. App/login/Headlamp/MinIO/Grafana host HTTPS200
+and anonymous dashboard denial401 passed. No canonical migration/PVC/offset reset.
+Earlier backend/public/backup checks remain historical, not newly counted here.
+
+Visual checks: focused planning desktop/mobile, wide compose and390px preview,
+common graph/keyboard/mobile navigation; finite transitions finished before captures.
+The initial rapid input failure was fixed through committed selection restoration
+and is covered by the same rapid typing assertion. No input wait was added to hide it.
+
+Evidence
+.local/workspace-flow-validation.json
+.local/workspace-flow-deployment.json
+.local/workspace-flow-baseline.json
+.local/workspace-flow-builder-evidence/*.json, *.tar.gz, *.log
+.local/graph-ui-results/workspace-flow-*.png
+.local/workspace-flow-forward.json
+docs/workspace-flow.md
+
+No new service, dependency, API/event contract, owner schema, AI, data sharing or
+automatic learning mutation. Broader collaboration/editor refinement, substantive
+public content curation and production delivery/HA/SLO/off-host/PITR remain separate.

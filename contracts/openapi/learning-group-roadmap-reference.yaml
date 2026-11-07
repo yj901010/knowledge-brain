@@ -1,0 +1,113 @@
+openapi: 3.1.0
+info:
+  title: Learning Group Roadmap Reference Capability
+  version: 1.0.0
+  description: Dedicated Collaboration-to-Learning HTTPS POST capability, not Gateway-routed.
+    Singleton constant-time bearer key; Cookie and Origin rejected. Strict <=2048-byte
+    three-field JSON, no query. Resolves the browser opaque token through fresh Space
+    GROUP_ROADMAP_READ. Returns only scoped reference/provenance metadata, never graphs,
+    credentials or personal learning data. Caller verifies same principal/Space/link,
+    ACTIVE state and exact observed version. no-store and traceparent propagation.
+    TLS fixed origin, no redirects, bounded client response16KiB and connect/read
+    deadlines. Feature flags default disabled; local/base service values explicitly
+    configure the dedicated Secret.
+security:
+- serviceCapability: []
+paths:
+  /internal/learning/group-roadmap-reference:
+    post:
+      operationId: checkGroupRoadmapReference
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - spaceId
+              - roadmapLinkId
+              - token
+              properties:
+                spaceId:
+                  $ref: '#/components/schemas/Id'
+                roadmapLinkId:
+                  $ref: '#/components/schemas/Id'
+                token:
+                  type: string
+                  pattern: ^[A-Za-z0-9_-]{43}$
+                  writeOnly: true
+      responses:
+        '200':
+          description: Authorized reference relationship; sr0 means absent
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reference'
+        '400':
+          description: Invalid UUID/strict body/query/version
+        '401':
+          description: Dedicated service capability or opaque principal token invalid
+        '403':
+          description: Browser Cookie/Origin rejected, unregistered principal or Group
+            read denied
+        '404':
+          description: Group membership/configuration, Study scope, or Group roadmap
+            unavailable
+        '413':
+          description: Body >2048 bytes
+        '415':
+          description: JSON required
+        '503':
+          description: Space/Learning authority or persistence unavailable; nothing
+            committed before successful reference check
+components:
+  securitySchemes:
+    serviceCapability:
+      type: http
+      scheme: bearer
+  schemas:
+    Id:
+      type: string
+      format: uuid
+      pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+    Reference:
+      type: object
+      additionalProperties: false
+      required:
+      - principalId
+      - spaceId
+      - roadmapLinkId
+      - version
+      - state
+      - sourceSpaceId
+      - sourceRoadmapId
+      - sourceVersion
+      - title
+      properties:
+        principalId:
+          $ref: '#/components/schemas/Id'
+        spaceId:
+          $ref: '#/components/schemas/Id'
+        roadmapLinkId:
+          $ref: '#/components/schemas/Id'
+        version: &id001
+          type: integer
+          format: int64
+          minimum: 1
+        state:
+          enum:
+          - ACTIVE
+          - RETIRED
+        sourceSpaceId:
+          $ref: '#/components/schemas/Id'
+        sourceRoadmapId:
+          $ref: '#/components/schemas/Id'
+        sourceVersion: *id001
+        title:
+          type: string
+          maxLength: 200

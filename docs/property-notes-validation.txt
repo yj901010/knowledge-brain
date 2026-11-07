@@ -1,0 +1,17 @@
+Property-to-Note typed-value browsing validation — 2026-10-22
+
+content: 154 passed, 0 failed/error/skipped; backend-validation-1792671540849942700-b574624a
+gateway: 71 passed, 0 failed/error/skipped; backend-validation-1792671540886584800-65928a1f
+Browser: 21 passed (3 property scenarios + 18 tag/metadata/activity/library/retirement/Journal/archive/restoration regressions); graph-web-validation-1792671975505435400
+Pinned frontend build and TypeScript checks passed: graph-static-build-1792671705639821100
+OpenAPI: 54 documents parsed, 1450 local references resolved.
+Real 20+2 property and Note pages; active ordinary/Daily Notes, repeated titles distinguished by UUID, unassigned/retired Notes excluded.
+Five property types, exact 38-digit decimal, zero/false/empty string/empty list and multiline values preserved.
+Current values and metadata versions, assignment removal and retirement observed; unused property definition retained with zero count.
+Fresh Space checks, foreign/unknown property denial, no-store pages, strict query keys/limits and read-only Gateway routes passed.
+Real PostgreSQL reads/store restart preserved revision and Outbox behavior. V13 adds only note_property_lookup; deployment migration verified. No new dependency.
+Property browsing preserves independent editor draft; explicit Note selection opens existing canonical editor. Mobile width and literal HTML escaping passed.
+Wrong property/name/type, malformed typed values and repeated pages fail closed; explicit refresh recovers. Late switched/closed responses cannot repopulate private UI.
+Revoked detail and catalog reads clear private UI; empty property catalog is explained. No browser storage or browsing writes.
+Content/Gateway exact source-hash images imported on both nodes and rolled out; both owned temporary builders cleaned.
+All 12 application Deployments ready; verified host HTTPS /graph 200.

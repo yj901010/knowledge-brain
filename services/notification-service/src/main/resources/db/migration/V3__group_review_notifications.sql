@@ -1,0 +1,8 @@
+CREATE TABLE group_review_preference(group_id uuid NOT NULL,recipient_id uuid NOT NULL,space_id uuid NOT NULL,version bigint NOT NULL CHECK(version>0),membership_version bigint NOT NULL CHECK(membership_version>0),enabled boolean NOT NULL,enabled_after bigint NOT NULL,snapshot jsonb NOT NULL,PRIMARY KEY(group_id,recipient_id));
+CREATE TABLE group_review_preference_revision(revision_id uuid PRIMARY KEY,group_id uuid NOT NULL,recipient_id uuid NOT NULL,version bigint NOT NULL,snapshot jsonb NOT NULL,UNIQUE(group_id,recipient_id,version));
+CREATE TABLE group_review_receipt(event_id uuid PRIMARY KEY,payload_hash char(64) NOT NULL,aggregate_id uuid NOT NULL,source_version bigint NOT NULL,decision varchar(32) NOT NULL,UNIQUE(aggregate_id,source_version));
+CREATE TABLE group_review_notification(notification_id uuid PRIMARY KEY,group_id uuid NOT NULL,space_id uuid NOT NULL,recipient_id uuid NOT NULL,membership_version bigint NOT NULL,source_event_id uuid NOT NULL UNIQUE,version bigint NOT NULL,is_read boolean NOT NULL,state varchar(16) NOT NULL CHECK(state IN ('ACTIVE','RETIRED')),snapshot jsonb NOT NULL);
+CREATE INDEX group_review_catalog ON group_review_notification(group_id,recipient_id,membership_version,notification_id);
+CREATE TABLE group_review_revision(revision_id uuid PRIMARY KEY,notification_id uuid NOT NULL REFERENCES group_review_notification(notification_id),version bigint NOT NULL,snapshot jsonb NOT NULL,UNIQUE(notification_id,version));
+CREATE TABLE group_review_runtime(singleton boolean PRIMARY KEY DEFAULT true CHECK(singleton),seeded boolean NOT NULL DEFAULT false);
+INSERT INTO group_review_runtime VALUES(true,false);

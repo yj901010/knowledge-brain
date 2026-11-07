@@ -1,0 +1,37 @@
+{
+  "upstream": "org.apache.tinkerpop:gremlin-shaded:3.7.3",
+  "upstreamCommit": "077e3eb22c463545c3fc974944d4bf1d5d6a32fd",
+  "modifiedArtifact": "io.knowledgebrain:gremlin-shaded-patched:0.1.0-SNAPSHOT",
+  "modifications": [
+    "Jackson 2.15.2 replaced by actual Jackson 2.18.11 bytecode before relocation",
+    "Explicit original Kryo/minlog/Objenesis versions and relocations retained",
+    "Own artifact identity, merged notices, Multi-Release manifest, invalidated signatures/module descriptors excluded",
+    "Service descriptors excluded as in upstream; dependency metadata retained"
+  ],
+  "sources": {
+    "knowledge-brain/upstream-pom.xml": {
+      "url": "https://raw.githubusercontent.com/apache/tinkerpop/077e3eb22c463545c3fc974944d4bf1d5d6a32fd/gremlin-shaded/pom.xml",
+      "sha256": "c363e6839038e60efa83deb87719426f991c2670d45bf4e8b4262d7ce3ac3996"
+    },
+    "LICENSE": {
+      "url": "https://raw.githubusercontent.com/apache/tinkerpop/077e3eb22c463545c3fc974944d4bf1d5d6a32fd/gremlin-shaded/src/main/static/LICENSE",
+      "sha256": "68d1e80fbde427b4bcb1bfde50d908210dc5233d39a5a458e965ee3e04cf1d4c"
+    },
+    "knowledge-brain/upstream-NOTICE": {
+      "url": "https://raw.githubusercontent.com/apache/tinkerpop/077e3eb22c463545c3fc974944d4bf1d5d6a32fd/gremlin-shaded/src/main/static/NOTICE",
+      "sha256": "ffa2d212ef26a4238614713ef08b5bd3dd64c9c45d4c126d7054b8d3a5b80b48"
+    },
+    "licenses/kryo": {
+      "url": "https://raw.githubusercontent.com/apache/tinkerpop/077e3eb22c463545c3fc974944d4bf1d5d6a32fd/gremlin-shaded/src/main/static/licenses/kryo",
+      "sha256": "a993d7bb08c5d4dc1c17d00cbaf9eaa39d44f183ae0bd42523bc2389b97494de"
+    },
+    "licenses/minlog": {
+      "url": "https://raw.githubusercontent.com/apache/tinkerpop/077e3eb22c463545c3fc974944d4bf1d5d6a32fd/gremlin-shaded/src/main/static/licenses/minlog",
+      "sha256": "aa0f8f8e01e2416fdfda98064c58644ced3b8a799548608e1f1239be8bd494a5"
+    },
+    "licenses/bigint": {
+      "url": "https://raw.githubusercontent.com/apache/tinkerpop/077e3eb22c463545c3fc974944d4bf1d5d6a32fd/gremlin-shaded/src/main/static/licenses/bigint",
+      "sha256": "800a2a1fa6141763161e6d9ea5ceb283152ef3695dad10cee7243b63b9986c9f"
+    }
+  }
+}

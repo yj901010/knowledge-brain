@@ -1,0 +1,18 @@
+syntax = "proto3";
+package knowledgebrain.learning.courseprogress.v1;
+option java_package = "io.knowledgebrain.contracts.learning.courseprogress.v1";
+option java_multiple_files = true;
+message CourseProgressEnvelopeV1 {
+ string event_id = 1; string event_type = 2; uint32 event_version = 3;
+ int64 occurred_at_epoch_millis = 4; string producer = 5; string aggregate_type = 6;
+ string aggregate_id = 7; string space_id = 8; string actor_id = 9; string trace_id = 10; bytes payload = 11;
+}
+message CourseStudyProgressV1 { string study_id = 1; string status = 2; }
+// PRIVATE/PARTICIPANT_ONLY even inside a Group Space. No owner/peer visibility grant.
+// No Course/Study content copy or personal Note/evidence; deduplicate event_id and apply increasing versions.
+message CourseProgressSnapshotV1 {
+ string progress_id = 1; string group_id = 2; string space_id = 3; string course_id = 4;
+ string participant_id = 5; int64 version = 6; int64 course_version = 7;
+ string enrollment_id = 8; int64 enrollment_version = 9; string visibility = 10;
+ string audience = 11; repeated CourseStudyProgressV1 steps = 12; string updated_at = 13;
+}

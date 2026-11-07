@@ -1,0 +1,33 @@
+Validated 2026-10-06, local k3d-knowledge-brain.
+Helm brain-connect revision 1 deployed in brain-events; workers restored to 1/1 Ready after outage verification.
+Official Debezium Connect 3.7.0.Final manifest sha256:79265cb2c2b9d901bf3c24f4e09e40d06f14987b6bcba0f6e0e06d3f1ddc1fbb.
+Kafka 4.3.1, PostgreSQL 17.11; test JVM Java 25, Maven 3.10.0, protoc/runtime 4.36.2.
+Helm local/base lint and local manifest rendering passed; 9 resources rendered.
+4 explicit Kafka topics and both mTLS users Ready; local RF=1/min ISR=1.
+Bootstrap Job identity-cdc-bootstrap-1791287261 Complete:
+  Dedicated CDC login can SELECT Identity Outbox.
+  SELECT of guest credential_hash denied; connections to all 12 other owner databases denied.
+  Publication identity_outbox contains exactly public.outbox_event.
+Connector configuration Job identity-connector-config-1791287442 Complete: connector and task RUNNING.
+Full backend-validation-1791287633 Complete, BUILD SUCCESS: 42 tests, failures=0, errors=0, skipped=0; all 13 service packages and event-contracts built.
+  Actual Kafka values byte-for-byte equal to stored Protobuf envelopes.
+  Aggregate key, event-ID, trace-ID, schema group/artifact/version headers match.
+  Explicitly rolled-back guest/outbox transaction absent in the observation window.
+  Intentional seek/reconsumption returns identical stable event IDs/content.
+  Readonly Kafka client topic Write rejected with TopicAuthorizationException.
+  Committed fixture 01a11110-8cc5-7d84-b4a7-9315070438e3; rolled-back fixture 01a11110-8cd5-71cf-bacf-eab547bb76b6.
+Access Jobs connect-access-allowed-1791287677 and connect-access-denied-1791287677 Complete:
+  Labeled administrator can read RUNNING task status; unlabeled pod cannot reach REST (DNS resolution succeeds).
+Outage recovery:
+  Connect scaled to zero; prior worker Pod deleted before producing new source data.
+  Owner-side integration Job backend-validation-1791287776 BUILD SUCCESS (CDC-specific test intentionally disabled during outage).
+  Event committed during outage: 01a11112-b1eb-757e-b2df-c6dc31557079.
+  Worker restored to one; same slot/publication/config/internal Kafka offsets preserved.
+  Logs: Found previous partition offset; completed prior snapshot found; no snapshot executed; streaming resumed.
+  Post-restart backend-validation-1791287983 Complete, BUILD SUCCESS: 6 Identity tests, no failures/errors/skips.
+  Kafka revalidation checks all currently retained source Outbox IDs/bytes, including the outage fixture, plus a new live commit/rollback and readonly-write rejection.
+  Committed fixture 01a11115-c43d-747c-93bf-59351394ffb6; rolled-back fixture 01a11115-c452-7f03-8813-16d444876f57.
+  Post-restart access Jobs connect-access-allowed-1791287983 / connect-access-denied-1791287984 passed again.
+One post-restart kubectl top sample: Connect 28m CPU, 691Mi memory against 1 CPU / 1Gi limit (not a workload benchmark or full 32Gi capacity validation).
+Initial failures corrected: asynchronous REST status briefly 404 after configuration; retry added. Validation TLS initially trusted clients CA; corrected to brokers' cluster CA, without disabling hostname/certificate verification.
+Transport is validated locally; no state-changing business consumer or durable business inbox is introduced. Space consumer/idempotency, browser flow, production monitoring/TLS/rotation/HA remain separate milestones.

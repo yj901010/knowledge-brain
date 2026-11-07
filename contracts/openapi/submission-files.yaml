@@ -1,0 +1,637 @@
+openapi: 3.1.0
+info:
+  title: Private version-pinned submission attachments
+  version: 1.0.0
+  description: Registered current participant. Collaboration authorizes all operations
+    through fresh Space authority; author/current OWNER only for submitted files.
+    Current OWNER/MEMBER upload new files while OPEN, no Personal import. Exact command
+    intent, immutable attempt bundle + answer + both Outboxes in one local transaction.
+    Media owns all binary lifecycle; direct presigned MinIO byte transfer. See docs/submission-files.md.
+security:
+- browserSession: []
+paths:
+  /api/groups/{groupId}/studies/{studyId}/assignments/{assignmentId}/submission-files:
+    parameters:
+    - name: groupId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    - name: studyId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    - name: assignmentId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    post:
+      operationId: allocatePrivateSubmissionFile
+      description: Current writer and OPEN parent. Same key/original metadata resumes
+        pending/completed allocation. Upload alone does not publish to OWNER.
+      parameters:
+      - &id001
+        name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^[0-9a-f]{32}$
+      responses:
+        '400':
+          description: Strict fields, input or path invalid
+        '401':
+          description: Missing session
+        '403':
+          description: Role or same-origin denied
+        '404':
+          description: Unavailable scope, attempt or file; privacy non-disclosure
+        '409':
+          description: Lifecycle/Media state or changed intent conflict
+        '412':
+          description: Stale submission/instructions
+        '413':
+          description: Bounded request exceeded
+        '415':
+          description: JSON required
+        '428':
+          description: If-Match required
+        '503':
+          description: Authority/Media unavailable; no automatic retry
+        '200':
+          description: Authorized no-store response
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Created'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Upload'
+  /api/groups/{groupId}/studies/{studyId}/assignments/{assignmentId}/submission-files/{mediaId}/upload-form:
+    parameters:
+    - name: groupId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    - name: studyId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    - name: assignmentId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    - name: mediaId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    post:
+      operationId: resumeSubmissionUpload
+      description: Author allocation only; OPEN required; completed file409.
+      parameters: []
+      responses:
+        '400':
+          description: Strict fields, input or path invalid
+        '401':
+          description: Missing session
+        '403':
+          description: Role or same-origin denied
+        '404':
+          description: Unavailable scope, attempt or file; privacy non-disclosure
+        '409':
+          description: Lifecycle/Media state or changed intent conflict
+        '412':
+          description: Stale submission/instructions
+        '413':
+          description: Bounded request exceeded
+        '415':
+          description: JSON required
+        '428':
+          description: If-Match required
+        '503':
+          description: Authority/Media unavailable; no automatic retry
+        '200':
+          description: Authorized no-store response
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadForm'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Empty'
+  /api/groups/{groupId}/studies/{studyId}/assignments/{assignmentId}/submission-files/{mediaId}/complete:
+    parameters:
+    - name: groupId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    - name: studyId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    - name: assignmentId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    - name: mediaId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    post:
+      operationId: completeSubmissionUpload
+      description: Author allocation only; verify MIME/size/hash and seal original
+        object. Completion idempotent while OPEN.
+      parameters: []
+      responses:
+        '400':
+          description: Strict fields, input or path invalid
+        '401':
+          description: Missing session
+        '403':
+          description: Role or same-origin denied
+        '404':
+          description: Unavailable scope, attempt or file; privacy non-disclosure
+        '409':
+          description: Lifecycle/Media state or changed intent conflict
+        '412':
+          description: Stale submission/instructions
+        '413':
+          description: Bounded request exceeded
+        '415':
+          description: JSON required
+        '428':
+          description: If-Match required
+        '503':
+          description: Authority/Media unavailable; no automatic retry
+        '200':
+          description: Authorized no-store response
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reference'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Empty'
+  /api/groups/{groupId}/studies/{studyId}/assignments/{assignmentId}/submissions/with-files:
+    parameters:
+    - name: groupId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    - name: studyId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    - name: assignmentId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    post:
+      operationId: submitAnswerWithExplicitFiles
+      description: Ordered own-context AVAILABLE file IDs. Exact retry200, new attempt201.
+        Key changes/mode mismatch409. Author/instructions/base/files pinned.
+      parameters:
+      - *id001
+      - name: If-Match
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^"su(0|[1-9][0-9]{0,18})"$
+      responses:
+        '400':
+          description: Strict fields, input or path invalid
+        '401':
+          description: Missing session
+        '403':
+          description: Role or same-origin denied
+        '404':
+          description: Unavailable scope, attempt or file; privacy non-disclosure
+        '409':
+          description: Lifecycle/Media state or changed intent conflict
+        '412':
+          description: Stale submission/instructions
+        '413':
+          description: Bounded request exceeded
+        '415':
+          description: JSON required
+        '428':
+          description: If-Match required
+        '503':
+          description: Authority/Media unavailable; no automatic retry
+        '200':
+          description: Authorized no-store response
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Submitted'
+        '201':
+          description: Authorized no-store response
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Submitted'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Submit'
+  /api/groups/{groupId}/studies/{studyId}/assignments/{assignmentId}/submissions/{submissionId}/revisions/{version}/files:
+    parameters:
+    - name: groupId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    - name: studyId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    - name: assignmentId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    - name: submissionId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    - name: version
+      in: path
+      required: true
+      schema: &id002
+        type: integer
+        minimum: 1
+        maximum: 9223372036854775807
+    get:
+      operationId: readExactSubmittedFiles
+      description: Author/current OWNER only, empty list for legacy attempts, nonexistent
+        attempt404. No query/body.
+      parameters: []
+      responses:
+        '400':
+          description: Strict fields, input or path invalid
+        '401':
+          description: Missing session
+        '403':
+          description: Role or same-origin denied
+        '404':
+          description: Unavailable scope, attempt or file; privacy non-disclosure
+        '409':
+          description: Lifecycle/Media state or changed intent conflict
+        '412':
+          description: Stale submission/instructions
+        '413':
+          description: Bounded request exceeded
+        '415':
+          description: JSON required
+        '428':
+          description: If-Match required
+        '503':
+          description: Authority/Media unavailable; no automatic retry
+        '200':
+          description: Authorized no-store response
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/View'
+  ? /api/groups/{groupId}/studies/{studyId}/assignments/{assignmentId}/submissions/{submissionId}/revisions/{version}/files/{mediaId}/download
+  : parameters:
+    - name: groupId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    - name: studyId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    - name: assignmentId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    - name: submissionId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    - name: version
+      in: path
+      required: true
+      schema: *id002
+    - name: mediaId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    post:
+      operationId: downloadExactSubmittedFile
+      description: Author/current OWNER only, same-origin. Retained source owner;
+        revalidate metadata, sealed original version. Closed/retired parent readable.
+      parameters: []
+      responses:
+        '400':
+          description: Strict fields, input or path invalid
+        '401':
+          description: Missing session
+        '403':
+          description: Role or same-origin denied
+        '404':
+          description: Unavailable scope, attempt or file; privacy non-disclosure
+        '409':
+          description: Lifecycle/Media state or changed intent conflict
+        '412':
+          description: Stale submission/instructions
+        '413':
+          description: Bounded request exceeded
+        '415':
+          description: JSON required
+        '428':
+          description: If-Match required
+        '503':
+          description: Authority/Media unavailable; no automatic retry
+        '200':
+          description: Authorized no-store response
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Download'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Empty'
+components:
+  securitySchemes:
+    browserSession:
+      type: apiKey
+      name: __Host-brain_guest
+      in: cookie
+  schemas:
+    Id:
+      type: string
+      format: uuid
+      pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+    Upload:
+      type: object
+      additionalProperties: false
+      required:
+      - filename
+      - mimeType
+      - byteSize
+      - sha256
+      properties:
+        filename: &id003
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: NFC/strip; no controls, traversal, NUL or invalid Unicode
+        mimeType: &id004
+          type: string
+          enum:
+          - application/octet-stream
+          - application/pdf
+          - image/png
+          - image/jpeg
+          - image/gif
+          - image/webp
+        byteSize: &id005
+          type: integer
+          minimum: 1
+          maximum: 10485760
+        sha256: &id006
+          type: string
+          pattern: ^[0-9a-f]{64}$
+    File:
+      type: object
+      additionalProperties: false
+      required:
+      - mediaId
+      - version
+      - filename
+      - mimeType
+      - byteSize
+      - sha256
+      properties:
+        mediaId:
+          $ref: '#/components/schemas/Id'
+        version:
+          const: 2
+        filename: *id003
+        mimeType: *id004
+        byteSize: *id005
+        sha256: *id006
+    UploadForm:
+      type: object
+      additionalProperties: false
+      required:
+      - url
+      - fields
+      - expiresAt
+      properties:
+        url:
+          type: string
+          format: uri
+          description: HTTPS configured public MinIO origin; no cookies
+        fields:
+          type: object
+          minProperties: 1
+          maxProperties: 30
+          additionalProperties:
+            type: string
+        expiresAt:
+          type: string
+          format: date-time
+    Download:
+      type: object
+      additionalProperties: false
+      required:
+      - url
+      - expiresAt
+      properties:
+        url:
+          type: string
+          format: uri
+          description: 60-second bearer URL, pinned sealed object version, attachment/octet-stream
+        expiresAt:
+          type: string
+          format: date-time
+    Media:
+      type: object
+      additionalProperties: false
+      required:
+      - mediaId
+      - spaceId
+      - state
+      - version
+      - filename
+      - mimeType
+      - byteSize
+      - sha256
+      - createdAt
+      - completedAt
+      properties:
+        mediaId:
+          $ref: '#/components/schemas/Id'
+        spaceId:
+          $ref: '#/components/schemas/Id'
+        state:
+          enum:
+          - PENDING
+          - AVAILABLE
+        version:
+          type: integer
+          enum:
+          - 1
+          - 2
+        filename: *id003
+        mimeType: *id004
+        byteSize: *id005
+        sha256: *id006
+        createdAt:
+          type: string
+          format: date-time
+        completedAt:
+          type:
+          - string
+          - 'null'
+          format: date-time
+    Reference:
+      type: object
+      additionalProperties: false
+      required:
+      - contextId
+      - ownerId
+      - media
+      properties:
+        contextId:
+          $ref: '#/components/schemas/Id'
+        ownerId:
+          $ref: '#/components/schemas/Id'
+        media:
+          $ref: '#/components/schemas/Media'
+    Created:
+      type: object
+      additionalProperties: false
+      required:
+      - reference
+      - upload
+      properties:
+        reference:
+          $ref: '#/components/schemas/Reference'
+        upload:
+          anyOf:
+          - $ref: '#/components/schemas/UploadForm'
+          - type: 'null'
+    Empty:
+      type: object
+      additionalProperties: false
+      required: []
+      properties: {}
+    Submit:
+      type: object
+      additionalProperties: false
+      required:
+      - content
+      - assignmentVersion
+      - files
+      properties:
+        content:
+          type: string
+          minLength: 1
+          description: Nonblank, valid Unicode, <=32768 UTF8 bytes
+        assignmentVersion: *id002
+        files:
+          type: array
+          minItems: 1
+          maxItems: 5
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/Id'
+    Submitted:
+      type: object
+      additionalProperties: false
+      required:
+      - submission
+      - files
+      properties:
+        submission:
+          $ref: assignment-submissions.yaml#/components/schemas/Submission
+        files:
+          type: array
+          minItems: 1
+          maxItems: 5
+          items:
+            $ref: '#/components/schemas/File'
+    View:
+      type: object
+      additionalProperties: false
+      required:
+      - submissionId
+      - submissionVersion
+      - files
+      properties:
+        submissionId:
+          $ref: '#/components/schemas/Id'
+        submissionVersion: *id002
+        files:
+          type: array
+          maxItems: 5
+          items:
+            $ref: '#/components/schemas/File'

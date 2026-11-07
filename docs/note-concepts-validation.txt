@@ -1,0 +1,42 @@
+2026-10-08 Local Kubernetes private Concept and Note-reference validation
+
+Architecture: AGENTS.md and PROJECT.md read before implementation. Knowledge owns canonical personal Concepts; Content owns only explicit references; no cross-service SQL/foreign keys/canonical data copy or public knowledge writes. Existing dependency versions reused, no external dataset imported.
+
+Backend:
+backend-validation-1791466355 Complete: 187 tests, 0 failures/errors/skips, all 13 services, real PostgreSQL/Kafka/CDC/Cassandra/OpenSearch/MinIO.
+New Concept store: persistence/revisions/retirement, real PRIVATE DB constraint, same-row concurrent writers, rollback on Outbox failure, cross-Space isolation and bounded Unicode input.
+New Content references: stable IDs on reorder, independent versions across Note edits, reference history after restart/retirement, one concurrent winner and atomic Outbox rollback.
+Knowledge/Content API and Space action scoping tests passed.
+ConceptKafkaIntegrationTest and ConceptLinkKafkaIntegrationTest passed: exact committed Outbox Protobuf bytes/event IDs, Space/actor/trace/schema headers and versions 1,2,3 through actual Debezium to knowledge.concept.v1 / content.note-concepts.v1.
+backend-validation-1791466640 Complete: final Gateway 15 tests, 0 failures/errors/skips; new Concept pagination/query denial and 32KiB body-cap regression included. Combined unique backend coverage: 188 tests (full 187 + one added Gateway regression).
+
+Runtime:
+note-concept-api-validation-1791466424 Complete: fresh guest private Concept CRUD/history, stable Content-only IDs across rename, stale/missing ETag/duplicate/foreign Origin and foreign Space denial, retired Concept ID audit and new-addition denial, Note retirement final cleared reference revision, immediate session revocation and internal route denial.
+note-concept-api-validation-1791466425 Complete with fault coordinator: actual Knowledge replicas scaled to zero, new reference addition returns 503 without changing Content relations, original count restored and Pod UID replaced, new addition succeeds on recovery. Proof .local/note-concept-api-failure-proof.json.
+
+CDC and Registry:
+knowledge-cdc-bootstrap-1791465962 and installer rerun 1791466777 Complete: own outbox SELECT, canonical Concept SELECT denial and 12 other owner DB CONNECT denials; single-table publication.
+knowledge-contract-validation-1791465963 / 1791466787 Complete; noteconcept-contract-validation-1791465963 / 1791466793 Complete: Registry V1 exact content, VALIDITY FULL, COMPATIBILITY FULL_TRANSITIVE.
+knowledge-connector-config-1791466237 / 1791466799 Complete; content-connector-config-1791466081 / 1791466804 Complete, both tasks RUNNING.
+Ordered Install-LocalNoteConcepts.py executed successfully; topics and literal ACLs Ready before Content/Gateway exposure, existing credentials/data preserved.
+
+Frontend:
+Pinned Next static export/Webpack and TypeScript production builds PASS.
+graph-web-validation-1791466956 Complete: 1 actual deployed HTTPS Chromium test passed (5.7s), including private Concept creation, link/unlink checkbox round trip and canonical persistence after page reload/reselection, all prior Note graph exploration/filter/zoom/mobile checks, simulated 503 clears private graph/body, real session revocation clears access, no page/CSP errors.
+Public local CA imported only into disposable test browser; no TLS bypass, no host trust/firewall change. Screenshots visually inspected: .local/graph-ui-results/desktop.png and mobile.png; sanitized validation log retained there.
+
+Corrections before final pass:
+Early backend-validation-1791465725 failed existing Content Kafka suites because new canonical reference events reached CDC before new topic ACLs were ready. Initialized topics/ACLs, restored Content connector, changed installer ordering; all full Kafka suites then passed.
+Initial Knowledge rollout lacked correctly named BRAIN_KNOWLEDGE env settings; corrected deployment values and verified own DB health Ready.
+Initial Knowledge connector request used an incorrect Content-Type header; corrected and verified task RUNNING.
+Initial UI test found Gateway rejected Concept pagination; fixed allowed bounded query routes/body cap, added regression and rebuilt/deployed Gateway.
+Playwright checkbox test originally required immediate state change; changed to click then wait for server-confirmed controlled checkbox state and added page reload persistence check. Final browser run passed.
+
+Live artifacts:
+Knowledge and Space local-08a4ce5e8e29a28a
+Content local-1c1cb6f0fb453711
+Gateway local-17d819012b81c1ac
+Brain Query unchanged local-7444582456ac57b4
+Final Space/Knowledge/Content/Gateway/BrainQuery Ready 1/1. Own temporary builder Pods/Services/ConfigMaps/NetworkPolicies removed; validation Jobs retained with TTL. No cluster/PVC deletion.
+
+Limits: personal same-Space ACTIVE Concept additions only; at most 20 references per Note, first 100 active Concepts in current UI catalog. Existing retired references retain immutable audit IDs. Knowledge lifecycle can race after a synchronous check; no distributed transaction is claimed. Public Concept selection/contribution/review, Concept graph vertices/search projections and registered claiming remain planned.

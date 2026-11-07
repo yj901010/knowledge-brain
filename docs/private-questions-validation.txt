@@ -1,0 +1,135 @@
+Private Question validation, 2026-10-18
+
+656 backend tests, zero failures/errors,25 unchanged environment-gated skips
+(631 passed). Content104 uses actual own PostgreSQL and all eight literal Content
+Kafka topics with no skips. Gateway49 no skips; Space34 with two existing skips.
+Coverage includes manual OPEN/ANSWERED transition validation, nonblank answers,
+retained answer on reopening, exact Unicode/UTF-8 text bounds, version-before-noop,
+immutable versions/actor IDs, repeated/competing creation and mutation, rollback
+including original creation intent, independently scoped Note data, paged status/
+lifecycle-bound cursor denial, exact JSON/body/query/Origin/TLS/session guards,
+explicit current QUESTION_READ/WRITE actions, own Kafka payload/bytes/headers and
+trace ordering through existing Outbox/CDC.
+
+Focused3 and full78 browser tests pass against the deployed image. Tests cover
+20+3/20+2 catalogs, status filters, explicit answers, archived reads and retained
+version1 replay after edit/archive, strong quN tags, malformed fields/cursors and
+foreign principal denial. Lost create reply freezes the original fields/key and
+retries to one record. True edit/archive conflicts preserve drafts until explicit
+latest inspection/restart and reset archive acknowledgment. Existing unsaved Note
+draft/source remain unchanged. Historical HTML answer renders as escaped text,
+with no remote request. Mobile390px fit, no JS errors/private browser storage,
+catalog failure/late closed responses and real session revocation are verified.
+Desktop/mobile screenshots inspected. Two real Keycloak registrations retain
+guest Question IDs/immutable audit/actors/creation keys; registered answers record
+the registered actor, with original replay still intact after archive. A real
+Content Pod restart preserves direct answers, manual status, active/archived
+discovery, history and original request replay while preserving an independent
+Note. Synthetic active Question is explicitly archived afterward with204.
+
+New Registry Question source hash/FULL/FULL_TRANSITIVE and previous seven Content
+schema bytes verified against Registry. Prior Learning/Planning/Notification source
+hashes match completed proofs. Six new OpenAPI operations and all local references
+resolve; explicit capability actions preserve existing NOTE/BOOKMARK permissions.
+CDC can SELECT only own Outbox; Note and four Bookmark/Question canonical SELECTs
+and twelve other owner DB CONNECTs denied, one-table publication retained. All
+twelve app Deployments Ready, all eight Connector/task states RUNNING and exact
+existing Content connector config retained. Three images imported on both nodes.
+Three owned temporary builder Pod/Service/NetworkPolicy/source ConfigMap sets
+removed after exact labels/UID/owner/init-exit/deployed-image verification.
+Existing data, PVCs, topics, slots and offsets were not reset. No new dependency,
+dataset, external messaging/fetch, cross-owner SQL or AI capability introduced.
+
+{
+  "date": "2026-10-18",
+  "jobs": {
+    "backend": "backend-validation-1792307510227330000",
+    "focusedBrowser": "graph-web-validation-1792307763",
+    "browser": "graph-web-validation-1792307815",
+    "registry": "question-contract-validation-1792307499",
+    "contentCdc": "content-cdc-bootstrap-1792307677"
+  },
+  "backend": {
+    "tests": 656,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 25
+  },
+  "passedBackend": 631,
+  "contentActualPostgresAndEightKafkaTopicsTests": 104,
+  "gatewayTests": 49,
+  "spaceTests": 34,
+  "focusedBrowserTests": 3,
+  "browserTests": 78,
+  "registeredQuestionClaimChecks": 2,
+  "registryQuestionSha256": "ae6e0a2dd6264b023a9d8e0372350de05ba0b495fa9c2f9f9016597f58d78e8e",
+  "unchangedContentSchemaHashes": {
+    "note": "e62519e0ec755f41dabb2aafcec3b5503cbfbcea6934f1669978a8e9b80fd8d9",
+    "links": "69fa68736670be833ae97f6b72f9aa4e95e117bc4bb19e4b50b9ff3285331416",
+    "metadata": "80ceaaa95dec8f9a4bb71fed2ff2100d882310b53d0ca09da87913d2c946ffa4",
+    "daily": "d90b7403b7117b1c272606cc224481a087d016fc0123bc5782f3f418b53c669d",
+    "attachments": "ab2b00c4fbad16250b0d9bfefdf28f081d4c4db725ab77e565585bb19fee2007",
+    "concepts": "2d096a96ce77b1d3a5f56b2ce733412022ce89e7d6625385bdac4bc9c6cec3ac",
+    "bookmark": "fd8734005c8d77a0768e807bc86d30efea8aad389eeb6a1524d6812f9bcf1af5"
+  },
+  "otherPriorLearningPlanningNotificationSchemasUnchanged": true,
+  "openapiReferences": 1309,
+  "newOperations": [
+    "listPrivateQuestions",
+    "createPrivateQuestion",
+    "getPrivateQuestion",
+    "updatePrivateQuestion",
+    "archivePrivateQuestion",
+    "getPrivateQuestionRevisions"
+  ],
+  "readyDeployments": 12,
+  "runningConnectors": [
+    "space-outbox",
+    "planning-outbox",
+    "notification-outbox",
+    "knowledge-outbox",
+    "media-outbox",
+    "content-outbox",
+    "learning-outbox",
+    "identity-outbox"
+  ],
+  "contentConnectorAndSlotUnchanged": true,
+  "images": {
+    "space": "knowledge-brain/space-service:local-c9bb6b612b54313b",
+    "content": "knowledge-brain/content-service:local-c9bb6b612b54313b",
+    "gateway": "knowledge-brain/gateway-service:local-e0e3397a1a179897"
+  },
+  "exactNodeImports": {
+    "space": [
+      "space-image-import-1792307600-0",
+      "space-image-import-1792307600-1"
+    ],
+    "content": [
+      "content-image-import-1792307604-0",
+      "content-image-import-1792307604-1"
+    ],
+    "gateway": [
+      "gateway-image-import-1792307680-0",
+      "gateway-image-import-1792307681-1"
+    ]
+  },
+  "runtime": {
+    "spaceId": "01a14de4-c432-7d86-8822-c2fd181504d7",
+    "questionId": "01a14de4-db61-7690-99e8-8a92bc9d8546",
+    "activeQuestionId": "01a14de5-0382-7e31-84d0-60f4c6ce906f",
+    "noteId": "01a14de4-d367-7f8a-8221-1b069de45fab",
+    "contentRestart": {
+      "old": "f2439cf2-90cb-484a-a6ea-c5e3c4668ec3",
+      "new": "355a8efd-2b10-4c7a-8761-e2717a0f70c2"
+    },
+    "originalIntentReplayPreserved": true,
+    "immutableRevisionsAndActorsPreserved": true,
+    "activeAndArchivedDiscoveryPreserved": true,
+    "manualStatusAndDirectAnswersPreserved": true,
+    "noteSourceUnchanged": true,
+    "replicasPreserved": 1,
+    "keysTokensOnlyInMemory": true
+  },
+  "ownedBuilderSetsRemoved": 3,
+  "hostHttpsVerified": true
+}

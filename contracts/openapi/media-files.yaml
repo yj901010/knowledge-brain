@@ -1,0 +1,406 @@
+openapi: 3.1.0
+info:
+  title: Private Media API
+  version: 1.0.0
+  description: 'Media owns metadata and upload lifecycle. Direct private MinIO multipart
+    POST is limited to exact staging key, MIME and byte size. Completion checks SHA-256
+    and seals an immutable object version. No object bytes or storage credentials
+    in PostgreSQL or Gateway. Signed capabilities expire: upload 300 seconds, download
+    60 seconds.'
+servers:
+- url: https://localhost:8443
+security:
+- guestCookie: []
+paths:
+  /api/spaces/{spaceId}/media:
+    parameters:
+    - name: spaceId
+      in: path
+      required: true
+      schema: &id001
+        type: string
+        format: uuid
+        description: Canonical UUIDv7
+    post:
+      operationId: requestUpload
+      responses:
+        '201':
+          description: 'Private response; Cache-Control: no-store'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Created'
+        '400':
+          description: Invalid UUIDv7, bounds, JSON or checksum
+        '401':
+          description: Guest identity required
+        '403':
+          description: Same HTTPS Origin or permission required
+        '404':
+          description: Unavailable in authorized Space
+        '409':
+          description: Upload not ready or allocation quota reached
+        '413':
+          description: JSON body exceeds 2 KiB
+        '415':
+          description: application/json required
+        '503':
+          description: Owning authority or storage unavailable
+      parameters:
+      - name: Origin
+        in: header
+        required: true
+        schema:
+          type: string
+          const: https://localhost:8443
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UploadInput'
+    get:
+      operationId: listMedia
+      responses:
+        '200':
+          description: 'Private response; Cache-Control: no-store'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaPage'
+        '400':
+          description: Invalid UUIDv7, bounds, JSON or checksum
+        '401':
+          description: Guest identity required
+        '403':
+          description: Same HTTPS Origin or permission required
+        '404':
+          description: Unavailable in authorized Space
+        '409':
+          description: Upload not ready or allocation quota reached
+        '413':
+          description: JSON body exceeds 2 KiB
+        '415':
+          description: application/json required
+        '503':
+          description: Owning authority or storage unavailable
+      parameters:
+      - name: after
+        in: query
+        required: false
+        schema: *id001
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+  /api/spaces/{spaceId}/media/{mediaId}:
+    parameters:
+    - name: spaceId
+      in: path
+      required: true
+      schema: *id001
+    - name: mediaId
+      in: path
+      required: true
+      schema: *id001
+    get:
+      operationId: getMedia
+      responses:
+        '200':
+          description: 'Private response; Cache-Control: no-store'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Media'
+        '400':
+          description: Invalid UUIDv7, bounds, JSON or checksum
+        '401':
+          description: Guest identity required
+        '403':
+          description: Same HTTPS Origin or permission required
+        '404':
+          description: Unavailable in authorized Space
+        '409':
+          description: Upload not ready or allocation quota reached
+        '413':
+          description: JSON body exceeds 2 KiB
+        '415':
+          description: application/json required
+        '503':
+          description: Owning authority or storage unavailable
+  /api/spaces/{spaceId}/media/{mediaId}/upload-form:
+    parameters:
+    - name: spaceId
+      in: path
+      required: true
+      schema: *id001
+    - name: mediaId
+      in: path
+      required: true
+      schema: *id001
+    post:
+      operationId: uploadformMedia
+      responses:
+        '200':
+          description: 'Private response; Cache-Control: no-store'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadForm'
+        '400':
+          description: Invalid UUIDv7, bounds, JSON or checksum
+        '401':
+          description: Guest identity required
+        '403':
+          description: Same HTTPS Origin or permission required
+        '404':
+          description: Unavailable in authorized Space
+        '409':
+          description: Upload not ready or allocation quota reached
+        '413':
+          description: JSON body exceeds 2 KiB
+        '415':
+          description: application/json required
+        '503':
+          description: Owning authority or storage unavailable
+      parameters:
+      - name: Origin
+        in: header
+        required: true
+        schema:
+          type: string
+          const: https://localhost:8443
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Empty'
+  /api/spaces/{spaceId}/media/{mediaId}/complete:
+    parameters:
+    - name: spaceId
+      in: path
+      required: true
+      schema: *id001
+    - name: mediaId
+      in: path
+      required: true
+      schema: *id001
+    post:
+      operationId: completeMedia
+      responses:
+        '200':
+          description: 'Private response; Cache-Control: no-store'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Media'
+        '400':
+          description: Invalid UUIDv7, bounds, JSON or checksum
+        '401':
+          description: Guest identity required
+        '403':
+          description: Same HTTPS Origin or permission required
+        '404':
+          description: Unavailable in authorized Space
+        '409':
+          description: Upload not ready or allocation quota reached
+        '413':
+          description: JSON body exceeds 2 KiB
+        '415':
+          description: application/json required
+        '503':
+          description: Owning authority or storage unavailable
+      parameters:
+      - name: Origin
+        in: header
+        required: true
+        schema:
+          type: string
+          const: https://localhost:8443
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Empty'
+  /api/spaces/{spaceId}/media/{mediaId}/download:
+    parameters:
+    - name: spaceId
+      in: path
+      required: true
+      schema: *id001
+    - name: mediaId
+      in: path
+      required: true
+      schema: *id001
+    post:
+      operationId: downloadMedia
+      responses:
+        '200':
+          description: 'Private response; Cache-Control: no-store'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Download'
+        '400':
+          description: Invalid UUIDv7, bounds, JSON or checksum
+        '401':
+          description: Guest identity required
+        '403':
+          description: Same HTTPS Origin or permission required
+        '404':
+          description: Unavailable in authorized Space
+        '409':
+          description: Upload not ready or allocation quota reached
+        '413':
+          description: JSON body exceeds 2 KiB
+        '415':
+          description: application/json required
+        '503':
+          description: Owning authority or storage unavailable
+      parameters:
+      - name: Origin
+        in: header
+        required: true
+        schema:
+          type: string
+          const: https://localhost:8443
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Empty'
+components:
+  securitySchemes:
+    guestCookie:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest
+  schemas:
+    Empty:
+      type: object
+      additionalProperties: false
+      maxProperties: 0
+    UploadInput:
+      type: object
+      additionalProperties: false
+      required:
+      - filename
+      - mimeType
+      - byteSize
+      - sha256
+      properties:
+        filename: &id002
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: NFC filename, no control characters or slash
+        mimeType: &id003
+          type: string
+          enum:
+          - application/octet-stream
+          - application/pdf
+          - image/png
+          - image/jpeg
+          - image/gif
+          - image/webp
+        byteSize: &id004
+          type: integer
+          minimum: 1
+          maximum: 10485760
+        sha256: &id005
+          type: string
+          pattern: ^[0-9a-f]{64}$
+    Media:
+      type: object
+      required:
+      - mediaId
+      - spaceId
+      - state
+      - version
+      - filename
+      - mimeType
+      - byteSize
+      - sha256
+      - createdAt
+      - completedAt
+      properties:
+        mediaId: *id001
+        spaceId: *id001
+        state:
+          enum:
+          - PENDING
+          - AVAILABLE
+        version:
+          type: integer
+          minimum: 1
+        filename: *id002
+        mimeType: *id003
+        byteSize: *id004
+        sha256: *id005
+        createdAt:
+          type: string
+          format: date-time
+        completedAt:
+          type:
+          - string
+          - 'null'
+          format: date-time
+    UploadForm:
+      type: object
+      required:
+      - url
+      - fields
+      - expiresAt
+      properties:
+        url:
+          type: string
+          format: uri
+          description: Fixed HTTPS MinIO /brain-media; multipart fields followed by
+            file part
+        fields:
+          type: object
+          additionalProperties:
+            type: string
+          description: Signed scoped capability; do not log/cache/share
+        expiresAt:
+          type: string
+          format: date-time
+    Created:
+      type: object
+      properties:
+        media:
+          $ref: '#/components/schemas/Media'
+        upload:
+          $ref: '#/components/schemas/UploadForm'
+    Download:
+      type: object
+      required:
+      - url
+      - expiresAt
+      properties:
+        url:
+          type: string
+          format: uri
+          description: Short-lived sealed version GET; forces attachment/octet-stream
+        expiresAt:
+          type: string
+          format: date-time
+    MediaPage:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Media'
+        nextAfter:
+          type:
+          - string
+          - 'null'
+          format: uuid

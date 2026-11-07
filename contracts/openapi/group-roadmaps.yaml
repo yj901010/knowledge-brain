@@ -1,0 +1,367 @@
+openapi: 3.1.0
+info:
+  title: Private Group Shared Roadmap Links
+  version: 1.0.0
+  description: Fresh Space GROUP_ROADMAP_READ grants active registered OWNER/MEMBER/VIEWER;
+    GROUP_ROADMAP_WRITE requires OWNER. Learning owns pinned reviewed public graph
+    snapshots. No personal roadmap IDs, progress, study records, evidence or attachments
+    are accepted or exposed. One link per destination and source version; same/concurrent
+    POST replays current link, including RETIRED, without restoration or duplicate
+    events. First stale source version is 409. DELETE uses strong gr version; stale
+    412, missing 428. Retired links and history stay member-readable. Strict bounded
+    JSON/queries, HTTPS same Origin for writes, UUIDv7, no-store, trace context. Outbox
+    and immutable revision commit atomically; CDC learning.group-roadmap.v1 / learning:group-roadmap-events:1.
+security:
+- browserSession: []
+paths:
+  /api/spaces/{spaceId}/group-roadmaps:
+    parameters:
+    - name: spaceId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    get:
+      operationId: listGroupRoadmapLinks
+      parameters:
+      - name: after
+        in: query
+        required: false
+        schema:
+          $ref: '#/components/schemas/Id'
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      responses:
+        '200':
+          description: Authorized Group roadmap result
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Page'
+        '400': &id001
+          description: Malformed UUID/body/query/header; body cap 2048 bytes
+        '401': &id002
+          description: Session required
+        '403': &id003
+          description: Registered active Group OWNER required for mutations; exact
+            HTTPS Origin
+        '404': &id004
+          description: Group membership, Space kind or resource unavailable
+        '409': &id005
+          description: First attachment uses a stale public source version or principal
+            changed
+        '412': &id006
+          description: Stale link If-Match
+        '428': &id007
+          description: If-Match required
+        '503': &id008
+          description: Authorization or persistence unavailable
+    post:
+      operationId: attachPublicRoadmapToGroup
+      parameters:
+      - name: Origin
+        in: header
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Attach'
+      responses:
+        '201':
+          description: Authorized Group roadmap result
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"gr[1-9][0-9]*"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Link'
+        '200':
+          description: Authorized Group roadmap result
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"gr[1-9][0-9]*"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Link'
+        '400': *id001
+        '401': *id002
+        '403': *id003
+        '404': *id004
+        '409': *id005
+        '412': *id006
+        '428': *id007
+        '503': *id008
+  /api/spaces/{spaceId}/group-roadmaps/{linkId}:
+    parameters:
+    - name: spaceId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    - name: linkId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    get:
+      operationId: readGroupRoadmapLink
+      responses:
+        '200':
+          description: Authorized Group roadmap result
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"gr[1-9][0-9]*"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Link'
+        '400': *id001
+        '401': *id002
+        '403': *id003
+        '404': *id004
+        '409': *id005
+        '412': *id006
+        '428': *id007
+        '503': *id008
+    delete:
+      operationId: retireGroupRoadmapLink
+      parameters:
+      - name: Origin
+        in: header
+        required: true
+        schema:
+          type: string
+      - name: If-Match
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^"gr[1-9][0-9]*"$
+      responses:
+        '200':
+          description: Authorized Group roadmap result
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"gr[1-9][0-9]*"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Link'
+        '400': *id001
+        '401': *id002
+        '403': *id003
+        '404': *id004
+        '409': *id005
+        '412': *id006
+        '428': *id007
+        '503': *id008
+  /api/spaces/{spaceId}/group-roadmaps/{linkId}/revisions:
+    parameters:
+    - name: spaceId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    - name: linkId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    get:
+      operationId: readGroupRoadmapLinkHistory
+      parameters:
+      - name: before
+        in: query
+        required: false
+        schema: &id009
+          type: integer
+          format: int64
+          minimum: 1
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 5
+      responses:
+        '200':
+          description: Authorized Group roadmap result
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                type: array
+                maxItems: 10
+                items:
+                  $ref: '#/components/schemas/Revision'
+        '400': *id001
+        '401': *id002
+        '403': *id003
+        '404': *id004
+        '409': *id005
+        '412': *id006
+        '428': *id007
+        '503': *id008
+components:
+  securitySchemes:
+    browserSession:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest
+  schemas:
+    Id:
+      type: string
+      format: uuid
+      pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+    Link:
+      type: object
+      additionalProperties: false
+      required:
+      - linkId
+      - spaceId
+      - version
+      - state
+      - visibility
+      - actorId
+      - createdAt
+      - updatedAt
+      - source
+      properties:
+        linkId:
+          $ref: '#/components/schemas/Id'
+        spaceId:
+          $ref: '#/components/schemas/Id'
+        version: *id009
+        state:
+          enum:
+          - ACTIVE
+          - RETIRED
+        visibility:
+          const: PRIVATE
+        actorId:
+          $ref: '#/components/schemas/Id'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        source:
+          $ref: ./public-roadmaps.yaml#/components/schemas/Roadmap
+    Summary:
+      type: object
+      additionalProperties: false
+      required:
+      - linkId
+      - version
+      - state
+      - title
+      - sourceSpaceId
+      - sourceRoadmapId
+      - sourceVersion
+      properties:
+        linkId:
+          $ref: '#/components/schemas/Id'
+        version: *id009
+        state:
+          enum:
+          - ACTIVE
+          - RETIRED
+        title:
+          type: string
+          maxLength: 200
+        sourceSpaceId:
+          $ref: '#/components/schemas/Id'
+        sourceRoadmapId:
+          $ref: '#/components/schemas/Id'
+        sourceVersion: *id009
+    Attach:
+      type: object
+      additionalProperties: false
+      required:
+      - sourceSpaceId
+      - sourceRoadmapId
+      - sourceVersion
+      properties:
+        sourceSpaceId:
+          $ref: '#/components/schemas/Id'
+        sourceRoadmapId:
+          $ref: '#/components/schemas/Id'
+        sourceVersion: *id009
+    Page:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - nextAfter
+      properties:
+        items:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/Summary'
+        nextAfter:
+          oneOf:
+          - $ref: '#/components/schemas/Id'
+          - type: 'null'
+    Revision:
+      type: object
+      additionalProperties: false
+      required:
+      - revisionId
+      - version
+      - actorId
+      - occurredAt
+      - snapshot
+      properties:
+        revisionId:
+          $ref: '#/components/schemas/Id'
+        version: *id009
+        actorId:
+          $ref: '#/components/schemas/Id'
+        occurredAt:
+          type: string
+          format: date-time
+        snapshot:
+          $ref: '#/components/schemas/Link'

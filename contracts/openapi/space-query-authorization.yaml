@@ -1,0 +1,78 @@
+openapi: 3.1.0
+info:
+  title: Space Brain Query Search Authorization
+  version: 1.0.0
+servers:
+- url: https://space-service.brain-apps.svc:8080
+paths:
+  /internal/space/query-authorization:
+    post:
+      operationId: authorizeNoteSearch
+      description: Dedicated Brain Query service bearer over HTTPS. Cookie headers
+        are rejected. Resolve the live common guest/registered principal through Identity and current membership
+        through the Space-owned DB; only PRIVATE PERSONAL Space search is supported.
+        No write or generic principal delegation. No authorization cache.
+      security:
+      - queryServiceBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - spaceId
+              - token
+              - action
+              properties:
+                spaceId:
+                  type: string
+                  format: uuid
+                token:
+                  type: string
+                  pattern: ^[A-Za-z0-9_-]{43}$
+                  writeOnly: true
+                action:
+                  type: string
+                  enum: [NOTE_SEARCH, NOTE_GRAPH, BRAIN_SEARCH, BRAIN_GRAPH]
+      responses:
+        '200':
+          description: No-store permission decision
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - spaceId
+                - principalId
+                - action
+                - visibility
+                properties:
+                  spaceId:
+                    type: string
+                    format: uuid
+                  principalId:
+                    type: string
+                    format: uuid
+                  action:
+                    type: string
+                    enum: [NOTE_SEARCH, NOTE_GRAPH, BRAIN_SEARCH, BRAIN_GRAPH]
+                  visibility:
+                    type: string
+                    const: PRIVATE
+        '400':
+          description: Invalid action or UUID
+        '401':
+          description: Invalid service key or guest credential
+        '403':
+          description: Browser credential or access denied
+        '404':
+          description: Space unavailable
+        '503':
+          description: Identity or persistence unavailable; fail closed
+components:
+  securitySchemes:
+    queryServiceBearer:
+      type: http
+      scheme: bearer
+      description: Separate 256-bit Brain Query-to-Space credential.

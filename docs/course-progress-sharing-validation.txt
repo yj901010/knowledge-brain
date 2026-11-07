@@ -1,0 +1,21 @@
+Explicit owner-only Course completion summaries validation — 2026-10-24
+
+space: 72 passed; 2 skipped; backend-validation-1792771234374753400-5b2f379e
+collaboration: 127 passed; 0 skipped; backend-validation-1792770939764205500-c4dd1ad8
+learning: 158 passed; 0 skipped; backend-validation-1792771738063404800-7f9610ca
+gateway: 108 passed; 0 skipped; backend-validation-1792771234375980700-d319415b
+
+Browser: twelve actual-account Group/Course scenarios passed; graph-web-validation-1792772218126325600
+Explicit MEMBER opt-in, count-only minimal OWNER summary, no MEMBER/peer roster, no personal Note access; own history stays participant-only.
+Private progress changed from50% to100% without updating published counts. Old preview failed409. Explicit re-share updated the summary. Lost committed response recovered by fresh read; stale cs0 failed412 and exact no-op produced no duplicate audit.
+Policy disabled/re-enabled without restoring old summaries. Enrollment withdrawal/rejoin and member role change hid prior consent until explicit publication. VIEWER could withdraw but could not publish. Removed member was hidden from owner list and denied own access; UI cleared. Private progress and personal Note stayed intact.
+Six own share revisions paginated5/1, explicit UI withdrawal preserved private progress. Empty/scanned owner-page cursor integration check prevents inaccessible candidates from ending pagination prematurely.
+Real Space and Learning Debezium/Connect topic delivery: three byte-exact snapshots each, stable event IDs, aggregate key, trace/schema headers and repeated unacknowledged replay. Separate immutable schema artifacts use FULL validity/FULL_TRANSITIVE compatibility; old private progress topic/proto unchanged.
+Policy/share current, full revision and Outbox writes are local atomic transactions. Database failure during Outbox insert rolled back initial and existing publication/withdrawal plus history. Concurrent initial writes had exactly one winner; stale source/progress and policy/membership/enrollment versions fail closed.
+Bounded delegated HTTPS authority client validates exact duplicate-free JSON, scope/IDs/roles/lifecycle, integral positive versions, count/list limits, foreign response, malformed/oversized body, redirects and denial; only cookie/trace delegated, no actor/Authorization/Origin header. Same-origin mutations and strong ETags enforced.
+Space owns policy/current membership; Collaboration keeps Course/enrollment and returns bounded intersections; Learning keeps private progress and separate explicit count summaries. No cross-service SQL/FK, new producer, cache, projector, new dependency/dataset, AI or distributed transaction. Concurrent revocation can race an admitted operation; subsequent requests recheck.
+Space and Learning CDC credentials denied canonical policy/share/revision SELECT while Outbox remained readable. Only Connect literal topic writers and scoped readonly validators; all nine existing connectors/tasks RUNNING after browser writes. No offsets/slots/publications reset.
+Pinned Next/TypeScript static export and all OpenAPI references/path parameters passed. Four exact images imported on both nodes and rolled out. Source archive matches deployed module and shared contracts. Four current and two obsolete owned builder resource sets removed after UID/label/source-owner checks; unrelated service images unchanged.
+All13 Deployments Ready; trusted HTTPS /graph and /graph/groups200/no-store/CSP. Space V7, Learning V12, Collaboration V8. No old migration or published Protobuf rewrite.
+Space suite skipped only existing PublicReviewerKafkaIntegrationTest and SpaceKafkaIntegrationTest whose separate consumer credentials are not enabled in the Group validator run. All new policy/share/Kafka tests ran. Final executed backend total465 passed;12 browser cases passed.
+Prerequisite enforcement, grading/assessment and automatic completion rules remain future explicit decisions.

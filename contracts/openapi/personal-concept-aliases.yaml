@@ -1,0 +1,485 @@
+openapi: 3.1.0
+info:
+  title: Private Space Concept Alias API
+  version: 1.1.0
+  description: >-
+    Knowledge owns immutable UUIDv7 aliases and revisions. Each alias is PRIVATE,
+    scoped to its owning Space and one same-Space private Concept. Every request
+    requires fresh Space and Identity authorization through the common guest or
+    registered session cookie. Alias changes use an independent strong ETag and
+    never change the parent Concept version or Content reference versions. All
+    responses are Cache-Control no-store. There is no implicit publishing,
+    universal terminology binding, search projection or Wiki Link resolution.
+servers:
+  - url: https://localhost:8443
+security:
+  - sessionCookie: []
+paths:
+  /api/spaces/{spaceId}/concepts/{conceptId}/aliases:
+    parameters:
+      - $ref: '#/components/parameters/SpaceId'
+      - $ref: '#/components/parameters/ConceptId'
+    get:
+      operationId: listPersonalConceptAliases
+      description: >-
+        Default ACTIVE lists active aliases under an ACTIVE PRIVATE Concept.
+        Explicit state=RETIRED lists only directly retired PRIVATE SPACE aliases
+        under a known same-Space PRIVATE Concept, including a retired parent.
+        Parent retirement never implicitly retires remaining active aliases.
+        UUIDv7 ascending order; after is exclusive. Unknown, foreign or public
+        parents return 404. Only after, limit and state are accepted once each.
+        Discovery is read-only; existing revision history remains immutable.
+      parameters:
+        - name: state
+          in: query
+          schema:
+            type: string
+            enum: [ACTIVE, RETIRED]
+            default: ACTIVE
+        - name: after
+          in: query
+          schema:
+            $ref: '#/components/schemas/UuidV7'
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: Authorized private Alias page
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/NoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Page'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/Unavailable'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+    post:
+      operationId: createPersonalConceptAlias
+      description: >-
+        Create an ACTIVE PRIVATE SPACE-scoped alias with version 1 for an ACTIVE
+        PRIVATE parent. Labels are stripped at both ends, then validated as 1 to
+        200 Unicode code points with no NUL. Active labels must be exactly unique
+        per Concept, including case. The same label is allowed on other Concepts.
+        Maximum 100 ACTIVE aliases per Concept. Retired aliases retain their IDs
+        and history; reusing a retired label creates a new UUIDv7. Alias, initial
+        revision and AliasCreated outbox event commit atomically.
+      parameters:
+        - $ref: '#/components/parameters/Origin'
+      requestBody:
+        $ref: '#/components/requestBodies/Edit'
+      responses:
+        '201':
+          description: Created Alias with independent strong ETag "a1"
+          headers:
+            ETag:
+              $ref: '#/components/headers/AliasETag'
+            Cache-Control:
+              $ref: '#/components/headers/NoStore'
+            Location:
+              description: Created Alias canonical API path
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Alias'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/Unavailable'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '413':
+          $ref: '#/components/responses/TooLarge'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+  /api/spaces/{spaceId}/concepts/{conceptId}/aliases/{aliasId}:
+    parameters:
+      - $ref: '#/components/parameters/SpaceId'
+      - $ref: '#/components/parameters/ConceptId'
+      - $ref: '#/components/parameters/AliasId'
+    get:
+      operationId: getPersonalConceptAlias
+      description: >-
+        Read one ACTIVE Alias belonging to the ACTIVE PRIVATE parent Concept in
+        the authorized Space. Unknown, foreign, mismatched or retired objects
+        return 404. Query parameters are not accepted.
+      responses:
+        '200':
+          $ref: '#/components/responses/Alias'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/Unavailable'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+    put:
+      operationId: updatePersonalConceptAlias
+      description: >-
+        Update the label of an ACTIVE Alias of an ACTIVE PRIVATE parent. The
+        exact Alias version ETag is required. Alias update, immutable revision
+        and AliasUpdated outbox snapshot commit atomically. Label validation and
+        active uniqueness match creation. The Alias UUIDv7 never changes.
+      parameters:
+        - $ref: '#/components/parameters/Origin'
+        - $ref: '#/components/parameters/IfMatch'
+      requestBody:
+        $ref: '#/components/requestBodies/Edit'
+      responses:
+        '200':
+          $ref: '#/components/responses/Alias'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/Unavailable'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '412':
+          $ref: '#/components/responses/PreconditionFailed'
+        '413':
+          $ref: '#/components/responses/TooLarge'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '428':
+          $ref: '#/components/responses/PreconditionRequired'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+    delete:
+      operationId: retirePersonalConceptAlias
+      description: >-
+        Retire an ACTIVE Alias of an ACTIVE PRIVATE parent. The exact Alias
+        version ETag is required. The label, ID, revisions and AliasRetired
+        outbox snapshot are retained; there is no destructive deletion.
+      parameters:
+        - $ref: '#/components/parameters/Origin'
+        - $ref: '#/components/parameters/IfMatch'
+      responses:
+        '204':
+          description: Alias RETIRED with incremented independent Alias version
+          headers:
+            ETag:
+              $ref: '#/components/headers/AliasETag'
+            Cache-Control:
+              $ref: '#/components/headers/NoStore'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/Unavailable'
+        '412':
+          $ref: '#/components/responses/PreconditionFailed'
+        '428':
+          $ref: '#/components/responses/PreconditionRequired'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+  /api/spaces/{spaceId}/concepts/{conceptId}/aliases/{aliasId}/revisions:
+    parameters:
+      - $ref: '#/components/parameters/SpaceId'
+      - $ref: '#/components/parameters/ConceptId'
+      - $ref: '#/components/parameters/AliasId'
+    get:
+      operationId: listPersonalConceptAliasRevisions
+      description: >-
+        Immutable revision history in descending Alias version order. Same-Space
+        PRIVATE parent and Alias identity must match, even when the Alias or
+        parent Concept has been RETIRED. Foreign/public/unknown objects return
+        404. before is an exclusive positive version cursor. Only before and
+        limit query keys are accepted, and repeated keys are invalid.
+      parameters:
+        - name: before
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 9223372036854775807
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 10
+            default: 5
+      responses:
+        '200':
+          description: Authorized retained Alias revision history
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/NoStore'
+          content:
+            application/json:
+              schema:
+                type: array
+                maxItems: 10
+                items:
+                  $ref: '#/components/schemas/Revision'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/Unavailable'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest
+      description: Secure HttpOnly host cookie for the common guest/registered session principal
+  parameters:
+    SpaceId:
+      name: spaceId
+      in: path
+      required: true
+      description: Owning PERSONAL PRIVATE Space with fresh authority checks
+      schema:
+        $ref: '#/components/schemas/UuidV7'
+    ConceptId:
+      name: conceptId
+      in: path
+      required: true
+      description: Immutable same-Space PRIVATE Concept identity
+      schema:
+        $ref: '#/components/schemas/UuidV7'
+    AliasId:
+      name: aliasId
+      in: path
+      required: true
+      description: Immutable same-Concept Alias identity
+      schema:
+        $ref: '#/components/schemas/UuidV7'
+    Origin:
+      name: Origin
+      in: header
+      required: true
+      description: Exactly one configured browser origin; if present Sec-Fetch-Site must be same-origin
+      schema:
+        type: string
+        example: https://localhost:8443
+    IfMatch:
+      name: If-Match
+      in: header
+      required: true
+      description: One strong independent Alias version ETag, for example "a3"; weak/list/wildcard/Concept/reference ETags are invalid
+      schema:
+        type: string
+        pattern: '^"a[1-9][0-9]*"$'
+  headers:
+    AliasETag:
+      description: Strong independent Alias version ETag, for example "a1"
+      schema:
+        type: string
+        pattern: '^"a[1-9][0-9]*"$'
+    NoStore:
+      schema:
+        type: string
+        const: no-store
+  requestBodies:
+    Edit:
+      required: true
+      description: Strict JSON object; duplicate keys, trailing tokens and unknown fields are invalid
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Edit'
+  responses:
+    Alias:
+      description: Authorized active private Alias with independent strong version ETag
+      headers:
+        ETag:
+          $ref: '#/components/headers/AliasETag'
+        Cache-Control:
+          $ref: '#/components/headers/NoStore'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Alias'
+    BadRequest:
+      description: Invalid canonical UUIDv7, bounded query, strict JSON, label or If-Match syntax
+      content: &errorContent
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: Missing, duplicate, expired or revoked session credential
+      content: *errorContent
+    Forbidden:
+      description: TLS/origin/fetch-site/role denied
+      content: *errorContent
+    Unavailable:
+      description: Space, Concept or Alias unknown, foreign, inaccessible or unavailable for this operation
+      content: *errorContent
+    Conflict:
+      description: Duplicate exact active label or the parent Concept already has 100 active aliases
+      content: *errorContent
+    PreconditionFailed:
+      description: Alias version differs; reload the current Alias before saving
+      content: *errorContent
+    TooLarge:
+      description: JSON body exceeds the bounded request size
+      content: *errorContent
+    UnsupportedMediaType:
+      description: application/json required
+      content: *errorContent
+    PreconditionRequired:
+      description: If-Match is missing
+      content: *errorContent
+    BadGateway:
+      description: Gateway cannot reach Knowledge
+      content: *errorContent
+    ServiceUnavailable:
+      description: Persistence or Space/Identity authority unavailable; no partial mutation
+      content: *errorContent
+    GatewayTimeout:
+      description: Gateway complete-response timeout
+      content: *errorContent
+  schemas:
+    UuidV7:
+      type: string
+      format: uuid
+      pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$'
+    Edit:
+      type: object
+      additionalProperties: false
+      required: [label]
+      properties:
+        label:
+          type: string
+          minLength: 1
+          description: Request body is at most 4096 bytes. Strip both ends, then require nonblank and at most 200 Unicode code points; reject NUL and unpaired surrogates. No case folding or normalization.
+    Alias:
+      type: object
+      additionalProperties: false
+      required: [aliasId, conceptId, spaceId, visibility, scope, state, version, label, createdAt, updatedAt]
+      properties:
+        aliasId:
+          $ref: '#/components/schemas/UuidV7'
+        conceptId:
+          $ref: '#/components/schemas/UuidV7'
+        spaceId:
+          $ref: '#/components/schemas/UuidV7'
+        visibility:
+          const: PRIVATE
+        scope:
+          const: SPACE
+        state:
+          type: string
+          enum: [ACTIVE, RETIRED]
+        version:
+          type: integer
+          minimum: 1
+          maximum: 9223372036854775807
+        label:
+          type: string
+          minLength: 1
+          maxLength: 200
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    Page:
+      type: object
+      additionalProperties: false
+      required: [items, nextAfter]
+      properties:
+        items:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/Alias'
+        nextAfter:
+          description: Last returned Alias UUIDv7 when another page exists, otherwise null
+          anyOf:
+            - $ref: '#/components/schemas/UuidV7'
+            - type: 'null'
+    Revision:
+      type: object
+      additionalProperties: false
+      required: [revisionId, aliasId, version, state, label, actorId, occurredAt]
+      properties:
+        revisionId:
+          $ref: '#/components/schemas/UuidV7'
+        aliasId:
+          $ref: '#/components/schemas/UuidV7'
+        version:
+          type: integer
+          minimum: 1
+          maximum: 9223372036854775807
+        state:
+          type: string
+          enum: [ACTIVE, RETIRED]
+        label:
+          type: string
+          minLength: 1
+          maxLength: 200
+        actorId:
+          $ref: '#/components/schemas/UuidV7'
+        occurredAt:
+          type: string
+          format: date-time
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string

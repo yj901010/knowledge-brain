@@ -1,0 +1,79 @@
+Personal Concept Alias delivery, 2026-10-11 Asia/Seoul
+
+Instructions: AGENTS.md and PROJECT.md read first; Knowledge ownership, private
+Space scope, immutable UUIDv7, revisions and transactional Outbox preserved.
+No new dependency, external terminology dataset or architecture decision.
+
+Full backend: backend-validation-1791644895, Complete, BUILD SUCCESS.
+253 discovered; 237 executed; 16 optional non-Knowledge storage/Kafka cases skipped.
+Zero failures/errors across the full Maven reactor.
+AliasApiTest: 8 passed; AliasStoreIntegrationTest: 10 passed against real PostgreSQL;
+AliasKafkaIntegrationTest: 1 passed through real Debezium/Kafka with mTLS.
+GatewayProxyTest: 15 passed including precise Alias methods/paths/query/body bounds.
+Evidence: .local/personal-concept-aliases-backend-validation.txt.
+
+API/store evidence: independent strong aN ETags, verified actor and trace, strict
+JSON/query/UUIDv7, HTTPS/Origin/cookie/authority failures, foreign/public/retired
+parent denial, immutable history retained after Alias and parent retirement,
+unchanged Concept version/revisions/events, exact case-sensitive duplicate scope,
+retired label reuse with a new ID, 200-codepoint Unicode/surrogate validation,
+same-Space Knowledge FK and database privacy/scope/revision constraints,
+outbox failure rolls back Alias and revision, one winner for concurrent edits and
+duplicate creates, atomic 100-active capacity, parent retirement/write races.
+
+Kafka evidence: AliasCreated/Updated/Retired versions1/2/3 wire bytes match stored
+outbox; correct alias key, independent Concept ID, event/revision UUIDv7,
+knowledge-service producer, Space/actor/trace and schema headers verified.
+brain-connect Helm revision16; knowledge.alias.v1 Ready,1partition/1replica locally.
+Connect producer and scoped Knowledge validator KafkaUser Ready with observed
+generations11/3. Base/local Helm render and license/CSP/static checks passed.
+
+Registry: alias-contract-validation-1791644965547871600, Complete.
+VALIDITY FULL, COMPATIBILITY FULL_TRANSITIVE, exact immutable version1 content.
+Alias schema SHA256 c432d80ca20139dd4d167fd3285231f8289928bb1475f8e1bc22e8f952fd3501.
+Existing Concept V1 bytes unchanged.
+Evidence: .local/personal-concept-aliases-contract-validation.txt.
+
+Static build: graph-static-build-1791645047201671400, pinned Next.js/TypeScript
+compile/export, dependency publisher license notices and CSP hashes passed.
+Knowledge build: knowledge-image-build-1791644840, init exit0.
+Imports: knowledge-image-import-1791644967-0/1 Complete, both nodes covered.
+Knowledge image: knowledge-brain/knowledge-service:local-614a02544fee5a6c.
+Gateway build: gateway-image-build-1791645088, init exit0.
+Imports: gateway-image-import-1791645129-0/1 Complete, both nodes covered.
+Gateway image: knowledge-brain/gateway-service:local-f4e78f3d51088b1e.
+Install-LocalPersonalConceptAliases.py verified exact current builder/import
+metadata and rolled out both deployments Ready1. All eight app deployments Ready1.
+
+Builder cleanup: exact Pod UID/label, Service selector, NetworkPolicy selector and
+source ConfigMap owner UID checked before deleting these temporary resources.
+Both builders and owned resources verified absent; application images Ready1.
+Evidence: .local/personal-concept-aliases-build-cleanup.json and corresponding
+knowledge/gateway-build-ownership.json. Persistent databases/volumes preserved.
+
+User endpoint: https://localhost:8443/graph, host HTTPS forward restarted after
+Gateway rollout; HTTP200 verified with the project CA and no TLS bypass.
+
+Full browser: graph-web-validation-1791645189, Complete; 17 passed (1.9m).
+New actual API/browser Alias scenario passed in11.5s. All previous16 Note,
+Concept, login/public contribution/review/merge and projection scenarios passed.
+Temporary reviewer01a12661-9748-78cb-a077-fdf6987c0422 was explicitly retired by
+the runner after the public fixture; both new Alias guest fixtures revoked.
+
+Browser evidence: actual22-Alias20+2 canonical pages, exact stripped duplicates
+and same label on another Concept,200-codepoint padded emoji label through both
+API/UI and201-codepoint rejection, malformed pagination/foreign Space denials,
+independent Alias ETags and exact unchanged canonical Concept/Note/reference
+snapshots, explicit create and duplicate handling, retained local Alias draft
+after real concurrent412, latest inspection without draft replacement and
+explicit restart, actual9-revision descending5+4 history, retirement conflict
+with fresh confirmation, retained history after both Alias/parent retirement,
+both Concept and Note editor drafts retained, stale responses discarded across
+Concept switch and close,503 catalogue clearing/retry,390px width fit, escaped
+labels, no browser storage/CSP/JavaScript error, pending-read revocation clears
+all private data.
+
+Evidence: .local/graph-ui-results/validation.txt. Desktop1280x4332 and
+mobile390x5868 concept-aliases.png / concept-aliases-mobile.png inspected.
+The current functional prototype layout fits both viewports; dark graph redesign
+remains the previously agreed later design phase.

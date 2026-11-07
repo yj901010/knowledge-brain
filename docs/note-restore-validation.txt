@@ -1,0 +1,19 @@
+Private Note historical text restoration — 2026-10-22
+
+Pinned Next.js static export and TypeScript check passed: graph-static-build-1792668117936568400
+Real HTTPS browser tests: 14 passed, 0 failed/skipped; graph-web-validation-1792668571678790400
+6 new restoration scenarios + 8 existing editor, Markdown, retirement, metadata, Journal, Wiki Link, attachment and Concept link regressions.
+Real seven-revision history and newer canonical preflight version; exact long Unicode title/body restored with same Note ID and new immutable revision.
+Preparation and cancel write nothing. New save uses freshly read strong If-Match; all prior revision records remain identical.
+Current nonempty tag, sealed attachment and Concept link snapshots and independent histories stay identical.
+Wiki Links and Backlinks recompute from restored text; graph title converges through existing events; Daily date/timezone binding retained.
+Concurrent writer returns 412 without overwriting; edited draft retained; explicit fresh comparison/rebase before saving.
+503 preserves draft; real committed save with simulated lost acknowledgement retries old ETag and cannot silently create duplicate version.
+Malformed history IDs, actor/time/state/text, repeated records/pages and invalid fresh Note tenant/state/visibility/ETag rejected; explicit retry passed.
+Late preparation and unsaved drafts discarded on Note switch; real guest revocation clears all private Note UI; foreign writes/history denied; retired Note cannot be resurrected.
+Escaped long Unicode/HTML strings, no browser storage and 390px width assertion passed.
+Gateway exact image imported on both nodes and deployed: knowledge-brain/gateway-service:local-fa65157836fb1cdf
+690 backend/contract files verified unchanged by SHA-256.
+Temporary owned Gateway builder Pod, Service, NetworkPolicy and source ConfigMaps removed.
+All 12 application Deployments ready; host HTTPS /graph 200.
+Existing Content PUT/NoteUpdated/Outbox/telemetry retained. No API, event, schema, dependency or architecture change.

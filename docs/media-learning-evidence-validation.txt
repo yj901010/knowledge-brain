@@ -1,0 +1,96 @@
+Media learning evidence validation, 2026-10-15
+
+Learning owns private file evidence relationships/revisions/Outbox; Media owns
+freshly authorized same-Space metadata and sealed MinIO object versions. Existing
+Note attachments are independent. No cross-owner SQL/FK/write, distributed
+transaction, bytes/object keys/signed credentials in evidence or automatic progress.
+
+{
+  "jobs": {
+    "backend": "backend-validation-1792068481",
+    "learningKafka": "backend-validation-1792068400",
+    "media": "backend-validation-1792068197",
+    "browser": "graph-web-validation-1792068653",
+    "focusedBrowser": "graph-web-validation-1792068568",
+    "registry": "learning-tracking-contract-validation-1792068195",
+    "cdc": "learning-cdc-bootstrap-1792068663"
+  },
+  "backend": {
+    "tests": 465,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 30
+  },
+  "learningKafka": {
+    "tests": 63,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "media": {
+    "tests": 12,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 2
+  },
+  "browserTests": 40,
+  "focusedBrowserTests": 3,
+  "registeredClaimMarkers": 2,
+  "schemaHashes": {
+    "media": "570c5ed12f35a119b9bda059c98a2fea913e19cf329adaa964b96de97f1bbc52",
+    "note": "432a3664007de5f39da77d077b745c534147c8dc50be424dab4cd04e56ccce2b",
+    "concept": "defd2827328024b6fee71e56a3a40c650f335f0359d03dcf62ef0d6a2b31ef04",
+    "progress": "ef3bf592594564efa67c9ddd1f3b9f3dddb7f6cc5e6fc7d20943464f013c1113",
+    "study": "98b45509343000736c25510aa59fb5cd814a9f2672de5e9dcdd242a2cf55a90e"
+  },
+  "images": {
+    "media": "knowledge-brain/media-service:local-12168fa16f0cb6c6",
+    "learning": "knowledge-brain/learning-service:local-12168fa16f0cb6c6",
+    "gateway": "knowledge-brain/gateway-service:local-2be78206e3ee9efe"
+  },
+  "readyServices": 9,
+  "connectorRunning": true,
+  "exactTopicAclsVerified": true,
+  "ownedBuildResourcesRemoved": 3,
+  "hostHttpsVerified": true,
+  "openapiLocalReferences": 1178
+}
+
+Real PostgreSQL tests prove independent meN versions, stale edits, no-op writes,
+concurrent original-key retries, unique active pins, immutable full history,
+archived-node/root lifecycle and atomic Outbox. V4-to-V5 migration preserves both
+Note/Concept IDs, snapshots, fingerprints, exact event bytes and original retry
+semantics. Typed catalogs, wrong-kind IDs and cross-kind key reuse stay isolated.
+Media owner tests prove fresh session authority, AVAILABLE-only metadata, strict
+body/query denial and no storage credentials or storage calls.
+
+Real Kafka proof compares exact committed Protobuf bytes, full file metadata/hash,
+actor/Space/trace/schema headers, stable UUIDv7 event/revision IDs and three ordered
+versions. Existing Registry v1 hashes remain immutable, with FULL validity and
+FULL_TRANSITIVE compatibility. Exact new-topic ACLs were applied before writes;
+Outbox-only publication and ten canonical/twelve other-owner CDC denials verified.
+
+Focused browser uses real sealed TLS MinIO uploads, PENDING/foreign/version denial,
+typed catalog/ID isolation, 5+3 history, original-key replay, independent attachments
+and unchanged root/progress. Real 23-file picker (one pending) and 20+2 evidence
+pages, committed lost-response retry, actual edit/retire 412 with latest restart,
+unchanged sibling drafts, escaped raw filenames/memos, late-read clearing and real
+revoked session are covered. Download compares original bytes and SHA-256, rejects
+same-length corrupted bytes and transfers with no Cookie/referrer. Desktop and
+390px screenshots inspected; viewport does not overflow. Two real Keycloak
+registrations keep file evidence IDs/snapshots/sealed Media across Space claim and
+then update the same records as registered principals. Full suite is on the same
+final deployed image. Full reactor skips 30 environment-gated checks; the separate
+Learning run enables all Learning real-Kafka tests (63, zero skips).
+
+An initial Kafka assertion contained a generated test-only artifact-name typo;
+it was corrected before the final successful Learning and full reactor runs.
+Three exact successful builder Pods/Services/NetworkPolicies/source ConfigMaps
+were removed only after UID/labels, selectors, source owner refs, init exit code,
+both-node image imports and deployed image identity checks. No database, PVC,
+application record, broker offset or CDC slot was reset. Temporary scripts never
+modify global PowerShell execution policy or Git configuration.
+
+No new dependencies/datasets/licenses. Central telemetry exporter/stack, optional
+StudySession association, Activity timeline projection, public/group Roadmap study,
+ratings/ranking and visual redesign remain later scope.

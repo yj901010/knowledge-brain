@@ -1,0 +1,86 @@
+replicaCount: 1
+image:
+  repository: knowledge-brain/content-service
+  tag: ''
+  pullPolicy: Never
+  digest: sha256:42df347e0bc2e96608b54c2261b95f01cbf1084f0d914a354e1cf4116cd7dcf9
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: '1'
+    memory: 768Mi
+env:
+- name: BRAIN_CONTENT_PERSISTENCE_ENABLED
+  value: 'true'
+- name: BRAIN_CONTENT_API_ENABLED
+  value: 'true'
+- name: BRAIN_CONTENT_DATABASE_URL
+  value: jdbc:postgresql://brain-postgres.brain-data.svc:5432/brain_content
+- name: BRAIN_CONTENT_DATABASE_PASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: brain-content-db
+      key: password
+- name: BRAIN_CONTENT_DATABASE_MAXIMUM_POOL_SIZE
+  value: '3'
+- name: BRAIN_CONTENT_SPACE_ORIGIN
+  value: https://space-service.brain-apps.svc:8080
+- name: BRAIN_CONTENT_SPACE_TRUST_FILE
+  value: /space-trust/ca.crt
+- name: BRAIN_CONTENT_SPACE_AUTHORIZATION_KEY
+  valueFrom:
+    secretKeyRef:
+      name: brain-content-space-authorization
+      key: key
+- name: SERVER_SSL_ENABLED
+  value: 'true'
+- name: SERVER_SSL_CERTIFICATE
+  value: file:/api-tls/tls.crt
+- name: SERVER_SSL_CERTIFICATE_PRIVATE_KEY
+  value: file:/api-tls/tls.key
+- name: SERVER_FORWARD_HEADERS_STRATEGY
+  value: NONE
+- name: MANAGEMENT_ENDPOINT_HEALTH_GROUP_READINESS_INCLUDE
+  value: readinessState,contentDatabase
+- name: BRAIN_CONTENT_BROWSER_ORIGIN
+  value: https://localhost:8443
+- name: BRAIN_CONTENT_ATTACHMENTS_ENABLED
+  value: 'true'
+- name: BRAIN_CONTENT_MEDIA_ORIGIN
+  value: https://media-service.brain-apps.svc:8080
+- name: BRAIN_CONTENT_MEDIA_TRUST_FILE
+  value: /space-trust/ca.crt
+- name: BRAIN_CONTENT_MEDIA_AUTHORIZATION_KEY
+  valueFrom:
+    secretKeyRef:
+      name: brain-content-media-authorization
+      key: key
+- name: BRAIN_CONTENT_SNAPSHOT_ENABLED
+  value: 'true'
+- name: BRAIN_CONTENT_SNAPSHOT_KEY
+  valueFrom:
+    secretKeyRef:
+      name: brain-content-search-snapshot
+      key: key
+- name: BRAIN_CONTENT_CONCEPTS_ENABLED
+  value: 'true'
+- name: BRAIN_CONTENT_KNOWLEDGE_ORIGIN
+  value: https://knowledge-service.brain-apps.svc:8080
+- name: BRAIN_CONTENT_KNOWLEDGE_TRUST_FILE
+  value: /space-trust/ca.crt
+- name: BRAIN_CONTENT_KNOWLEDGE_AUTHORIZATION_KEY
+  valueFrom:
+    secretKeyRef:
+      name: brain-content-knowledge-authorization
+      key: key
+- name: BRAIN_CONTENT_ACTIVITY_EXPORT_ENABLED
+  value: 'true'
+- name: BRAIN_CONTENT_ACTIVITY_EXPORT_KEY
+  valueFrom:
+    secretKeyRef:
+      name: brain-content-activity-export
+      key: key
+deploymentStrategy:
+  type: Recreate

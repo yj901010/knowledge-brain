@@ -1,0 +1,263 @@
+openapi: 3.1.0
+info:
+  title: Space Guest Read API
+  version: 1.0.1
+servers:
+- url: https://localhost:8443
+  description: Common local HTTPS Gateway, via Kubernetes port-forward; trust local
+    CA
+- url: https://localhost:8444
+  description: Direct Space diagnostic port-forward
+security:
+- guestCookie: []
+paths:
+  /api/spaces/personal:
+    get:
+      operationId: getPersonalSpace
+      description: Resolves the browser credential through Identity over verified
+        HTTPS, then reads only Space-owned data. Principal/user headers are ignored.
+        No credential cache is used. Responses are no-store.
+      responses:
+        '200':
+          description: Active private Personal Space and membership
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Space'
+        '202':
+          description: Identity is valid but asynchronous provisioning has not completed;
+            empty body
+          headers:
+            Retry-After:
+              schema:
+                type: string
+                const: '1'
+        '400':
+          description: Invalid request or HTTPS required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Missing, malformed, expired, retired or revoked credential
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Request not permitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Authentication or persistence unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/spaces/{spaceId}:
+    get:
+      operationId: getAuthorizedSpace
+      parameters:
+      - name: spaceId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: Space visible to the verified member; no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VisibleSpace'
+        '404':
+          description: Space does not exist or principal has no active membership;
+            does not reveal existence
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '400':
+          description: Invalid request or HTTPS required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Missing, malformed, expired, retired or revoked credential
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Request not permitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Authentication or persistence unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /internal/space/content-authorization:
+    post:
+      operationId: authorizeContent
+      servers:
+      - url: https://space-service.brain-apps.svc:8080
+      description: Private service-only Content authorization; common guest/registered
+        principal and current PERSONAL PRIVATE membership. NOTE_READ/BOOKMARK_READ/QUESTION_READ/DECISION_READ
+        permits visible members, NOTE_WRITE/BOOKMARK_WRITE/QUESTION_WRITE/DECISION_WRITE only OWNER/ADMIN/EDITOR.
+        No permission cache; dedicated Content service key and TLS required.
+      security:
+      - contentServiceBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - spaceId
+              - token
+              - action
+              properties:
+                spaceId: &id001
+                  type: string
+                  format: uuid
+                  description: Canonical UUIDv7
+                token:
+                  type: string
+                  pattern: ^[A-Za-z0-9_-]{43}$
+                action:
+                  type: string
+                  enum:
+                  - NOTE_READ
+                  - NOTE_WRITE
+                  - BOOKMARK_READ
+                  - BOOKMARK_WRITE
+                  - QUESTION_READ
+                  - QUESTION_WRITE
+                  - DECISION_READ
+                  - DECISION_WRITE
+      responses:
+        '200':
+          description: Authoritative decision
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - spaceId
+                - principalId
+                - action
+                - visibility
+                properties:
+                  spaceId: *id001
+                  principalId: *id001
+                  action:
+                    type: string
+                  visibility:
+                    type: string
+                    const: PRIVATE
+        '401':
+          description: Service credential or browser credential invalid
+        '403':
+          description: Role lacks requested write permission
+        '404':
+          description: Space unavailable
+        '503':
+          description: Identity or Space persistence unavailable
+components:
+  securitySchemes:
+    guestCookie:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest
+      description: Opaque 256-bit browser credential; Secure, HttpOnly, SameSite=Lax,
+        Path=/, no Domain; SHA-256 stored by Identity.
+    contentServiceBearer:
+      type: http
+      scheme: bearer
+      description: Separate Content-to-Space service secret; not a browser credential
+  schemas:
+    VisibleSpace:
+      type: object
+      description: Active Space and membership already authorized for this principal.
+        Supported model kinds do not grant domain permissions or create new provisioning workflows.
+      required:
+      - spaceId
+      - kind
+      - visibility
+      - role
+      properties:
+        spaceId:
+          type: string
+          format: uuid
+        kind:
+          type: string
+          enum:
+          - PUBLIC
+          - PERSONAL
+          - GROUP
+          - ORGANIZATION
+        visibility:
+          type: string
+          enum:
+          - PRIVATE
+          - PUBLIC
+        role:
+          type: string
+          enum:
+          - OWNER
+          - ADMIN
+          - EDITOR
+          - CONTRIBUTOR
+          - REVIEWER
+          - MEMBER
+          - VIEWER
+      if:
+        properties:
+          kind:
+            const: PERSONAL
+      then:
+        properties:
+          visibility:
+            const: PRIVATE
+      additionalProperties: false
+    Space:
+      type: object
+      required:
+      - spaceId
+      - kind
+      - visibility
+      - role
+      properties:
+        spaceId:
+          type: string
+          format: uuid
+        kind:
+          type: string
+          enum:
+          - PERSONAL
+        visibility:
+          type: string
+          enum:
+          - PRIVATE
+        role:
+          type: string
+          enum:
+          - OWNER
+      additionalProperties: false
+    Error:
+      type: object
+      required:
+      - error
+      properties:
+        error:
+          type: string
+      additionalProperties: false

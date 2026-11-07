@@ -1,0 +1,80 @@
+{{- if ne (int .Values.replicaCount) 1 }}
+{{- fail "This standalone cache chart supports one replica; use a separately reviewed HA topology for expansion" }}
+{{- end }}
+{{- if not (regexMatch "^sha256:[0-9a-f]{64}$" .Values.image.digest) }}
+{{- fail "An immutable Valkey image digest is required" }}
+{{- end }}
+apiVersion: v1
+kind: ConfigMap
+metadata: {name: brain-valkey-config}
+data:
+  valkey.conf: |
+{{ include "brain-valkey.config" . | indent 4 }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: {name: brain-valkey}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  strategy: {type: Recreate}
+  selector: {matchLabels: {app: brain-valkey}}
+  template:
+    metadata:
+      labels: {app: brain-valkey}
+      annotations:
+        checksum/config: {{ include "brain-valkey.config" . | sha256sum | quote }}
+    spec:
+      automountServiceAccountToken: false
+      securityContext: {runAsNonRoot: true, runAsUser: 10001, runAsGroup: 10001, fsGroup: 10001, seccompProfile: {type: RuntimeDefault}}
+      containers:
+      - name: valkey
+        image: "{{ .Values.image.repository }}@{{ .Values.image.digest }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        command: [valkey-server, /config/valkey.conf]
+        securityContext: {allowPrivilegeEscalation: false, readOnlyRootFilesystem: true, capabilities: {drop: [ALL]}}
+        ports: [{name: tls, containerPort: 6379}]
+        resources:
+{{ toYaml .Values.resources | indent 10 }}
+        startupProbe:
+          exec: {command: [sh, -ec, 'VALKEYCLI_AUTH="$(cat /acl/health-password)" valkey-cli --tls --cacert /tls/ca.crt --sni brain-valkey.brain-data.svc -h 127.0.0.1 --user health ping | grep -qx PONG']}
+          periodSeconds: 5
+          failureThreshold: 24
+        readinessProbe:
+          exec: {command: [sh, -ec, 'VALKEYCLI_AUTH="$(cat /acl/health-password)" valkey-cli --tls --cacert /tls/ca.crt --sni brain-valkey.brain-data.svc -h 127.0.0.1 --user health ping | grep -qx PONG']}
+          periodSeconds: 10
+          timeoutSeconds: 2
+        livenessProbe:
+          exec: {command: [sh, -ec, 'VALKEYCLI_AUTH="$(cat /acl/health-password)" valkey-cli --tls --cacert /tls/ca.crt --sni brain-valkey.brain-data.svc -h 127.0.0.1 --user health ping | grep -qx PONG']}
+          periodSeconds: 20
+          timeoutSeconds: 2
+        volumeMounts:
+        - {name: config, mountPath: /config, readOnly: true}
+        - {name: tls, mountPath: /tls, readOnly: true}
+        - {name: acl, mountPath: /acl, readOnly: true}
+        - {name: data, mountPath: /data}
+      volumes:
+      - {name: config, configMap: {name: brain-valkey-config}}
+      - {name: tls, secret: {secretName: {{ .Values.tlsSecret }}, defaultMode: 0440}}
+      - {name: acl, secret: {secretName: {{ .Values.aclSecret }}, defaultMode: 0440}}
+      - {name: data, emptyDir: {sizeLimit: 16Mi}}
+---
+apiVersion: v1
+kind: Service
+metadata: {name: brain-valkey}
+spec:
+  type: ClusterIP
+  selector: {app: brain-valkey}
+  ports: [{name: tls, port: 6379, targetPort: tls}]
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: {name: brain-valkey-private}
+spec:
+  podSelector: {matchLabels: {app: brain-valkey}}
+  policyTypes: [Ingress, Egress]
+  egress: []
+  ingress:
+  - from:
+    - namespaceSelector: {matchLabels: {kubernetes.io/metadata.name: brain-apps}}
+      podSelector: {matchLabels: {app.kubernetes.io/name: brain-query-service}}
+    ports: [{protocol: TCP, port: 6379}]

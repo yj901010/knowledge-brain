@@ -1,0 +1,12 @@
+{
+  "originalArtifact": "com.datastax.oss:java-driver-shaded-guava:25.1-jre-graal-sub-1",
+  "modifiedArtifact": "io.knowledgebrain:java-driver-shaded-guava-patched:0.1.0-SNAPSHOT",
+  "sourceUrl": "https://repo.maven.apache.org/maven2/com/google/guava/guava/25.1-jre/guava-25.1-jre-sources.jar",
+  "sourceArchiveSha256": "b7ffb578b2bd6445c958356e308d1c46c9ea6fb868fc9444bc8bda3a41875a1b",
+  "sourcePath": "com/google/common/collect/MapMakerInternalMap.java",
+  "originalSourceSha256": "7b668ed83cc9b62a955289a915d5034cfea1b5c961dd3615035185a2e0cc1bf4",
+  "modifiedSourceSha256": "9d3f7b2e0ae0809c16025db567178dc5345283b825bb1ed39101e29e0401cc3b",
+  "upstreamFix": "com.google.guava:guava:33.7.2-jre MapMakerInternalMap.readMapMaker initialCapacity(min(size,256))",
+  "modification": "Rebuild the entire MapMakerInternalMap class family with Java8 classfile conventions, original namespace/UIDs; replace only those classes. Keep the original other classes/Graal substitutions and notices. This is a Knowledge/Brain compatibility backport, not an upstream release.",
+  "license": "Apache-2.0"
+}

@@ -1,0 +1,50 @@
+{{- if or (lt (int .Values.kafka.minInSyncReplicas) 1) (gt (int .Values.kafka.minInSyncReplicas) (int .Values.kafka.replicationFactor)) }}
+{{- fail "minInSyncReplicas must be between 1 and replicationFactor" }}
+{{- end }}
+{{- range $topic := list "registry-journal" "registry-snapshots" "registry-events" }}
+---
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaTopic
+metadata:
+  name: {{ $topic }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    strimzi.io/cluster: {{ $.Values.kafka.clusterName }}
+spec:
+  partitions: 1
+  replicas: {{ $.Values.kafka.replicationFactor }}
+  config:
+    cleanup.policy: delete
+    retention.ms: -1
+    retention.bytes: -1
+    min.insync.replicas: {{ $.Values.kafka.minInSyncReplicas }}
+{{- end }}
+---
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaUser
+metadata:
+  name: {{ .Values.kafka.userName }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    strimzi.io/cluster: {{ .Values.kafka.clusterName }}
+spec:
+  authentication:
+    type: tls
+  authorization:
+    type: simple
+    acls:
+{{- range $topic := list "registry-journal" "registry-snapshots" "registry-events" }}
+      - resource:
+          type: topic
+          name: {{ $topic }}
+          patternType: literal
+        operations: [Read, Write, Describe, DescribeConfigs]
+{{- end }}
+      - resource:
+          type: group
+          name: brain-registry-
+          patternType: prefix
+        operations: [Read, Describe]
+      - resource:
+          type: cluster
+        operations: [IdempotentWrite]

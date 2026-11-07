@@ -1,0 +1,274 @@
+openapi: 3.1.0
+info:
+  title: Public discovery read model
+  version: 1.0.1
+  description: Knowledge PUBLIC canonical facts projected through Outbox/Connect/Kafka
+    into Brain Query-owned PostgreSQL durable inbox/work, fixed OpenSearch index and
+    JanusGraph pub namespace. No private data or pending proposals. All reads require
+    fresh Identity/Space authorization and bounded current Knowledge metadata checks.
+    Eventual search totals may include omitted stale rows; no owner-scan fallback.
+security:
+- guestCookie: []
+paths:
+  /api/public/spaces/{spaceId}/search:
+    get:
+      parameters:
+      - &id001
+        name: spaceId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: q
+        in: query
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 128
+      - name: kind
+        in: query
+        required: false
+        schema:
+          enum:
+          - CONCEPT
+          - ALIAS
+          - CLAIM
+          - SOURCE
+          - EVIDENCE
+          - MAPPING
+          - VERIFICATION
+          - QUALIFIER
+      - name: offset
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          maximum: 999
+          default: 0
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 50
+          default: 20
+      description: Fixed public index title/body/reference-title search. offset+limit<=1000.
+        Returns projectedTotal,offset,limit,nextOffset,staleOmitted,items. Items include
+        current content, qualifierPins,currentContext,effectiveLevel,needsReview;
+        no stale expertise or official context.
+      responses:
+        '200':
+          description: No-store JSON; canonical current facts only
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchPage'
+        '400': &publicBadRequest
+          description: Unknown/duplicate query, invalid bounds or ID
+        '401': &publicUnauthorized
+          description: Current application identity required
+        '404': &publicNotFound
+          description: Non-public or unknown Space
+        '503': &publicUnavailable
+          description: Read store, canonical authority or rebuild unavailable; no
+            fallback
+  /api/public/spaces/{spaceId}/graph:
+    get:
+      parameters:
+      - *id001
+      - name: center
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+      - name: depth
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 3
+          default: 2
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 80
+      description: Bounded public graph with optional center and breadth expansion.
+        Maximum300 edges; depth1..3, at most1000 incident-edge visits per frontier
+        vertex. Returns canonical nodes,typed edges,truncated,staleOmitted. Uncentered
+        view is a bounded sample. Outdated/retired/context-invalid endpoints and their
+        edges are excluded.
+      responses:
+        '200':
+          description: No-store JSON; canonical current facts only
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GraphView'
+        '400': *publicBadRequest
+        '401': *publicUnauthorized
+        '404': *publicNotFound
+        '503': *publicUnavailable
+components:
+  securitySchemes:
+    guestCookie:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest
+  schemas:
+    PublicItem:
+      type: object
+      required:
+      - entityId
+      - kind
+      - title
+      - version
+      - state
+      - content
+      - qualifierPins
+      - currentContext
+      - effectiveLevel
+      - needsReview
+      additionalProperties: false
+      properties:
+        entityId: &id003
+          type: string
+          format: uuid
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+        kind:
+          enum:
+          - CONCEPT
+          - ALIAS
+          - CLAIM
+          - SOURCE
+          - EVIDENCE
+          - MAPPING
+          - VERIFICATION
+          - QUALIFIER
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        version:
+          type: integer
+          minimum: 1
+        state:
+          enum:
+          - ACTIVE
+        content:
+          type: object
+          description: Current canonical typed fields; exact per-kind fields follow
+            public-knowledge-workbench.yaml.
+        qualifierPins:
+          type: object
+          maxProperties: 100
+          additionalProperties:
+            type: integer
+            minimum: 1
+        currentContext:
+          const: true
+        effectiveLevel:
+          enum:
+          - ''
+          - DRAFT
+          - SOURCED
+          - COMMUNITY_REVIEWED
+          - EXPERT_VERIFIED
+        needsReview:
+          type: boolean
+    SearchPage:
+      type: object
+      required:
+      - projectedTotal
+      - offset
+      - limit
+      - nextOffset
+      - staleOmitted
+      - items
+      additionalProperties: false
+      properties:
+        projectedTotal:
+          type: integer
+          minimum: 0
+        offset:
+          type: integer
+          minimum: 0
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 50
+        nextOffset:
+          type:
+          - integer
+          - 'null'
+          minimum: 0
+        staleOmitted:
+          type: integer
+          minimum: 0
+          maximum: 50
+        items:
+          type: array
+          maxItems: 50
+          items:
+            $ref: '#/components/schemas/PublicItem'
+    GraphEdge:
+      type: object
+      required:
+      - id
+      - source
+      - target
+      - role
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+        source: *id003
+        target: *id003
+        role:
+          enum:
+          - ALIAS_OF
+          - SUBJECT
+          - PREDICATE
+          - OBJECT
+          - SUPPORTS
+          - SOURCE
+          - MAPS
+          - ASSESSES
+          - EVIDENCE
+          - QUALIFIES
+          - QUALIFIER_PREDICATE
+          - QUALIFIER_VALUE
+    GraphView:
+      type: object
+      required:
+      - nodes
+      - edges
+      - truncated
+      - staleOmitted
+      additionalProperties: false
+      properties:
+        nodes:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/PublicItem'
+        edges:
+          type: array
+          maxItems: 300
+          items:
+            $ref: '#/components/schemas/GraphEdge'
+        truncated:
+          type: boolean
+        staleOmitted:
+          type: integer
+          minimum: 0
+          maximum: 100

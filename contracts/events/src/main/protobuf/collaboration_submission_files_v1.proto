@@ -1,0 +1,15 @@
+syntax = "proto3";
+package knowledgebrain.collaboration.submissionfiles.v1;
+option java_package = "io.knowledgebrain.contracts.collaboration.submissionfiles.v1";
+option java_multiple_files = true;
+message SubmissionFilesEnvelopeV1 {
+ string event_id = 1; string event_type = 2; uint32 event_version = 3;
+ int64 occurred_at_epoch_millis = 4; string producer = 5; string aggregate_type = 6;
+ string aggregate_id = 7; string space_id = 8; string actor_id = 9; string trace_id = 10; bytes payload = 11;
+}
+message SubmittedFileV1 { string media_id = 1; int64 version = 2; string filename = 3; string mime_type = 4; int64 byte_size = 5; string sha256 = 6; }
+message SubmissionFilesSnapshotV1 {
+ string bundle_id = 1; int64 version = 2; string submission_id = 3; int64 submission_version = 4;
+ string assignment_id = 5; string study_id = 6; string group_id = 7; string space_id = 8;
+ string author_id = 9; repeated SubmittedFileV1 files = 10; string audience = 11; string created_at = 12;
+}

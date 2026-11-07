@@ -1,0 +1,497 @@
+openapi: 3.1.0
+info:
+  title: Private Group Studies
+  version: 1.0.0
+  description: 'Collaboration-owned Study organization. Active registered OWNER/MEMBER/VIEWER
+    read; OWNER creates, edits, transitions and archives. Fresh Space participation
+    grant and matching ACTIVE Collaboration Group/Space checked on every request.
+    Creation starts PLANNED, then PLANNED -> ACTIVE -> COMPLETED; archive from any
+    non-archived state to RETIRED. No reopening in this slice. Metadata may be corrected
+    until archived. Strong stN version required for changes. Exact no-op with current
+    version does not create a revision/event. Create idempotency scoped to Group/creator/key:
+    immutable original input is compared and current snapshot replayed, including
+    after edits/retirement. Bounded keyset/history, strict JSON and queries, same-origin
+    HTTPS writes, UUIDv7, no-store and trace propagation. Study operation state is
+    independent from personal Learning sessions/progress; no automatic sharing or
+    roadmap duplication. Outbox/revision/current snapshot commit atomically; collaboration.study.v1,
+    collaboration/study-events/1.'
+security:
+- browserSession: []
+paths:
+  /api/groups/{groupId}/studies:
+    parameters:
+    - &id011
+      name: groupId
+      in: path
+      schema:
+        $ref: '#/components/schemas/Id'
+      required: true
+    get:
+      operationId: listGroupStudies
+      responses:
+        '200':
+          description: Freshly authorized Group Study result
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Page'
+        '400': &id001
+          description: Invalid UUID/body/query/key/strong ETag
+        '401': &id002
+          description: Invalid session
+        '403': &id003
+          description: Registered account required; only OWNER can write; same-origin
+            HTTPS required
+        '404': &id004
+          description: Current Group membership/configuration/Space or scoped Study
+            unavailable
+        '409': &id005
+          description: Changed creation input under same key, invalid lifecycle transition,
+            or editing archived Study
+        '412': &id006
+          description: Stale Study version
+        '413': &id007
+          description: Body >65536 bytes
+        '415': &id008
+          description: JSON required
+        '428': &id009
+          description: If-Match required
+        '503': &id010
+          description: Space authorization or persistence unavailable
+      parameters:
+      - name: after
+        in: query
+        schema:
+          $ref: '#/components/schemas/Id'
+        required: false
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+        required: false
+    post:
+      operationId: createGroupStudy
+      responses:
+        '200':
+          description: Freshly authorized Group Study result
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"st[1-9][0-9]*"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Study'
+        '400': *id001
+        '401': *id002
+        '403': *id003
+        '404': *id004
+        '409': *id005
+        '412': *id006
+        '413': *id007
+        '415': *id008
+        '428': *id009
+        '503': *id010
+        '201':
+          description: Freshly authorized Group Study result
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"st[1-9][0-9]*"$
+            Location:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Study'
+      parameters:
+      - name: Origin
+        in: header
+        schema:
+          type: string
+        required: true
+      - name: Idempotency-Key
+        in: header
+        schema:
+          type: string
+          pattern: ^[0-9a-f]{32}$
+        required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Settings'
+  /api/groups/{groupId}/studies/{studyId}:
+    parameters: &id012
+    - *id011
+    - name: studyId
+      in: path
+      schema:
+        $ref: '#/components/schemas/Id'
+      required: true
+    get:
+      operationId: readGroupStudy
+      responses:
+        '200':
+          description: Freshly authorized Group Study result
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"st[1-9][0-9]*"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Study'
+        '400': *id001
+        '401': *id002
+        '403': *id003
+        '404': *id004
+        '409': *id005
+        '412': *id006
+        '413': *id007
+        '415': *id008
+        '428': *id009
+        '503': *id010
+    put:
+      operationId: editGroupStudy
+      responses:
+        '200':
+          description: Freshly authorized Group Study result
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"st[1-9][0-9]*"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Study'
+        '400': *id001
+        '401': *id002
+        '403': *id003
+        '404': *id004
+        '409': *id005
+        '412': *id006
+        '413': *id007
+        '415': *id008
+        '428': *id009
+        '503': *id010
+      parameters:
+      - name: Origin
+        in: header
+        schema:
+          type: string
+        required: true
+      - name: If-Match
+        in: header
+        schema:
+          type: string
+          pattern: ^"st[1-9][0-9]*"$
+        required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Settings'
+    delete:
+      operationId: archiveGroupStudy
+      responses:
+        '200':
+          description: Freshly authorized Group Study result
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"st[1-9][0-9]*"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Study'
+        '400': *id001
+        '401': *id002
+        '403': *id003
+        '404': *id004
+        '409': *id005
+        '412': *id006
+        '413': *id007
+        '415': *id008
+        '428': *id009
+        '503': *id010
+      parameters:
+      - name: Origin
+        in: header
+        schema:
+          type: string
+        required: true
+      - name: If-Match
+        in: header
+        schema:
+          type: string
+          pattern: ^"st[1-9][0-9]*"$
+        required: true
+  /api/groups/{groupId}/studies/{studyId}/state:
+    parameters: *id012
+    put:
+      operationId: transitionGroupStudy
+      responses:
+        '200':
+          description: Freshly authorized Group Study result
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"st[1-9][0-9]*"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Study'
+        '400': *id001
+        '401': *id002
+        '403': *id003
+        '404': *id004
+        '409': *id005
+        '412': *id006
+        '413': *id007
+        '415': *id008
+        '428': *id009
+        '503': *id010
+      parameters:
+      - name: Origin
+        in: header
+        schema:
+          type: string
+        required: true
+      - name: If-Match
+        in: header
+        schema:
+          type: string
+          pattern: ^"st[1-9][0-9]*"$
+        required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StateInput'
+  /api/groups/{groupId}/studies/{studyId}/revisions:
+    parameters: *id012
+    get:
+      operationId: readGroupStudyHistory
+      responses:
+        '200':
+          description: Freshly authorized Group Study result
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/History'
+        '400': *id001
+        '401': *id002
+        '403': *id003
+        '404': *id004
+        '409': *id005
+        '412': *id006
+        '413': *id007
+        '415': *id008
+        '428': *id009
+        '503': *id010
+      parameters:
+      - name: before
+        in: query
+        schema: &id013
+          type: integer
+          format: int64
+          minimum: 1
+        required: false
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 5
+        required: false
+components:
+  securitySchemes:
+    browserSession:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest
+  schemas:
+    Id:
+      type: string
+      format: uuid
+      pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+    Study:
+      type: object
+      additionalProperties: false
+      required:
+      - studyId
+      - groupId
+      - spaceId
+      - creatorId
+      - version
+      - title
+      - description
+      - state
+      - visibility
+      - createdAt
+      - updatedAt
+      properties:
+        studyId:
+          $ref: '#/components/schemas/Id'
+        groupId:
+          $ref: '#/components/schemas/Id'
+        spaceId:
+          $ref: '#/components/schemas/Id'
+        creatorId:
+          $ref: '#/components/schemas/Id'
+        version: *id013
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+          description: UTF-8 at most 32768 bytes, valid Unicode, no NUL
+        state: &id014
+          enum:
+          - PLANNED
+          - ACTIVE
+          - COMPLETED
+          - RETIRED
+        visibility:
+          const: PRIVATE
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    Summary:
+      type: object
+      additionalProperties: false
+      required:
+      - studyId
+      - version
+      - title
+      - state
+      properties:
+        studyId:
+          $ref: '#/components/schemas/Id'
+        version: *id013
+        title:
+          type: string
+          maxLength: 200
+        state: *id014
+    Settings:
+      type: object
+      additionalProperties: false
+      required:
+      - title
+      - description
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: Nonblank, no control characters; preserved literally
+        description:
+          type: string
+          description: UTF-8 <=32768 bytes, valid Unicode, no NUL
+    StateInput:
+      type: object
+      additionalProperties: false
+      required:
+      - state
+      properties:
+        state:
+          enum:
+          - ACTIVE
+          - COMPLETED
+    Page:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - nextAfter
+      properties:
+        items:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/Summary'
+        nextAfter:
+          oneOf:
+          - $ref: '#/components/schemas/Id'
+          - type: 'null'
+    Revision:
+      type: object
+      additionalProperties: false
+      required:
+      - revisionId
+      - version
+      - actorId
+      - occurredAt
+      - snapshot
+      properties:
+        revisionId:
+          $ref: '#/components/schemas/Id'
+        version: *id013
+        actorId:
+          $ref: '#/components/schemas/Id'
+        occurredAt:
+          type: string
+          format: date-time
+        snapshot:
+          $ref: '#/components/schemas/Study'
+    History:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - nextBefore
+      properties:
+        items:
+          type: array
+          maxItems: 10
+          items:
+            $ref: '#/components/schemas/Revision'
+        nextBefore:
+          oneOf:
+          - *id013
+          - type: 'null'

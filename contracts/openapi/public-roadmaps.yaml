@@ -1,0 +1,1227 @@
+openapi: 3.1.0
+info:
+  title: Public Roadmap Contribution and Review
+  version: 1.0.0
+  description: Explicit public graph snapshots; SUBMITTED -> APPROVED -> MERGED or
+    REJECTED. New public canonical and proposal IDs. Reviewed verification separate
+    from ranking/expert status. Private roadmap/progress/study/evidence are never
+    copied. Bounded request 1 MiB, individual snapshot 512 KiB, review/merge 32 KiB.
+    Original immutable payload bytes use separate learning.public-roadmap.v1 and learning.roadmap-contribution.v1.
+    Every read uses a common guest or registered session and fresh Space authority;
+    no public canonical PUT/DELETE. Strict JSON duplicate/unknown/trailing fields
+    and GET bodies are rejected.
+security:
+- browserSession: []
+paths:
+  /api/public/spaces/{spaceId}/roadmaps:
+    parameters:
+    - name: spaceId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    get:
+      operationId: listPublicRoadmaps
+      parameters:
+      - name: after
+        in: query
+        required: false
+        schema:
+          $ref: '#/components/schemas/Id'
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      responses:
+        '200':
+          description: Authorized public snapshot; no personal learning data.
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoadmapPage'
+        '400':
+          description: Strict JSON/query/graph/size invariant failed
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '401':
+          description: Session required
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '403':
+          description: Registration/reviewer/origin required, self-review forbidden
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '404':
+          description: Public Space/roadmap/proposal unavailable
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '409':
+          description: Illegal lifecycle transition
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '412':
+          description: Stale contribution or public canonical base
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '413':
+          description: Request exceeds bounded size
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '415':
+          description: JSON required
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '428':
+          description: Strong contribution If-Match required
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '503':
+          description: Authority/database unavailable
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+  /api/public/spaces/{spaceId}/roadmaps/{roadmapId}:
+    parameters:
+    - name: spaceId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    - name: roadmapId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    get:
+      operationId: getPublicRoadmap
+      parameters: []
+      responses:
+        '200':
+          description: Authorized public snapshot; no personal learning data.
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"rmp[1-9][0-9]*"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Roadmap'
+        '400':
+          description: Strict JSON/query/graph/size invariant failed
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '401':
+          description: Session required
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '403':
+          description: Registration/reviewer/origin required, self-review forbidden
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '404':
+          description: Public Space/roadmap/proposal unavailable
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '409':
+          description: Illegal lifecycle transition
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '412':
+          description: Stale contribution or public canonical base
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '413':
+          description: Request exceeds bounded size
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '415':
+          description: JSON required
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '428':
+          description: Strong contribution If-Match required
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '503':
+          description: Authority/database unavailable
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+  /api/public/spaces/{spaceId}/roadmaps/{roadmapId}/revisions:
+    parameters:
+    - name: spaceId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    - name: roadmapId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    get:
+      operationId: publicRoadmapRevisions
+      parameters:
+      - name: before
+        in: query
+        required: false
+        schema: &id002
+          type: integer
+          format: int64
+          minimum: 1
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 5
+      responses:
+        '200':
+          description: Authorized public snapshot; no personal learning data.
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                type: array
+                maxItems: 10
+                items:
+                  $ref: '#/components/schemas/Revision'
+        '400':
+          description: Strict JSON/query/graph/size invariant failed
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '401':
+          description: Session required
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '403':
+          description: Registration/reviewer/origin required, self-review forbidden
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '404':
+          description: Public Space/roadmap/proposal unavailable
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '409':
+          description: Illegal lifecycle transition
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '412':
+          description: Stale contribution or public canonical base
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '413':
+          description: Request exceeds bounded size
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '415':
+          description: JSON required
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '428':
+          description: Strong contribution If-Match required
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '503':
+          description: Authority/database unavailable
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+  /api/public/spaces/{spaceId}/roadmap-contributions:
+    parameters:
+    - name: spaceId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    get:
+      operationId: listRoadmapContributions
+      parameters:
+      - name: after
+        in: query
+        required: false
+        schema:
+          $ref: '#/components/schemas/Id'
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      responses:
+        '200':
+          description: Authorized public snapshot; no personal learning data.
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProposalPage'
+        '400':
+          description: Strict JSON/query/graph/size invariant failed
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '401':
+          description: Session required
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '403':
+          description: Registration/reviewer/origin required, self-review forbidden
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '404':
+          description: Public Space/roadmap/proposal unavailable
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '409':
+          description: Illegal lifecycle transition
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '412':
+          description: Stale contribution or public canonical base
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '413':
+          description: Request exceeds bounded size
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '415':
+          description: JSON required
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '428':
+          description: Strong contribution If-Match required
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '503':
+          description: Authority/database unavailable
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+    post:
+      operationId: submitRoadmapContribution
+      parameters: []
+      responses:
+        '201':
+          description: Authorized public snapshot; no personal learning data.
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"pc[1-9][0-9]*"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Proposal'
+        '400':
+          description: Strict JSON/query/graph/size invariant failed
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '401':
+          description: Session required
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '403':
+          description: Registration/reviewer/origin required, self-review forbidden
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '404':
+          description: Public Space/roadmap/proposal unavailable
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '409':
+          description: Illegal lifecycle transition
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '412':
+          description: Stale contribution or public canonical base
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '413':
+          description: Request exceeds bounded size
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '415':
+          description: JSON required
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '428':
+          description: Strong contribution If-Match required
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '503':
+          description: Authority/database unavailable
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+      description: Same-origin HTTPS write; freshly authorized registered principal.
+        No direct canonical mutation.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Submit'
+  /api/public/spaces/{spaceId}/roadmap-contributions/{contributionId}:
+    parameters:
+    - name: spaceId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    - name: contributionId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    get:
+      operationId: getRoadmapContribution
+      parameters: []
+      responses:
+        '200':
+          description: Authorized public snapshot; no personal learning data.
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"pc[1-9][0-9]*"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Proposal'
+        '400':
+          description: Strict JSON/query/graph/size invariant failed
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '401':
+          description: Session required
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '403':
+          description: Registration/reviewer/origin required, self-review forbidden
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '404':
+          description: Public Space/roadmap/proposal unavailable
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '409':
+          description: Illegal lifecycle transition
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '412':
+          description: Stale contribution or public canonical base
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '413':
+          description: Request exceeds bounded size
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '415':
+          description: JSON required
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '428':
+          description: Strong contribution If-Match required
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '503':
+          description: Authority/database unavailable
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+  /api/public/spaces/{spaceId}/roadmap-contributions/{contributionId}/reviews:
+    parameters:
+    - name: spaceId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    - name: contributionId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    get:
+      operationId: roadmapContributionReviews
+      parameters: []
+      responses:
+        '200':
+          description: Authorized public snapshot; no personal learning data.
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+          content:
+            application/json:
+              schema:
+                type: array
+                maxItems: 2
+                items:
+                  $ref: '#/components/schemas/Review'
+        '400':
+          description: Strict JSON/query/graph/size invariant failed
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '401':
+          description: Session required
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '403':
+          description: Registration/reviewer/origin required, self-review forbidden
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '404':
+          description: Public Space/roadmap/proposal unavailable
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '409':
+          description: Illegal lifecycle transition
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '412':
+          description: Stale contribution or public canonical base
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '413':
+          description: Request exceeds bounded size
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '415':
+          description: JSON required
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '428':
+          description: Strong contribution If-Match required
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '503':
+          description: Authority/database unavailable
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+  /api/public/spaces/{spaceId}/roadmap-contributions/{contributionId}/review:
+    parameters:
+    - name: spaceId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    - name: contributionId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    post:
+      operationId: reviewRoadmapContribution
+      parameters:
+      - name: If-Match
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^"pc[1-9][0-9]{0,18}"$
+      responses:
+        '200':
+          description: Authorized public snapshot; no personal learning data.
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"pc[1-9][0-9]*"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Proposal'
+        '400':
+          description: Strict JSON/query/graph/size invariant failed
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '401':
+          description: Session required
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '403':
+          description: Registration/reviewer/origin required, self-review forbidden
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '404':
+          description: Public Space/roadmap/proposal unavailable
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '409':
+          description: Illegal lifecycle transition
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '412':
+          description: Stale contribution or public canonical base
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '413':
+          description: Request exceeds bounded size
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '415':
+          description: JSON required
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '428':
+          description: Strong contribution If-Match required
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '503':
+          description: Authority/database unavailable
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+      description: Same-origin HTTPS write; freshly authorized registered principal.
+        No direct canonical mutation.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - decision
+              - reason
+              properties:
+                decision:
+                  enum:
+                  - APPROVED
+                  - REJECTED
+                reason:
+                  type: string
+                  minLength: 1
+                  maxLength: 2000
+  /api/public/spaces/{spaceId}/roadmap-contributions/{contributionId}/merge:
+    parameters:
+    - name: spaceId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    - name: contributionId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    post:
+      operationId: mergeRoadmapContribution
+      parameters:
+      - name: If-Match
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^"pc[1-9][0-9]{0,18}"$
+      responses:
+        '200':
+          description: Authorized public snapshot; no personal learning data.
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+            ETag:
+              schema:
+                type: string
+                pattern: ^"pc[1-9][0-9]*"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Proposal'
+        '400':
+          description: Strict JSON/query/graph/size invariant failed
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '401':
+          description: Session required
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '403':
+          description: Registration/reviewer/origin required, self-review forbidden
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '404':
+          description: Public Space/roadmap/proposal unavailable
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '409':
+          description: Illegal lifecycle transition
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '412':
+          description: Stale contribution or public canonical base
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '413':
+          description: Request exceeds bounded size
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '415':
+          description: JSON required
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '428':
+          description: Strong contribution If-Match required
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+        '503':
+          description: Authority/database unavailable
+          headers:
+            Cache-Control:
+              schema:
+                const: no-store
+      description: Same-origin HTTPS write; freshly authorized registered principal.
+        No direct canonical mutation.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              maxProperties: 0
+components:
+  securitySchemes:
+    browserSession:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest
+  schemas:
+    Id:
+      type: string
+      format: uuid
+      pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+    Node:
+      type: object
+      additionalProperties: false
+      required:
+      - nodeId
+      - title
+      - description
+      properties:
+        nodeId:
+          $ref: '#/components/schemas/Id'
+        title: &id001
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+          description: At most 2048 UTF-8 bytes.
+    Edge:
+      type: object
+      additionalProperties: false
+      required:
+      - edgeId
+      - kind
+      - sourceNodeId
+      - targetNodeId
+      properties:
+        edgeId:
+          $ref: '#/components/schemas/Id'
+        kind: &id011
+          enum:
+          - PREREQUISITE_OF
+          - RECOMMENDED_BEFORE
+          - PART_OF
+          - REQUIRED_FOR
+          - OPTIONAL_FOR
+          - RELATED_TO
+        sourceNodeId:
+          $ref: '#/components/schemas/Id'
+        targetNodeId:
+          $ref: '#/components/schemas/Id'
+    Graph:
+      type: object
+      additionalProperties: false
+      required:
+      - nodes
+      - edges
+      properties:
+        nodes: &id003
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/Node'
+        edges: &id004
+          type: array
+          maxItems: 500
+          items:
+            $ref: '#/components/schemas/Edge'
+    Summary:
+      type: object
+      additionalProperties: false
+      required:
+      - roadmapId
+      - title
+      - version
+      - updatedAt
+      properties:
+        roadmapId:
+          $ref: '#/components/schemas/Id'
+        title: *id001
+        version: *id002
+        updatedAt:
+          type: string
+          format: date-time
+    ProposalSummary:
+      type: object
+      additionalProperties: false
+      required:
+      - contributionId
+      - roadmapId
+      - baseVersion
+      - authorId
+      - state
+      - version
+      - title
+      properties:
+        contributionId: &id005
+          $ref: '#/components/schemas/Id'
+        roadmapId: &id006
+          $ref: '#/components/schemas/Id'
+        baseVersion: &id007
+          type: integer
+          format: int64
+          minimum: 0
+        authorId: &id008
+          $ref: '#/components/schemas/Id'
+        state: &id009
+          enum:
+          - SUBMITTED
+          - APPROVED
+          - REJECTED
+          - MERGED
+        version: *id002
+        title: *id001
+    Review:
+      type: object
+      additionalProperties: false
+      required:
+      - reviewId
+      - contributionVersion
+      - reviewerId
+      - decision
+      - reason
+      - occurredAt
+      properties:
+        reviewId:
+          $ref: '#/components/schemas/Id'
+        contributionVersion: *id002
+        reviewerId:
+          $ref: '#/components/schemas/Id'
+        decision:
+          enum:
+          - APPROVED
+          - REJECTED
+          - MERGED
+        reason:
+          type: string
+          maxLength: 2000
+        occurredAt:
+          type: string
+          format: date-time
+    Roadmap:
+      type: object
+      additionalProperties: false
+      required:
+      - roadmapId
+      - spaceId
+      - visibility
+      - verification
+      - version
+      - title
+      - description
+      - createdAt
+      - updatedAt
+      - nodes
+      - edges
+      properties:
+        roadmapId:
+          $ref: '#/components/schemas/Id'
+        spaceId:
+          $ref: '#/components/schemas/Id'
+        visibility:
+          const: PUBLIC
+        verification:
+          const: REVIEWED
+        version: *id002
+        title: *id001
+        description: &id010
+          type: string
+          description: At most 32768 UTF-8 bytes; LF/CR/TAB allowed, other ISO controls/unpaired
+            surrogates rejected.
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        nodes: *id003
+        edges: *id004
+    Proposal:
+      type: object
+      additionalProperties: false
+      required:
+      - contributionId
+      - roadmapId
+      - baseVersion
+      - authorId
+      - state
+      - version
+      - title
+      - spaceId
+      - description
+      - rationale
+      - graph
+      - createdAt
+      - updatedAt
+      - mergedRoadmapVersion
+      properties:
+        contributionId: *id005
+        roadmapId: *id006
+        baseVersion: *id007
+        authorId: *id008
+        state: *id009
+        version: *id002
+        title: *id001
+        spaceId:
+          $ref: '#/components/schemas/Id'
+        description: *id010
+        rationale:
+          type: string
+          minLength: 1
+          maxLength: 2000
+        graph:
+          $ref: '#/components/schemas/Graph'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        mergedRoadmapVersion:
+          type:
+          - integer
+          - 'null'
+          minimum: 1
+    Revision:
+      type: object
+      additionalProperties: false
+      required:
+      - revisionId
+      - version
+      - actorId
+      - occurredAt
+      - snapshot
+      properties:
+        revisionId:
+          $ref: '#/components/schemas/Id'
+        version: *id002
+        actorId:
+          $ref: '#/components/schemas/Id'
+        occurredAt:
+          type: string
+          format: date-time
+        snapshot:
+          $ref: '#/components/schemas/Roadmap'
+    RoadmapPage:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - nextAfter
+      properties:
+        items:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/Summary'
+        nextAfter:
+          anyOf:
+          - $ref: '#/components/schemas/Id'
+          - type: 'null'
+    ProposalPage:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - nextAfter
+      properties:
+        items:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/ProposalSummary'
+        nextAfter:
+          anyOf:
+          - $ref: '#/components/schemas/Id'
+          - type: 'null'
+    NodeEdit:
+      type: object
+      additionalProperties: false
+      required:
+      - key
+      - title
+      - description
+      properties:
+        key:
+          type: string
+          description: Existing ACTIVE public node UUIDv7 in base graph or new:[A-Za-z0-9_-]{1,32};
+            CREATE only permits new keys.
+        title: *id001
+        description:
+          type: string
+          description: At most 2048 UTF-8 bytes.
+    EdgeEdit:
+      type: object
+      additionalProperties: false
+      required:
+      - key
+      - kind
+      - source
+      - target
+      properties:
+        key:
+          type: string
+          description: Existing public edge UUIDv7 in base graph or new draft key.
+        kind: *id011
+        source: &id012
+          type: string
+        target: *id012
+    Submit:
+      type: object
+      additionalProperties: false
+      required:
+      - roadmapId
+      - baseVersion
+      - title
+      - description
+      - rationale
+      - nodes
+      - edges
+      properties:
+        roadmapId:
+          anyOf:
+          - $ref: '#/components/schemas/Id'
+          - type: 'null'
+        baseVersion: *id007
+        title: *id001
+        description: *id010
+        rationale:
+          type: string
+          minLength: 1
+          maxLength: 2000
+        nodes:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/NodeEdit'
+        edges:
+          type: array
+          maxItems: 500
+          items:
+            $ref: '#/components/schemas/EdgeEdit'

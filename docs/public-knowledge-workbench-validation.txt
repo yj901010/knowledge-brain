@@ -1,0 +1,132 @@
+Public knowledge workbench — verified 2026-11-01 KST
+
+Source: k3d-knowledge-brain
+kube-system UID: ee84ca44-bb83-4712-a572-10169a6e2542
+
+Delivered
+- Explicit CREATE/UPDATE/RETIRE proposals for public Alias, typed Claim, Source,
+  Evidence, External Mapping and Verification; existing Concept workflow retained.
+- Immutable submitted snapshots, designated review, self-review/self-merge denial,
+  strong kpN CAS, canonical base/reference checks at merge, rejection, retirement,
+  immutable review/revision history and atomic canonical+proposal+Outbox writes.
+- Alias GLOBAL/COUNTRY/ORGANIZATION scope; current same-public-Space references.
+- Claims support Concept/String/Number/Date/Boolean without literal coercion.
+- Source/Claim/Evidence revision pins; no private working-content import.
+- DRAFT/SOURCED/COMMUNITY_REVIEWED/EXPERT_VERIFIED progression; edited/retired
+  grounds invalidate effective verification without rewriting historical records.
+- Independent CANDIDATE/CONFIRMED/OFFICIAL mappings with version/provenance.
+- Separate current operator capabilities for expert verification and official
+  Mapping approval/merge; general reviewer membership does not grant either.
+- Public catalog/type/state/my-proposals filters, bounded literal title/Alias
+  search, at-most20 incident Claim relations and an explicit truncated flag.
+- User-facing typed forms, public consent, before/after review, history and390px
+  layout. The existing functional UI is retained; Obsidian design is a later phase.
+
+Architecture and data
+- Same13 services, per-owner DBs, private defaults, REST, Protobuf/Registry and
+  Outbox -> Connect -> Kafka publication. No runtime direct Kafka producer added.
+- Knowledge V18 adds public records/proposals/reviews/revisions; V19 normalizes
+  unambiguous hashed identity tuples and backfills earlier workbench rows.
+- Space V8 adds independent operator capabilities and immutable capability audit.
+- Existing private tables/contracts and public Concept IDs remain unchanged.
+- No new dependency version, clinical dataset, licensed terminology import or AI.
+- Knowledge owns the heterogeneous public fact lifecycle and typed JSON snapshots.
+  Bounded public search/relations read its own canonical DB; no complete public
+  OpenSearch/JanusGraph projection is claimed.
+
+Backend evidence
+- backend-validation-1793523633339196200-4e24dc41:
+  Knowledge full suite248 tests,0 failures/errors/skips, including actual Kafka.
+- backend-validation-1793524044399492000-132af1f1:
+  Final identity/migration boundary subset16 passed,0 failures/errors/skips:
+ 11 store tests,4 API tests,1 actual public-record Kafka test.
+- backend-validation-1793525408568270400-df893972:
+ 2 actual Spring security-boundary tests passed; declared reads reach their HTTPS
+  guard; search writes, private APIs and unrelated management remain denied.
+- backend-validation-1793523495892154000-ac916215:
+  Space83 tests,0 failures/errors,5 Kafka-flag-dependent tests skipped;78 executed.
+  Includes current role AND specific capability, revocation and domain separation.
+- backend-validation-1793524121918449400-7b0ba811:
+  Gateway240 tests,0 failures/errors/skips; includes exact new route allowlist and
+  direct public canonical write denial.
+- backend-validation-1793525536106735800-c8c193f3:
+ 1 actual Space capability CDC test passed after browser authority cleanup.
+  All four real operator grant/revoke events match committed bytes, envelope,
+  payload, trace/schema headers and read-only Kafka delivery.
+- These are separate scoped runs, not one asserted all-service test invocation.
+
+Actual browser evidence
+- Job graph-web-validation-1793525383163823400
+  UID8cfbe7b1-4ce5-452b-aca3-12f0e1e98907;1 comprehensive scenario passed36.7s.
+- Two registered accounts plus a guest; real Keycloak registration/Space claiming.
+- Source and scoped Alias created through actual public-consent forms; designated
+  reviewer approves/merges through UI. Approval alone publishes no canonical row.
+- Claim, Evidence and all verification stages exercised over actual HTTPS.
+- Expert approval denied without its capability, then permitted after explicit
+  test-only operator grant; expert merge succeeds. A later approved edit cannot
+  merge once that capability is revoked.
+- Official Mapping separately denied/granted/merged. It never changes Claim
+  verification. Fixtures use an Example vocabulary/DEMO code, not a real official
+  terminology or professional qualification.
+- Source change retains v1/v2 history and makes old Claim verification need review;
+  stale approved competing merge412; rejected proposal cannot merge409.
+- Evidence retirement retains old versions. UUID-looking STRING remains literal.
+- Guest proposal403, private Concept reference404, foreign/private Space404,
+  duplicate query keys400 and excessive page limit400.
+- Reviewed Alias search resolves its Concept; canonical incident relations include
+  Concept and literal objects. Desktop/390px screenshots inspected, no overflow.
+- No browser page errors and no TLS verification bypass.
+
+Authority cleanup
+- Final test reviewer01a19671-ecbc-79ee-b188-4844257c8702.
+- Five isolated reviewer memberships from this milestone are RETIRED; zero active
+  fixture reviewer roles/capabilities. Normal accounts were never auto-promoted.
+- Final reviewer's two capabilities are RETIRED. Four immutable capability audit
+  rows match four Space Outbox rows, whose actual Kafka bytes were verified.
+- Read-only authority Job public-authority-final-1793525729,
+  UID5ac98c07-cfa8-4310-a8c3-fdc940c197ba. Credential values were not printed.
+
+Deployment and retained runtime
+- Space image local-c3f102bd9c528ded.
+- Knowledge image local-62589660efa9a1c3.
+- Gateway image local-ba1e4615395801ac, static build
+  graph-static-build-1793524526744917900.
+- Each image built independently, imported successfully on both nodes and rolled
+  sequentially with the existing OpenTelemetry overlay. Builder source/image
+  hashes, Pod/ConfigMap/import Job UIDs and success logs captured before cleanup.
+- Only owned temporary builders/endpoints/source maps removed; no PVC/offset/slot
+  reset, no Docker/WSL restart and no clone/backup deletion.
+-14 applications Ready,7 monitoring Deployments Ready,13 JVM services and all six
+  public metric kinds visible; all service Deployment UIDs and13 PVC UIDs retained.
+- No firing alerts; Linux/WSL available-memory headroom25.0% at final capture.
+- New standalone Protobuf topics/artifacts:
+  knowledge.public-record.v1 -> knowledge/public-record-events V1;
+  space.public-capability.v1 -> space/public-capability-events V1.
+  Exact source bytes and FULL/FULL_TRANSITIVE rules checked before writers.
+- Existing76 Registry artifacts retained; final combined manifest contains78.
+ 10 Outbox connector/tasks RUNNING. Final machine proof records the combined
+ 78-artifact byte/rule verification Job.
+- Graph8443, login8445, Headlamp8444, Media9443 and Grafana8446 HTTPS200 with verified
+  local CA. Source forwards running; restore clone remains stopped and retained.
+
+Historical attempts
+- Earlier browser failures remain evidence: an approval/input refresh race was
+  fixed by disabling review input while busy; state checks were narrowed to the
+  selected proposal; a missing GET explore security matcher was fixed and covered
+  by actual Spring filter-chain tests. The final passing browser run supersedes
+  them. A test-only missing origin property was supplied; TLS was never disabled.
+
+Private operator evidence
+.local/public-knowledge-validation.json
+.local/public-knowledge-contracts.json
+.local/public-knowledge-deployment.json
+.local/public-knowledge-builder-evidence/*.json
+.local/public-knowledge-browser-validation.json
+.local/public-knowledge-final-health.json
+.local/public-knowledge-registry-manifest.json
+.local/graph-ui-results/public-workbench-desktop.png
+.local/graph-ui-results/public-workbench-mobile.png
+
+Remaining separate scope: public qualifiers, curated licensed initial knowledge,
+broader public projections/graph visualization, frontend design and production
+delivery/readiness. No new backup/restore drill is claimed for this later dataset.

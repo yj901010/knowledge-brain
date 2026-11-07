@@ -1,0 +1,19 @@
+Private Group invitations and membership validation — 2026-10-22
+
+space: 64 passed, 0 failures/errors, 2 existing conditional checks skipped; backend-validation-1792679782528763800-81ee8289
+collaboration: 22 passed, 0 failures/errors, 1 existing conditional checks skipped; backend-validation-1792679429584483100-7db2ba12
+gateway: 88 passed, 0 failures/errors, 0 existing conditional checks skipped; backend-validation-1792679439634755400-34bc4800
+Browser: 2 scenarios passed with actual Keycloak registrations, original private Group creation regression and new OWNER/MEMBER/VIEWER workflow; graph-web-validation-1792680268880855700
+OWNER can issue/revoke 24-hour single-use invitations, list members, change MEMBER/VIEWER, remove members and read immutable histories. OWNER cannot be removed, demoted or leave.
+Registered acceptance is explicit. Concurrent recipients have one winner. Same-account replay reads current role; old accepted codes cannot undo role changes or regrant removed/left membership. Fresh invitations explicitly reactivate with increasing version.
+Issue response-loss retry returns the same invitation/code. Different role under the same key is 409. Stale If-Match is 412, and absent version is 428. Outbox failures roll back invitation/member state, versions and audit history.
+Invitation plaintext is absent from database rows, Kafka events, GET lists and browser storage. Dedicated Space-only HMAC key is preserved; database stores only SHA-256(code). Existing five canonical tables deny SELECT to the Space CDC role.
+Fresh Space participation grants filter ACTIVE Collaboration configuration in bounded batches. Original OWNER-only creation/access APIs remain unchanged. Group Space remains rejected by Personal-only Note APIs.
+Actual browser checks covered issuance, response loss, acceptance, MEMBER-to-VIEWER update, stale writes, member exclusion, new invitation rejoin, leave, revoked code denial, OWNER protection, private Note/Space isolation, mobile layout and empty browser storage.
+Real Kafka checks compare seven invitation/member snapshots and existing Group Space event bytes against canonical Outboxes, verify trace/schema headers and unacknowledged replay.
+A temporary TopicAuthorizationException from test writers preceding ACL readiness was recovered by restarting only failed Space CDC tasks after Kafka topic/user readiness. Existing offsets/slot/Outbox were retained and all delivery tests then passed.
+V5/V6 migrations include Group-only membership versions, invitation hashes, immutable audit records and compatible initial OWNER history for old writers. No prior migration or Protobuf bytes rewritten.
+OpenAPI: 57 documents parsed, 1480 local references resolved. New Registry artifacts have FULL validity and FULL_TRANSITIVE compatibility.
+Pinned Next/TypeScript export passed; actual deployed module/shared contract source bytes match build archives. All service image imports succeeded on both k3d nodes; five owned temporary builder sets removed.
+All 13 application Deployments ready; trusted host HTTPS /graph and /graph/groups return 200 with no-store/CSP. All nine CDC connectors/tasks RUNNING.
+No new library/version/dataset, AI, cross-service database access, external messaging, ownership transfer or automatic Personal sharing. Group Study/Course/Assignment/Discussion/Submission content remains subsequent work.

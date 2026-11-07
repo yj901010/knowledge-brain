@@ -1,0 +1,5 @@
+package io.knowledgebrain.gateway;
+import org.junit.jupiter.api.Test;import static org.junit.jupiter.api.Assertions.*;
+class RoadmapRatingRouteTest {
+ @Test void exactRatingAndBoundedRankingRoutesNeverExposeOtherActorsOrPrivateVotes(){String root="/api/public/spaces/0199e000-0000-7000-8000-000000000002",id="0199e000-0000-7000-8000-000000000003";for(String path:new String[]{"/roadmap-rankings","/roadmaps/"+id+"/ratings","/roadmaps/"+id+"/my-rating","/roadmaps/"+id+"/my-rating/revisions"})assertEquals("learning",GatewayRoute.select("GET",root+path).service());for(String method:new String[]{"PUT","DELETE"})assertEquals("learning",GatewayRoute.select(method,root+"/roadmaps/"+id+"/my-rating").service());for(String path:new String[]{"/roadmaps/"+id+"/ratings/"+id,"/roadmaps/"+id+"/ratings","/roadmap-rankings"})for(String method:new String[]{"PUT","POST","DELETE"})assertNull(GatewayRoute.select(method,root+path));assertNull(GatewayRoute.select("GET","/api/spaces/"+id+"/roadmaps/"+id+"/ratings"));}
+}

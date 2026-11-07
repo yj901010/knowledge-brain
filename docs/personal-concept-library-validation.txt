@@ -1,0 +1,96 @@
+Standalone personal Concept library validation — 2026-10-10 (Asia/Seoul)
+
+AGENTS.md / PROJECT.md read first. Existing Knowledge canonical ownership,
+Content-owned Note/reference snapshots, private Space boundaries and immutable
+UUIDv7 IDs preserved. No dependency, schema, domain API/event or backend code change.
+
+Build/deploy:
+  Next static Job graph-static-build-1791642624708886400 — compile/TypeScript/export passed
+  Gateway Java25 Maven builder gateway-image-build-1791642685 — init build exit0
+  Two owned source ConfigMaps: data bytes 700000 and 410264
+  Imports gateway-image-import-1791642717-0 and -1 — both Complete, both k3d nodes
+  Installer scripts/Install-LocalPersonalConceptLibrary.py
+  Gateway image knowledge-brain/gateway-service:local-660bb8bd16578a5c — Ready1
+  All 8 application Deployments Ready1 after local cluster recovery.
+  Exact builder Pod/Service/NetworkPolicy and both owned source ConfigMaps absent after cleanup.
+
+Browser:
+  python scripts/Run-GraphWebValidation.py --public
+  JOB graph-web-validation-1791642982 — 15 passed (2.0m), two workers
+  Trusted HTTPS/local CA; no TLS bypass. Temporary public test reviewer retired afterward.
+  New scenario completed in 10.7s; existing 14 regression scenarios also passed.
+
+New integration assertions:
+  Guest creates PRIVATE ACTIVE Concept before any Note exists; no Content writes.
+  Cancellation sends no POST; injected503 retains title/description; explicit retry only.
+  Canonical UUIDv7 ID, exact title/description and quoted ETag1.
+  Actual 41 Concepts in 20+20+1 cursor pages, different same-title IDs, loaded-only filter.
+  Third-page Concept save keeps selected detail while catalogue resets to page one.
+  Old catalogue response cannot restore pre-save title or retired Concept ID.
+  Library edits refresh already-open Note picker title without changing exact Note/reference snapshots.
+  Unsaved Note draft survives library edit/retire and Note-side Concept create.
+  Note-side Concept create resets library catalogue without removing its unsaved detail draft.
+  Actual RETIRED v4 and immutable v3/v2/v1 revisions retained; original escaped source remains inert.
+  Library close/reopen clears creation input, edit draft, acknowledgement and history.
+  Held old read after close cannot repopulate new failed catalogue; explicit refresh recovers.
+  Foreign list/create/detail/history404; revocation while POST pending clears all private views.
+  No JS/CSP errors, localStorage/sessionStorage empty, actual390x844 mobile has no horizontal overflow.
+
+Screenshots inspected:
+  .local/graph-ui-results/concept-library.png
+  .local/graph-ui-results/concept-library-mobile.png
+  Catalogue, pagination/filter, retained history and escaped description fit current layout.
+  Existing functional frontend style retained; agreed graph redesign remains later scope.
+
+Runtime repair required for validation:
+  Existing Cassandra truststore init failed after Docker sandbox restart because the same alias
+  was imported into retained emptyDir storage. Corrected exact generated truststore regeneration.
+  Same-emptyDir old import failure / corrected double initialization verified in
+  cassandra-truststore-validation-1791642870. Production Helm revision7 applied;
+  replaced only failed old Pod, unchanged data PVC/volume identity, init exit0,
+  Cassandra Ready and Brain Query Ready. See cassandra-truststore-validation.txt.
+
+JOB=graph-web-validation-1791642982
+debconf: delaying package configuration, since apt-utils is not installed
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
+
+Running 15 tests using 2 workers
+
+PERSONAL_CONCEPT_EDITOR_VERIFIED: canonical private Concept title/description and exact strong ETag saves; real 412 draft retention and explicit latest restart; 503 retry and cancel; seven immutable revisions in descending 5+2 cursor pages; unchanged Note source/version and reference c-ETag/Concept IDs/link IDs; same-ID title refresh and stale catalog response rejection; foreign read/write/history denial; escaped HTML; Concept/Note switch and close clearing; mobile and revoked-session clearing without browser storage
+  ✓   1 tests/concept-editor.spec.ts:3:5 › private Concept editing, conflict recovery, paged history and independent Note references (10.7s)
+NOTE_ATTACHMENTS_UI_VERIFIED: direct cookie-free TLS MinIO multipart upload, SHA256 sealed bytes, same-allocation resume, signed download byte comparison, independent a-ETag, real conflict/reload, unlink keeps Media, stable attachment IDs, 5+2 history and 20+1 Media paging, foreign denial, retry, reuse, Note-switch file clearing, mobile and revocation
+  ✓   2 tests/attachments.spec.ts:3:5 › private attachment upload/resume, sealed download, reuse, concurrency and history (17.2s)
+PERSONAL_CONCEPT_LIBRARY_VERIFIED: standalone private creation before any Note exists, cancellation and 503 input retention with explicit retry only; exact UUIDv7 and strong ETag; real 41-Concept 20+20+1 canonical pages, distinct same-title IDs and loaded filter; third-page detail retained across catalog reset, read-only revisions and escaped descriptions; stale catalog rejection after save and retirement; bidirectional library/Note-picker refresh preserving both local detail draft and unsaved Note draft with exact unchanged Content Note/version/reference c-ETag/Concept IDs/link IDs; retained retired history; close/reopen clearing creation/edit/ack/history, stale delayed read rejection and explicit recovery; foreign list/create/detail/history denial, mobile fit and pending create revocation clearing without browser storage
+  ✓   3 tests/concept-library.spec.ts:3:5 › standalone personal Concept library, canonical pages and independent Note editing (10.7s)
+PERSONAL_CONCEPT_RETIREMENT_VERIFIED: explicit acknowledgement and cancel without DELETE; real stale ETag 412, latest inspection and fresh reconfirmation; 503 retry with the same strong ETag; canonical RETIRED version and unchanged immutable prior revisions; late old catalog response rejection; retained read-only detail/history; exact unchanged Note and Content reference c-ETag/Concept IDs/link IDs; retained-ID unlink changes references only and adding the retired ID is rejected; foreign DELETE/history denial; escaped descriptions, close and Note-switch acknowledgement clearing; mobile fit and pending DELETE revocation clearing without browser storage
+  ✓   4 tests/concept-retirement.spec.ts:3:5 › explicit personal Concept retirement, stale catalog rejection and independent retained Note references (6.8s)
+NOTE_CONCEPT_LINKS_UI_VERIFIED: real 101-Concept paged catalog, stable retained IDs, independent c-ETag and unchanged Note version, 412 explicit latest restart, 503 retry, canonical 5+2 history, shared 20-reference cap, retained removal despite catalog outage, Note-switch draft/history clearing, foreign denial, mobile and revocation
+  ✓   5 tests/concepts.spec.ts:2:5 › canonical Concept catalog paging, independent link history and conflict recovery (10.2s)
+NOTE_EDITOR_VERIFIED: strong ETag, private UUID preserved, conflict draft retained, explicit restart, canonical paged history, failure retry, cancel, Note-switch draft clearing, revocation clear, escaped text
+  ✓   6 tests/editor.spec.ts:3:5 › private Note edit, conflict recovery, immutable paged history and draft privacy (7.9s)
+  ✓   7 tests/graph.spec.ts:2:5 › private graph create, explore, mobile, outage and revoke (5.9s)
+NOTE_JOURNAL_UI_VERIFIED: server today is read-only, explicit timezone, canonical create/reopen/rename/body preserved, immutable-zone conflict, existing today keeps original zone without write, 20+1 Journal pages, inclusive bounds, private isolation, ordinary exclusion, failure recovery, stale-response discard, retirement, mobile, revocation
+  ✓   8 tests/journal.spec.ts:2:5 › Daily Note open/reopen, server today, immutable zone and canonical Journal (7.5s)
+NOTE_LINKS_UI_VERIFIED: canonical 20+3 pagination, unresolved/ambiguous/retired states, stable rename navigation, grouped backlinks, outage clearing/recovery, revoked session clearing
+  ✓  10 tests/links.spec.ts:2:5 › canonical Wiki links, statuses, pagination, backlinks and lifecycle (4.9s)
+NOTE_MARKDOWN_PREVIEW_VERIFIED: CommonMark/GFM headings, emphasis, lists, quote, table, static task checkboxes and code; raw HTML/protocol rejection, no automatic image/resource request, safe external anchors, Wiki syntax remains literal, exact canonical source and draft/history fidelity, no write on toggle, version unchanged on history, Note switch, mobile, revoked-session clearing
+  ✓  11 tests/markdown.spec.ts:2:5 › Markdown preview, GFM, draft/history source fidelity and private rendering (30.9s)
+NOTE_METADATA_UI_VERIFIED: five types, exact 38-digit decimal preserved, multiline list, independent Note version, real ETag conflict and explicit restart, Space type lock, 503 retry, cancel, Note-switch draft clearing, mobile, revoke, escaping
+  ✓  12 tests/metadata.spec.ts:2:5 › typed metadata, exact decimal roundtrip, independent versions and draft privacy (7.1s)
+NOTE_LIBRARY_UI_VERIFIED: actual 202 canonical Notes, bounded 200-node graph exclusion, real 20-item cursor pages without duplicates, Daily inclusion, immutable outside-graph open, canonical rename refresh, failure clearing/retry, stale response discard across close/reopen, retired exclusion, foreign denial, mobile and revoked-session clearing
+  ✓   9 tests/library.spec.ts:2:5 › canonical full Note library beyond bounded graph, paging and privacy (45.0s)
+PUBLIC_REVIEWER_READY=01a12640-2a42-7335-8655-9ca9bd679985
+NOTE_RETIREMENT_UI_VERIFIED: explicit two-step acknowledgement, cancel without writes, real stale ETag conflict and explicit latest restart, 503 retry, canonical RETIRED history, list/graph removal, preserved Daily binding, foreign denial, Note-switch acknowledgement reset, mobile and revoked-session clearing
+PUBLIC_NOTE_REFERENCES_VERIFIED: guest/registered, unpublished/foreign-private denial, stable IDs, revision independence, persistence, removal, private Note isolation
+  ✓  14 tests/retirement.spec.ts:2:5 › explicit Note retirement, concurrency, history, Daily binding and privacy (23.9s)
+PUBLIC_REVIEWER_REVOKE_READY=01a12640-2a42-7335-8655-9ca9bd679985
+PUBLIC_WORKFLOW_VERIFIED
+  ✓  13 tests/public.spec.ts:3:5 › public Concept proposal, designated review, atomic merge and reviewer revocation (27.1s)
+NOTE_SEARCH_UI_VERIFIED: real title/body index, scoped totals/hits, 20+1 pagination, bounded graph selection, canonical reopen/retirement, failure clearing/recovery, aborted response ignored, revocation
+  ✓  15 tests/search.spec.ts:3:5 › private title/body search, real pagination, canonical open and failure privacy (8.5s)
+
+  15 passed (2.0m)

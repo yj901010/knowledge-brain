@@ -1,0 +1,474 @@
+openapi: 3.1.0
+info:
+  title: Private Content questions
+  version: 1.0.0
+  description: Content-owned PERSONAL PRIVATE questions with manual OPEN/ANSWERED
+    status, separate ACTIVE/RETIRED lifecycle and immutable audit. Input has exactly
+    title/context/answer/status. ANSWERED requires a nonblank direct answer; OPEN
+    may retain a draft answer and reopening never deletes it implicitly. Self-reported
+    resolution does not verify Knowledge claims. Fresh QUESTION_READ/WRITE via existing
+    Space capability and common principal; visible members read, OWNER/ADMIN/EDITOR
+    write. TLS, same-origin writes, no-store, exact singleton queries/JSON, empty
+    GET/DELETE and 256 KiB request limit. Independent quN strong tags; missing428,
+    malformed400, stale412 checked before no-op. Create with 32-lowercase-hex Idempotency-Key
+    replays original v1 even after edit/archive/claim; changed input409. Catalog20/100
+    compact title/status summaries omit context/answer, ascending cursor binds Space/lifecycle/status
+    filter. History5/10 descending exclusive versions. Retired GET/history200, edit404,
+    DELETE204 including current no-op. All own changes commit with revision and Protobuf
+    Transactional Outbox. No private browser storage, automatic publication or cross-owner
+    SQL.
+servers:
+- url: https://localhost:8443
+security:
+- sessionCookie: []
+paths:
+  /api/spaces/{spaceId}/questions:
+    parameters:
+    - &id004
+      name: spaceId
+      in: path
+      required: true
+      schema: &id005
+        type: string
+        format: uuid
+        pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+    get:
+      operationId: listPrivateQuestions
+      responses:
+        '200':
+          description: Canonical private result; known retired objects/history remain
+            available
+          headers:
+            Cache-Control: &id001
+              schema:
+                type: string
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Page'
+        '400':
+          description: Malformed, ambiguous/unknown fields, invalid cursor/status
+            or non-empty read/DELETE body
+        '401':
+          description: No valid common guest/registered browser session
+        '403':
+          description: Origin or current role denied
+        '404':
+          description: Private Space/object unavailable, or editing a retired question
+        '503':
+          description: Canonical storage or current authority unavailable; no partial
+            mutation
+      parameters:
+      - name: state
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - ACTIVE
+          - RETIRED
+          default: ACTIVE
+      - name: status
+        in: query
+        required: false
+        schema: &id015
+          type: string
+          enum:
+          - ALL
+          - OPEN
+          - ANSWERED
+          default: ALL
+      - name: after
+        in: query
+        required: false
+        schema:
+          type: string
+          maxLength: 256
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+    post:
+      operationId: createPrivateQuestion
+      responses:
+        '200':
+          description: 'Same key and validated intent: original v1, even after edit/archive/account
+            claim'
+          headers:
+            Cache-Control: *id001
+            ETag: &id002
+              schema: &id007
+                type: string
+                pattern: ^"qu[1-9][0-9]*"$
+            Location:
+              schema:
+                type: string
+          content: &id003
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Question'
+        '400':
+          description: Malformed, ambiguous/unknown fields, invalid cursor/status
+            or non-empty read/DELETE body
+        '401':
+          description: No valid common guest/registered browser session
+        '403':
+          description: Origin or current role denied
+        '404':
+          description: Private Space/object unavailable, or editing a retired question
+        '503':
+          description: Canonical storage or current authority unavailable; no partial
+            mutation
+        '409':
+          description: Creation key used for different validated intent
+        '412':
+          description: Stale current version, including stale unchanged input
+        '413':
+          description: JSON exceeds256 KiB
+        '415':
+          description: JSON required
+        '428':
+          description: Missing strong If-Match
+        '201':
+          description: First creation
+          headers:
+            Cache-Control: *id001
+            ETag: *id002
+            Location:
+              schema:
+                type: string
+          content: *id003
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^[0-9a-f]{32}$
+      requestBody: &id006
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Input'
+  /api/spaces/{spaceId}/questions/{questionId}:
+    parameters:
+    - *id004
+    - &id009
+      name: questionId
+      in: path
+      required: true
+      schema: *id005
+    get:
+      operationId: getPrivateQuestion
+      responses:
+        '200':
+          description: Canonical private result; known retired objects/history remain
+            available
+          headers:
+            Cache-Control: *id001
+            ETag: *id002
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Question'
+        '400':
+          description: Malformed, ambiguous/unknown fields, invalid cursor/status
+            or non-empty read/DELETE body
+        '401':
+          description: No valid common guest/registered browser session
+        '403':
+          description: Origin or current role denied
+        '404':
+          description: Private Space/object unavailable, or editing a retired question
+        '503':
+          description: Canonical storage or current authority unavailable; no partial
+            mutation
+    put:
+      operationId: updatePrivateQuestion
+      responses:
+        '200':
+          description: Canonical private result; known retired objects/history remain
+            available
+          headers:
+            Cache-Control: *id001
+            ETag: *id002
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Question'
+        '400':
+          description: Malformed, ambiguous/unknown fields, invalid cursor/status
+            or non-empty read/DELETE body
+        '401':
+          description: No valid common guest/registered browser session
+        '403':
+          description: Origin or current role denied
+        '404':
+          description: Private Space/object unavailable, or editing a retired question
+        '503':
+          description: Canonical storage or current authority unavailable; no partial
+            mutation
+        '409':
+          description: Creation key used for different validated intent
+        '412':
+          description: Stale current version, including stale unchanged input
+        '413':
+          description: JSON exceeds256 KiB
+        '415':
+          description: JSON required
+        '428':
+          description: Missing strong If-Match
+      requestBody: *id006
+      parameters: &id008
+      - name: If-Match
+        in: header
+        required: true
+        schema: *id007
+    delete:
+      operationId: archivePrivateQuestion
+      responses:
+        '204':
+          description: Canonical private result; known retired objects/history remain
+            available
+          headers:
+            Cache-Control: *id001
+            ETag: *id002
+        '400':
+          description: Malformed, ambiguous/unknown fields, invalid cursor/status
+            or non-empty read/DELETE body
+        '401':
+          description: No valid common guest/registered browser session
+        '403':
+          description: Origin or current role denied
+        '404':
+          description: Private Space/object unavailable, or editing a retired question
+        '503':
+          description: Canonical storage or current authority unavailable; no partial
+            mutation
+        '409':
+          description: Creation key used for different validated intent
+        '412':
+          description: Stale current version, including stale unchanged input
+        '413':
+          description: JSON exceeds256 KiB
+        '415':
+          description: JSON required
+        '428':
+          description: Missing strong If-Match
+      parameters: *id008
+  /api/spaces/{spaceId}/questions/{questionId}/revisions:
+    parameters:
+    - *id004
+    - *id009
+    get:
+      operationId: getPrivateQuestionRevisions
+      responses:
+        '200':
+          description: Canonical private result; known retired objects/history remain
+            available
+          headers:
+            Cache-Control: *id001
+          content:
+            application/json:
+              schema:
+                type: array
+                maxItems: 10
+                items:
+                  $ref: '#/components/schemas/Revision'
+        '400':
+          description: Malformed, ambiguous/unknown fields, invalid cursor/status
+            or non-empty read/DELETE body
+        '401':
+          description: No valid common guest/registered browser session
+        '403':
+          description: Origin or current role denied
+        '404':
+          description: Private Space/object unavailable, or editing a retired question
+        '503':
+          description: Canonical storage or current authority unavailable; no partial
+            mutation
+      parameters:
+      - name: before
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 9223372036854775807
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 5
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: __Host-brain_guest
+  schemas:
+    Input:
+      type: object
+      additionalProperties: false
+      required:
+      - title
+      - context
+      - answer
+      - status
+      properties:
+        title: &id010
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: Nonblank, at most200 Unicode codepoints/800 UTF-8 bytes; no
+            newline/tab/control/unpaired surrogate
+        context:
+          type: string
+          maxLength: 16384
+          description: At most16384 UTF-8 bytes, verbatim CR/LF/tab; no other ISO
+            control or unpaired surrogate
+        answer:
+          type: string
+          maxLength: 16384
+          description: At most16384 UTF-8 bytes, verbatim CR/LF/tab; no other ISO
+            control or unpaired surrogate
+        status: &id011
+          type: string
+          enum:
+          - OPEN
+          - ANSWERED
+          description: Manual resolution, separate from archival/Knowledge verification.
+            ANSWERED requires nonblank answer; OPEN may retain draft.
+      allOf:
+      - if:
+          properties:
+            status:
+              const: ANSWERED
+        then:
+          properties:
+            answer:
+              minLength: 1
+              description: Must not consist only of Java whitespace; validated by
+                Content
+    Question:
+      type: object
+      additionalProperties: false
+      required:
+      - questionId
+      - spaceId
+      - visibility
+      - state
+      - version
+      - title
+      - createdAt
+      - updatedAt
+      - context
+      - answer
+      - status
+      properties:
+        questionId: *id005
+        spaceId: *id005
+        visibility:
+          type: string
+          const: PRIVATE
+        state: &id012
+          type: string
+          enum:
+          - ACTIVE
+          - RETIRED
+        version: &id013
+          type: integer
+          minimum: 1
+        title: *id010
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt: &id014
+          type: string
+          format: date-time
+        context:
+          type: string
+          maxLength: 16384
+          description: At most16384 UTF-8 bytes, verbatim CR/LF/tab; no other ISO
+            control or unpaired surrogate
+        answer:
+          type: string
+          maxLength: 16384
+          description: At most16384 UTF-8 bytes, verbatim CR/LF/tab; no other ISO
+            control or unpaired surrogate
+        status: *id011
+    Summary:
+      type: object
+      additionalProperties: false
+      required:
+      - questionId
+      - title
+      - status
+      - state
+      - version
+      - updatedAt
+      properties:
+        questionId: *id005
+        title: *id010
+        state: *id012
+        version: *id013
+        updatedAt: *id014
+        status: *id011
+    Revision:
+      type: object
+      additionalProperties: false
+      required:
+      - revisionId
+      - questionId
+      - version
+      - actorId
+      - occurredAt
+      - snapshot
+      properties:
+        revisionId: *id005
+        questionId: *id005
+        version:
+          type: integer
+          minimum: 1
+        actorId: *id005
+        occurredAt:
+          type: string
+          format: date-time
+        snapshot:
+          $ref: '#/components/schemas/Question'
+    Page:
+      type: object
+      additionalProperties: false
+      required:
+      - spaceId
+      - state
+      - items
+      - nextAfter
+      - status
+      properties:
+        spaceId: *id005
+        state:
+          type: string
+          enum:
+          - ACTIVE
+          - RETIRED
+        items:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/Summary'
+        nextAfter:
+          type:
+          - string
+          - 'null'
+          maxLength: 256
+        status: *id015

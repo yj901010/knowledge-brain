@@ -1,0 +1,5 @@
+PASS base: CRD limited structural checks, durable topics, scoped ACL, TLS hostname checks, OIDC, Secret references, replicas and health ports
+PASS local: CRD limited structural checks, durable topics, scoped ACL, TLS hostname checks, OIDC, Secret references, replicas and health ports
+PASS rejected: oidc.issuerUrl must be supplied
+PASS rejected: minInSyncReplicas must be between
+Helm 3.19.0 lint/render base and local passed using test-only https://validation.invalid/realms/brain issuer. Upstream Apicurio 3.3.3 Apache-2.0 license and configuration source reviewed. CRD check is limited structure/type/enum verification, not full JSON Schema or Kubernetes admission. NOT RUN: image pull, Kubernetes admission/readiness, OIDC, Kafka mTLS/ACL, Protobuf registration, schema rules or restart persistence. Docker Linux pipe access denied.

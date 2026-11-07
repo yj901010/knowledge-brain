@@ -1,0 +1,90 @@
+Deterministic Learning guidance and sourced-draft authoring — 2026-11-07 (Asia/Seoul)
+State: COMPLETE for this scoped local implementation/verification package
+Whole agreed V1: ACTIVE, not complete
+Cluster UID: ee84ca44-bb83-4712-a572-10169a6e2542
+Learning manifest: sha256:aba561be5c4749b8ffd22355ee84f6ae086ac00508faf6f244e6ae52cea3d8a8
+Gateway manifest: sha256:65ad2a5beddf048e1295f5d84ecaadc52bb8264de3094cfd1ac47eb9e2e5a009
+
+Delivered
+- Exact private GET learning-guidance API, fresh ROADMAP_READ authority, no-store,
+  bounded single Learning-owned MVCC statement and GRAPH_PROGRESS_V1.
+- Direct unfinished PREREQUISITE_OF/REQUIRED_FOR waiting; soft unique-source
+  RECOMMENDED_BEFORE ordering; IN_PROGRESS then soft count then UUID ordering.
+  Completed nodes excluded. No transitive, time/evidence or automatic progress inference.
+- Saved-graph guidance UI, original fresh progress detail and independent sibling
+  drafts, keyboard/mobile reflow, current-principal/Space and late-failure boundaries.
+- 21 sourced Korean authoring previews across seven topics, with source/section/date,
+  rights/scope and exact NCI nonendorsement. Existing canonical-ID/version inspection,
+  explicit meaning confirmation, single CREATE preview/rationale/consent and receipt.
+- Concept/Source preparation and Claim/Evidence/Qualifier authoring use existing
+  public contracts. Pending reserved IDs are not canonical dependencies.
+- Required content pins retain server validation/merge conditions; extra authoring
+  pins are pre-submit checks/rationale. Canonical Claim-to-Source linking is Evidence.
+- Build/CI byte guard binds the existing draft pack to its frontend mirror.
+  No new software dependency, service, migration, event, importer or V1 AI.
+
+Tests and exact artifacts
+- Learning:202 discovered,188 executed,14 explicit existing external-condition
+  skips,0 failures/errors. All28 new pure/API/security/owner-DB checks executed,
+  including concurrent single-snapshot coherence and compact/jsonb boundary.
+  Isolated Learning PostgreSQL only; no canonical DB used for backend tests.
+- Gateway245 executed,0 skipped/failures/errors. Exact GET proxy and header/body/
+  query/public/group denial boundaries included.
+- Python delivery/Helm/OpenAPI/installer/draft/sync checks58 passed,0 skipped.
+- Fresh pinned Linux frontend fixture commit c9924659ea5649bb3bd1c00a9041ad54d83bc744;56 asset hashes, complete
+  current source receipt, CSP and publisher notices match the final Gateway archive.
+  The source repository remains uncommitted; this is an isolated fixture commit.
+- Both exact final image archives:0 HIGH/CRITICAL, no waivers. Gateway layers contain
+  exactly the56 verified static files; old generated/compiled assets retained separately.
+- Both images imported on the two original nodes with checked manifest/config IDs.
+  Helm resource comparison/server dry-run/atomic wait restricted rollout to images.
+
+Final verified-CA HTTPS browser scenario executions:53 across overlapping suites
+  guidance:10 / graph-web-validation-1793990544988644200
+  curation:9 / graph-web-validation-1793990473298755300
+  personal workspace regressions:25 / graph-web-validation-1793990629678881800
+  public workspace regressions:9 / graph-web-validation-1793990783507813200
+All final Job/ConfigMap UIDs, test source hashes and Gateway annotations are checked.
+Guidance includes real graph/progress semantics, manual completion, saved graph,
+fresh original detail and registered multiple Spaces; one error fixture is intercepted.
+Curation includes two real guest/registered flows and seven intercepted UI boundary
+fixtures. Real Development-only canonical Concept/Source fixtures support one explicit
+SUBMITTED Claim; its canonical read404 and self-review403 are verified. No medical
+Claim, expert verification or official mapping is published by these tests.
+Existing payload/store/OpenAPI field and version semantics were separately compared.
+Scoped settled-panel axe checks have0 violations; incomplete/manual checks remain
+outside this claim. Four desktop/mobile captures are retained. Long element captures
+include fixed-shell overlay artifacts; they do not establish full visual/WCAG certification.
+
+Preservation and operation
+- Original43 workload UIDs/specs retained except the two authorized application
+  image fields; original13 PVC UID/spec pairs, two node UIDs and kubeconfig unchanged.
+-14 applications,13 JVMs,7 monitoring deployments and10 connector/tasks Ready/running;
+ 79 Registry artifact bytes/rules match source; no firing alerts; five loopback HTTPS
+  entries pass the project CA. Guidance counter is actually exported with fixed labels.
+- Original persistent login/guest identity, Note v2/v1 history, sealed binary hash,
+  public/private isolation and source version continuity pass a post-rollout recovery
+  inspect scenario. It creates fresh guest/session/claim fixtures; it is not a claim
+  that the whole browser run is read-only. The original canonical Note is unchanged.
+- Read-only Space-owner audit confirms all 2 temporary reviewers RETIRED,
+  with no active public reviewer/expert/official capability. Credentials are not printed.
+
+Retained attempts and limits
+- Initial owner-DB test setup/order mistakes were corrected without changing rules.
+- First live UI audit found native button label/name and curation label issues;
+  the final scanned Gateway fixes them. The next guidance attempt exposed an
+  invalid test assumption about UUID order and collapsed lists. The test now expands
+  all rows and checks complete actual API ordering; product behavior is unchanged.
+- A source change during the earlier fix frontend build was correctly rejected;
+  the final stable-source fixture was rebuilt. Failed attempts and prior artifacts
+  remain retained; they are not counted as final passing scenarios.
+- The21 supplied drafts remain DRAFT, unresolved, unpublished and independently
+  unreviewed. Source metadata fixtures are not blanket legal/professional clearance.
+- Required external repository/license/hosted Actions/GHCR/GitOps adoption and
+  agreed external operational destinations remain open. No remote write, project
+  license assignment, automatic public release or full production certification.
+
+Reproduction: use docs/learning-guidance.md and docs/public-curation.md. Private
+receipts, source/image archives, scan reports, Job identities, captures and SHA256
+index are retained under .local/guidance-curation. Older milestone evidence remains
+a point-in-time record and is not relabeled as this final candidate.

@@ -1,0 +1,12 @@
+{
+  "version": "1.1.0",
+  "artifacts": [
+    "org.janusgraph:janusgraph-core:1.1.0",
+    "org.janusgraph:janusgraph-cql:1.1.0"
+  ],
+  "license": "Apache-2.0 (code); CC-BY-4.0 (upstream documentation)",
+  "licenseUrl": "https://raw.githubusercontent.com/JanusGraph/janusgraph/v1.1.0/LICENSE.txt",
+  "reviewedAt": "2026-10-07",
+  "cassandraCompatibility": "Cassandra 4.0.x; official 1.1.x compatibility matrix",
+  "integration": "Embedded Java API; Cassandra persisted graph; composite indices only"
+}

@@ -1,0 +1,40 @@
+package io.knowledgebrain.knowledge;
+import java.util.*;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import javax.sql.DataSource;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.http.*;
+import org.springframework.web.server.ResponseStatusException;
+import jakarta.servlet.http.HttpServletRequest;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
+
+/** Public canonical metadata only. Scan credentials are absent from live Query. */
+@RestController
+@ConditionalOnProperty(name="brain.knowledge.public-discovery.enabled",havingValue="true")
+final class PublicDiscoveryController {
+ record Item(UUID entityId,UUID spaceId,long version,String payload){}
+ record Page(UUID through,UUID nextAfter,List<Item> items){}
+ record Check(UUID entityId,String kind,String title,long version,String state,JsonNode content,JsonNode qualifierPins,boolean currentContext,String effectiveLevel,boolean needsReview){}
+ private final JdbcTemplate jdbc;private final PublicRecordStore store;private final byte[] scanKey,checkKey;
+ private final JsonMapper json=JsonMapper.builder().enable(tools.jackson.core.StreamReadFeature.STRICT_DUPLICATE_DETECTION).enable(tools.jackson.databind.DeserializationFeature.FAIL_ON_TRAILING_TOKENS).build();
+ PublicDiscoveryController(DataSource source,PublicRecordStore store,@Value("${brain.knowledge.public-discovery.snapshot-key}")String scan,@Value("${brain.knowledge.public-discovery.check-key}")String check){jdbc=new JdbcTemplate(source);this.store=store;scanKey=key(scan);checkKey=key(check);if(scan.equals(check))throw new IllegalArgumentException("Separate scan and check credentials required");}
+ private static byte[] key(String value){if(!value.matches("[A-Za-z0-9_-]{43}"))throw new IllegalArgumentException("Scoped service credential required");return ("Bearer "+value).getBytes(StandardCharsets.US_ASCII);}
+ private void authorize(HttpServletRequest r,byte[] key){if(!r.isSecure()||r.getHeader("Cookie")!=null)throw new ResponseStatusException(HttpStatus.FORBIDDEN,"HTTPS service request required");var values=Collections.list(r.getHeaders("Authorization"));if(values.size()!=1||!MessageDigest.isEqual(key,values.getFirst().getBytes(StandardCharsets.UTF_8)))throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,"Scoped credential required");}
+ @GetMapping("/internal/knowledge/public-snapshots") ResponseEntity<Page> snapshots(HttpServletRequest r){authorize(r,scanKey);try{
+  if(r.getContentLengthLong()>0||r.getHeader("Transfer-Encoding")!=null)throw new IllegalArgumentException();for(var e:r.getParameterMap().entrySet())if(!Set.of("kind","limit","after","through").contains(e.getKey())||e.getValue().length!=1)throw new IllegalArgumentException();String kind=r.getParameter("kind");if(kind==null||!Set.of("CONCEPT","RECORD").contains(kind))throw new IllegalArgumentException();UUID after=KnowledgeSnapshotController.id(r.getParameter("after")),through=KnowledgeSnapshotController.id(r.getParameter("through"));String raw=r.getParameter("limit");if(raw!=null&&!raw.matches("[1-5]"))throw new IllegalArgumentException();int limit=raw==null?5:Integer.parseInt(raw);if(after!=null&&(through==null||after.toString().compareTo(through.toString())>=0))throw new IllegalArgumentException();
+  String table=kind.equals("CONCEPT")?"concept":"public_knowledge_record",pk=kind.equals("CONCEPT")?"concept_id":"record_id",filter=kind.equals("CONCEPT")?" AND n.visibility='PUBLIC'":"";
+  if(through==null){var ids=jdbc.queryForList("SELECT n."+pk+" FROM "+table+" n WHERE true"+filter+" ORDER BY n."+pk+" DESC LIMIT 1",UUID.class);if(ids.isEmpty())return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(new Page(null,null,List.of()));through=ids.getFirst();}
+  String columns=kind.equals("CONCEPT")?"'CONCEPT' AS kind,r.title,jsonb_build_object('description',r.description)::text AS content,'{}'::text AS qualifier_pins":"n.kind,r.title,r.content::text,r.qualifier_pins::text";
+  String revision=kind.equals("CONCEPT")?"concept_revision":"public_knowledge_revision";
+  var items=jdbc.query("SELECT n."+pk+" AS entity_id,n.space_id,n.version,n.state,r.revision_id,r.actor_id,r.occurred_at,"+columns+" FROM "+table+" n LEFT JOIN "+revision+" r ON r."+pk+"=n."+pk+" AND r.version=n.version WHERE n."+pk+"<=?"+filter+(after==null?"":" AND n."+pk+">?")+" ORDER BY n."+pk+" LIMIT ?",(rs,i)->{UUID id=rs.getObject("entity_id",UUID.class),space=rs.getObject("space_id",UUID.class),rev=rs.getObject("revision_id",UUID.class);long version=rs.getLong("version");byte[] wire=PublicKnowledgeEvents.wire(rev,rev,id,space,rs.getObject("actor_id",UUID.class),"e".repeat(32),rs.getTimestamp("occurred_at").toInstant().toEpochMilli(),rs.getString("kind"),version,rs.getString("state"),rs.getString("title"),json.readTree(rs.getString("content")),json.readTree(rs.getString("qualifier_pins")));return new Item(id,space,version,Base64.getEncoder().encodeToString(wire));},after==null?new Object[]{through,limit+1}:new Object[]{through,after,limit+1});boolean more=items.size()>limit;var rows=List.copyOf(items.subList(0,Math.min(limit,items.size())));return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(new Page(through,more?rows.getLast().entityId():null,rows));
+ }catch(IllegalArgumentException e){throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Invalid public snapshot request");}}
+ @PostMapping("/internal/knowledge/public-check") ResponseEntity<List<Check>> check(HttpServletRequest r)throws java.io.IOException {authorize(r,checkKey);if(!r.getParameterMap().isEmpty()||r.getContentType()==null||!MediaType.APPLICATION_JSON.isCompatibleWith(MediaType.parseMediaType(r.getContentType())))throw PublicRecordStore.bad("JSON check required");byte[] bytes=r.getInputStream().readNBytes(10001);if(bytes.length>10000)throw PublicRecordStore.bad("Check too large");JsonNode body;try{body=json.readTree(bytes);}catch(RuntimeException e){throw PublicRecordStore.bad("Invalid check");}if(body==null||!body.isObject())throw PublicRecordStore.bad("Object check required");PublicRecordStore.fields(body,"spaceId","ids");UUID space=PublicRecordStore.id(body,"spaceId");var ids=body.path("ids");if(!ids.isArray()||ids.isEmpty()||ids.size()>50)throw PublicRecordStore.bad("Check1..50 IDs");var result=new ArrayList<Check>();var seen=new HashSet<UUID>();for(var value:ids){UUID id;try{id=KnowledgeSnapshotController.id(value.asString());if(id==null||!seen.add(id))throw new IllegalArgumentException();}catch(IllegalArgumentException e){throw PublicRecordStore.bad("Distinct UUIDv7 IDs required");}
+  var concepts=jdbc.query("SELECT title,version,state,description FROM concept WHERE concept_id=? AND space_id=? AND visibility='PUBLIC'",(rs,n)->new Check(id,"CONCEPT",rs.getString(1),rs.getLong(2),rs.getString(3),json.createObjectNode().put("description",rs.getString(4)),json.createObjectNode(),true,"",false),id,space);if(!concepts.isEmpty()){result.add(concepts.getFirst());continue;}
+  try{var fact=store.get(space,id);boolean current=store.currentContext(space,fact);String level="";boolean needs=false;if(fact.kind().equals("CLAIM")){var v=store.verification(space,id);level=v.effectiveLevel();needs=v.needsReview();}if(fact.kind().equals("VERIFICATION")){var v=store.verification(space,PublicRecordStore.id(fact.content(),"claimId"));current=current&&v.assessment()!=null&&v.assessment().recordId().equals(id);level=current?v.effectiveLevel():"DRAFT";needs=!current||v.needsReview();}result.add(new Check(id,fact.kind(),fact.title(),fact.version(),fact.state(),fact.content(),fact.qualifierPins(),current,level,needs));}catch(ResponseStatusException e){if(e.getStatusCode().value()!=404)throw e;}
+ }return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(List.copyOf(result));}
+}

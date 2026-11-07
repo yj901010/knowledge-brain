@@ -1,0 +1,171 @@
+Private Planning goals validation, 2026-10-16
+
+The independent Planning Service is deployed with its own PostgreSQL source,
+immutable Goal revisions and transactional Outbox. Space performs fresh private
+Goal authorization for common guest/registered principals. Gateway exposes only
+the declared Goal operations. There are no cross-service database reads/writes.
+
+{
+  "jobs": {
+    "backend": "backend-validation-1792076628534352200",
+    "planningKafka": "backend-validation-1792076303576858100",
+    "space": "backend-validation-1792074985",
+    "gateway": "backend-validation-1792075061615186700",
+    "browser": "graph-web-validation-1792076627",
+    "focusedBrowser": "graph-web-validation-1792075601",
+    "registry": "planning-contract-validation-1792074954",
+    "cdcIsolation": "planning-cdc-bootstrap-1792075352",
+    "connector": "planning-connector-config-1792075428",
+    "literalDateConsistency": "planning-date-check-1792076674"
+  },
+  "tests": {
+    "backend": {
+      "tests": 516,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 31
+    },
+    "planningKafka": {
+      "tests": 18,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "space": {
+      "tests": 30,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 2
+    },
+    "gateway": {
+      "tests": 35,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "browserTests": 49,
+  "focusedBrowserTests": 3,
+  "registeredClaimChecks": 2,
+  "registryGoalSha256": "643ed1f2566750ffc0bb21b63d2837ad8aaa625d0fe1ed3d2ca21a85cc6391b3",
+  "unchangedLearningSchemaHashes": {
+    "association": "1e210a4b741051d23b1e560384c6b9adfde008ccc91b28594495c846fec034a7",
+    "media": "570c5ed12f35a119b9bda059c98a2fea913e19cf329adaa964b96de97f1bbc52",
+    "note": "432a3664007de5f39da77d077b745c534147c8dc50be424dab4cd04e56ccce2b",
+    "concept": "defd2827328024b6fee71e56a3a40c650f335f0359d03dcf62ef0d6a2b31ef04",
+    "progress": "ef3bf592594564efa67c9ddd1f3b9f3dddb7f6cc5e6fc7d20943464f013c1113",
+    "study": "98b45509343000736c25510aa59fb5cd814a9f2672de5e9dcdd242a2cf55a90e",
+    "roadmap": "a2c1db67ceded3c5c965b92797b2caa0e7224aeb71386e71899d2edd4db5e1a9"
+  },
+  "openapiReferences": 1209,
+  "newOperations": [
+    "listPrivateGoals",
+    "createPrivateGoal",
+    "readPrivateGoal",
+    "updatePrivateGoal",
+    "retirePrivateGoal",
+    "readPrivateGoalRevisions",
+    "authorizePrivatePlanningGoal"
+  ],
+  "images": {
+    "space": "knowledge-brain/space-service:local-b5021da14cc40a44",
+    "planning": "knowledge-brain/planning-service:local-158233eae2fd462d",
+    "gateway": "knowledge-brain/gateway-service:local-ec8ffe7282caa683"
+  },
+  "readyDeployments": 11,
+  "connectors": {
+    "space-outbox": "RUNNING",
+    "planning-outbox": "RUNNING",
+    "knowledge-outbox": "RUNNING",
+    "media-outbox": "RUNNING",
+    "content-outbox": "RUNNING",
+    "learning-outbox": "RUNNING",
+    "identity-outbox": "RUNNING"
+  },
+  "exactPlanningTopicProducerAndReadOnlyValidatorAcls": true,
+  "cdcCanonicalSelectDenials": 2,
+  "cdcOtherDatabaseConnectDenials": 12,
+  "liveFlywayVersions": [
+    1,
+    2
+  ],
+  "liveGoalDateMismatches": 0,
+  "runtime": {
+    "spaceId": "01a14018-12ad-78a4-91c7-ff5738a97bea",
+    "goalId": "01a14018-2248-7f78-9372-8bbe94e02368",
+    "archivedGoalId": "01a14018-32f5-7886-9c0e-74b1cc553fdc",
+    "oldPodUids": [
+      "3ced7bb2-7d8a-4977-b6f0-c64b2f3a69ff"
+    ],
+    "newPodUids": [
+      "fa6ed693-7015-4afe-b535-6781a104f301"
+    ],
+    "image": "knowledge-brain/planning-service:local-158233eae2fd462d",
+    "browserJob": "graph-web-validation-1792076627",
+    "canonicalSnapshotsAndRevisionIdsPreserved": true,
+    "completedStatusAndClearedDatePreserved": true,
+    "literalGregorianDatePreserved": "1582-10-10",
+    "retiredDiscoveryAndAuditPreserved": true,
+    "originalCreateKeySurvivesRestartWithoutDuplicate": true
+  },
+  "ownedBuilderSetsRemoved": 4,
+  "hostGatewayAndMinioHttpsVerified": true,
+  "planningLightLoadMemoryMiB": 177,
+  "memoryObservationIsBenchmark": false
+}
+
+All 516 backend tests completed with zero failures/errors and 31 unchanged
+environment-gated storage/Kafka skips. The final 18 Planning tests ran against
+actual own PostgreSQL and scoped TLS Kafka with zero skips. Gateway's 35 tests
+passed with zero skips; Space's 30 tests retained two existing Kafka skips.
+Other owner integrations retain previously recorded validation; this does not
+claim all 31 skipped integrations were rerun for this feature.
+
+Planning tests exercise create retry after edit/retirement/account claim,
+independent strong ETags, stale/no-op rules, concurrent create/write races,
+whole-transaction rollback after an Outbox insert failure, foreign Space denial,
+catalog/history keyset paging, archive rediscovery, strict inputs and literal
+calendar dates under a non-UTC database timezone. The actual CDC/Kafka check
+matches four committed Goal envelopes, revision/event IDs, actor/Space/trace,
+schema headers and full snapshots; duplicate creation creates no extra event.
+
+An expanded real PostgreSQL regression initially exposed Java SQL Date's
+1582-10-10 -> 1582-10-20 hybrid-calendar conversion. The final JDBC 4.2 path uses
+LocalDate directly. V2 repairs only Goal's current date column from its latest
+immutable revision. The migration integration test verifies IDs, versions,
+revision/event bytes and original creation retries remain unchanged. Final
+calendar coverage includes years 0001/9999 and both sides of the 1582 cutover.
+Live own-DB verification confirms both migrations succeeded and zero current
+Goal date/revision mismatches. No table, source event, PVC, offset, slot or topic
+was deleted or reset.
+
+All 49 browser tests passed against deployed services. The three new Goal
+scenarios cover real CRUD/history/23-row paging, date/status filters, a lost
+creation response with one logical retry, 412 draft preservation, explicit
+retirement confirmation, archive rediscovery, escaped text, independent unsaved
+Note drafts, 390px fit, delayed closed-panel replies, 503 recovery and revoked
+private credentials. Existing public/learning/media/knowledge flows also passed.
+Two real Keycloak guest-to-account flows preserve the same Goal IDs and original
+actor/revision while registered edits use the new principal. Screenshots were
+inspected from the focused three-test run; UI was unchanged by the date fix.
+
+A synthetic private fixture over verified host HTTPS retained exact Goal and
+revision snapshots, manual completion, cleared dates, archived 1582-10-10,
+catalogs and original creation-key replay after restarting only Planning.
+No session credentials were persisted by this validation helper.
+
+Registry planning/goal-events v1 bytes match the checked hash with FULL validity
+and FULL_TRANSITIVE compatibility. Seven existing Learning v1 schemas remain
+unchanged. CDC has Outbox SELECT only, two canonical SELECT denials and 12 other
+database CONNECT denials. The Kafka producer and read-only validator are scoped
+to planning.goal.v1. All existing connectors/tasks and the new connector are
+RUNNING; all 11 application deployments are Ready. OpenAPI local references and
+seven new unique operations resolve. Four exact owned successful builder sets
+were removed after image, UID, selector and source ownership verification.
+
+The host HTTPS graph and MinIO forwards are available. The 177 MiB Planning
+memory observation is a local light-load sample, not a production benchmark.
+No new dependency version, external dataset, AI functionality or frontend
+redesign was introduced. Goal events are published but are not yet included in
+the Learning-only activity timeline. Task linking, scheduling, recurrence,
+reminders and central observability deployment remain separate planned work.

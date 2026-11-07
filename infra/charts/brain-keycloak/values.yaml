@@ -1,0 +1,7 @@
+image: quay.io/keycloak/keycloak:26.8.0
+replicas: 2
+hostname: ""
+databaseHost: brain-postgres.brain-data.svc
+resources:
+  requests: {cpu: 250m, memory: 768Mi}
+  limits: {cpu: "2", memory: 1536Mi}

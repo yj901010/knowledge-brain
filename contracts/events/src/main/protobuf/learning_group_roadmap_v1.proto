@@ -1,0 +1,19 @@
+syntax = "proto3";
+package knowledgebrain.learning.grouproadmap.v1;
+option java_package = "io.knowledgebrain.contracts.learning.grouproadmap.v1";
+option java_multiple_files = true;
+message GroupRoadmapEnvelopeV1 {
+ string event_id = 1; string event_type = 2; uint32 event_version = 3;
+ int64 occurred_at_epoch_millis = 4; string producer = 5; string aggregate_type = 6;
+ string aggregate_id = 7; string space_id = 8; string actor_id = 9; string trace_id = 10; bytes payload = 11;
+}
+message GroupRoadmapNodeV1 { string node_id = 1; string title = 2; string description = 3; }
+message GroupRoadmapEdgeV1 { string edge_id = 1; string kind = 2; string source_node_id = 3; string target_node_id = 4; }
+// Complete pinned public graph; no personal progress, evidence, files or study sessions.
+// Projectors deduplicate event_id and apply only increasing link version per aggregate_id.
+message GroupRoadmapChangedV1 {
+ string link_id = 1; int64 version = 2; string state = 3; string visibility = 4;
+ string source_space_id = 5; string source_roadmap_id = 6; int64 source_version = 7;
+ string title = 8; string description = 9; string created_at = 10; string updated_at = 11;
+ repeated GroupRoadmapNodeV1 nodes = 12; repeated GroupRoadmapEdgeV1 edges = 13;
+}

@@ -1,0 +1,21 @@
+# GitHub commits as private learning evidence
+
+Delivered bundle (2026-11-01): registered PRIVATE PERSONAL owners explicitly select an already imported public GitHub commit and Roadmap node, add a private memo, and optionally associate one manually recorded same-node StudySession. Repository screens offer reverse navigation to that commit’s private learning references. Both Evidence and session-link changes appear in the existing eventual Activity timeline with explicit fresh original-source inspection.
+
+Integration owns immutable imported observations. Learning owns Evidence, memo/revisions and optional StudySession pins. Learning reads the exact authenticated Integration reference through HTTPS and validates actor/tenant/IDs/private/public/version1/canonical URL; it never queries Integration storage or GitHub directly. Source disconnect stops sync and preserves imported facts for new and existing private learning links. No repository ownership or contribution inference, automatic progress/completion, public publishing, code clone, new credentials/dependencies or AI.
+
+## Mutation and history
+
+Exact32lowerhex Idempotency-Key plus normalized create body identifies one command in the existing per-Roadmap evidence namespace. Replays return the current record even after retirement, without repeating source reads. Active duplicate node+repository+commit is409. Retire then link again explicitly creates a new evidence identity. Source SHA, subject, author login and timestamps are immutable pins; commit time and import time remain separate.
+
+Memo changes and retirement require independent strong geN; CAS412 requires explicitly inspecting current state before restarting. No-op writes add no revision/event. Retirement is soft; known GET and history remain available. ACTIVE/RETIRED catalogs use ascending UUID keysets(default20/max100); history is descending version(default5/max10). Reverse catalog exposes12metadata fields with current Roadmap title/state and pinned node label, leaving memo in the original.
+
+StudySession linkage reuses the existing independent esN semantics: same node/current session version, explicit unlink, immutable linkage revisions. Editing/retiring a session or evidence does not silently rewrite pins, learning time or manual progress. Root retirement preserves reads and blocks new writes. Cookie/Origin, exact fields, duplicate JSON/query rejection, no-store responses and fresh registered owner authorization apply to every operation. The UI freezes uncertain creates for exact-key retry; closing, hidden document, scope changes and logout cancel and clear private views.
+
+## Data and events
+
+LearningV13 adds two immutable external-ID columns and widens the existing evidence discriminator/shape constraints, with an active duplicate guard and reverse index. Existing NOTE/CONCEPT/MEDIA row IDs, request keys, snapshots, revisions, session links and Outbox bytes are preserved. No cross-owner foreign key or distributed transaction. Local Evidence/revision/Outbox writes are atomic; the existing single Connect pipeline publishes.
+
+New version1 artifacts github-evidence-events and github-evidence-session-events in Registry learning group contain21-field Evidence and18-field session payloads. New topics learning.github-evidence.v1 and learning.github-evidence-session.v1 avoid changing published schemas. Registry FULL/FULL_TRANSITIVE rules and least-privilege Connect/Learning-validator/Activity ACLs apply. Activity keeps its published28-field record, adding two kinds GITHUB_EVIDENCE and GITHUB_EVIDENCE_SESSION with nested domain fields null. Recovery exports the two aggregates from canonical Learning Outbox. ActivityV11 schedules one full five-owner warmup without deleting Inbox, projection, offsets, slots, publications or user data. There are25subscribed topics including legacy ClaimV1,24current kinds,10existing Connect connectors and14app deployments.
+
+Contracts: personal-github-learning-evidence.yaml, evidence-study-sessions.yaml, github-internal.yaml, space-learning-authorization.yaml and Activity contracts. Runtime verification and immutable build/source receipts are recorded in github-learning-bundle-validation.txt after validation.

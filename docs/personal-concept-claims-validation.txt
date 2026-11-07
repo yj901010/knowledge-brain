@@ -1,0 +1,90 @@
+Personal Concept Claim delivery, 2026-10-11 Asia/Seoul
+
+AGENTS.md and PROJECT.md read before implementation. Claim remains Knowledge-owned,
+Space-scoped and PRIVATE/DRAFT. Existing CONCEPT_READ/CONCEPT_WRITE authorization,
+UUIDv7, local ACID revisions/Outbox and independent service ownership preserved.
+No new dependency, external terminology dataset or architecture decision.
+
+Full backend: backend-validation-1791646163 Complete; BUILD SUCCESS.
+275 discovered, 259 executed, 16 optional unrelated storage/Kafka cases skipped.
+Zero failures/errors across the full reactor.
+ClaimApiTest: 8 passed; ClaimStoreIntegrationTest: 12 real PostgreSQL tests passed;
+ClaimKafkaIntegrationTest: 1 real Debezium/Kafka mTLS test passed.
+GatewayProxyTest: 16 passed including exact Claim routes, queries, body and cl-ETag.
+Evidence: .local/personal-concept-claims-backend-validation.txt.
+
+Final Gateway bound correction: only Knowledge Claim/Alias routes receive the
+4096-byte limit; the existing Space claiming status route retains its 1024-byte
+limit. backend-validation-1791646642 Complete; all 23 Gateway tests passed,
+including the new Space status 1025-byte rejection assertion.
+Evidence: .local/personal-concept-claims-gateway-validation.txt.
+
+Store/API evidence: immutable subject and Claim identity, independent clN versions,
+strict typed CONCEPT object and canonical UUIDv7 JSON/query validation, fresh
+guest/registered Space authority and verified actor/trace, same-Space composite
+FKs for all three positions, PRIVATE/DRAFT constraints, exact active triple
+duplicates, retired triple reuse with a new ID, immutable descending history,
+atomic revision/Outbox rollback, stale and concurrent edit rejection, one winner
+for concurrent duplicate creates, globally sorted current/proposed Concept locks
+for reverse triples and duplicate positions. A deterministic lock-wait test
+changes the reference set while a future-ETag request waits and verifies412,
+without an extra revision/event. All reference retirement cases hide active
+reads and block writes while retaining history and canonical Claim versions.
+Concept, Alias and Content Note/reference state remains independent.
+
+Kafka evidence: complete ClaimCreated/Updated/Retired Protobuf snapshots, versions
+1/2/3, exact stored Outbox wire bytes, Claim key, immutable subject/predicate/object
+IDs, event/revision UUIDv7, producer, Space/actor/trace and schema headers verified.
+brain-connect Helm revision17; knowledge.claim.v1 Ready, 1partition/1replica locally.
+Connect and Knowledge validator KafkaUsers Ready, observed generations12/4, with
+literal topic Write/Read ACLs. Existing Knowledge connector routing unchanged.
+
+Registry: claim-contract-validation-1791646144374954600 Complete.
+VALIDITY FULL and COMPATIBILITY FULL_TRANSITIVE; immutable knowledge/claim-events/1.
+Claim SHA256: 5d561e290384dcbc6f770fd5084d9c84002969879fcf027742271a2e5038edc4.
+Concept V1 unchanged: 4d6e8a70859ac8a4c438e665522208211ab72d10edffd8168290766252ecbc72.
+Alias V1 unchanged: c432d80ca20139dd4d167fd3285231f8289928bb1475f8e1bc22e8f952fd3501.
+Evidence: .local/personal-concept-claims-contract-validation.txt.
+Helm base/local render and OpenAPI115 local-reference/6-operation checks passed.
+
+Static builds: graph-static-build-1791646198827117800 and final
+graph-static-build-1791646642052569200 Complete; pinned Next.js/TypeScript compile,
+export, publisher license notices and inline-script CSP hash checks passed.
+Knowledge build: knowledge-image-build-1791646134, init exit0.
+Knowledge imports: knowledge-image-import-1791646219-0/1 Complete, both nodes.
+Knowledge image: knowledge-brain/knowledge-service:local-a53e9cc2c23f6efc.
+Final Gateway build: gateway-image-build-1791646683, init exit0.
+Final Gateway imports: gateway-image-import-1791646711-0/1 Complete, both nodes.
+Gateway image: knowledge-brain/gateway-service:local-f6cea6ef30ebcf92.
+Installer verifies exact builder/import metadata and both node imports before
+rollout. Knowledge and Gateway Ready1; all eight app deployments Ready1.
+
+Temporary build cleanup checks exact Pod UID/labels, Service/NetworkPolicy
+selectors and source ConfigMap owner UID before deletion and verifies absence.
+Evidence: .local/personal-concept-claims-build-cleanup.json and the corresponding
+knowledge/gateway-build-ownership.json files. Persistent databases/volumes retained.
+
+Full browser: graph-web-validation-1791646506 Complete; 18 passed (2.0m), including
+the Claim scenario10.2s, all previous Note/Concept/Alias flows and registered
+login/public contribution/review/merge. Temporary reviewer
+01a12676-0870-7216-8067-f819cc029648 explicitly retired after the public fixture.
+Evidence: .local/personal-concept-claims-full-browser-validation.txt.
+Final Gateway focused browser: graph-web-validation-1791646772 Complete;
+Claim scenario10.3s, 1passed(11.6s), verified HTTPS and revoked fixture guests.
+Evidence: .local/graph-ui-results/validation.txt.
+
+Browser evidence: actual22-Claim20+2 pages, shared28-Concept20+8 picker, duplicate
+titles distinguished by stable IDs, fixed subject, duplicate creation and real
+concurrent412 preserve selections, explicit latest inspection/restart, immutable
+paged history through nine versions, retirement conflict requires fresh consent,
+retired triple reuse and subject/predicate/object lifecycle denial with retained
+history. Three unrelated Concept/Note/Alias drafts and exact canonical snapshots
+remain unchanged. Late responses rejected after switch/close, Claim/picker503
+clear rows with explicit retry, foreign/public/malformed requests denied,
+revocation clears private surfaces; no browser storage, CSP or JavaScript errors.
+Desktop1280x6455 and mobile390x8345 Claim screenshots inspected; controls and IDs
+fit the viewport. The agreed later dark graph redesign remains a separate phase.
+
+User endpoint: https://localhost:8443/graph. Final host HTTPS forward restarted
+after rollout; HTTP200 with the project CA and no TLS bypass.
+Evidence: .local/personal-concept-claims-user-endpoint.txt.

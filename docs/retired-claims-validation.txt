@@ -1,0 +1,17 @@
+Retired private Claim discovery validation — 2026-10-21
+
+knowledge: 211 passed, 0 failed/error/skipped; backend-validation-1792587471817746600-c5964f02
+gateway: 62 passed, 0 failed/error/skipped; backend-validation-1792587647620767500-2316745f
+Browser: 15 passed (3 new archive scenarios + 12 existing Claim/Concept/evidence/activity regressions); graph-web-validation-1792587790818616900
+Pinned frontend build and TypeScript checks passed: graph-static-build-1792587470098480100
+OpenAPI references resolved: 1467
+Explicit retired 20+2 pagination, same-Space authority, active-only current GET/PUT/DELETE, exact scalar values, five object kinds and seven-version comparison passed.
+Browser reload/reopen retained discoverability; predicate/object/subject retirement preserved original Claim revision IDs; active hidden Claims were excluded.
+Foreign access and malformed/repeated filters were denied; Gateway scoped state only to Claim collection GET.
+Malformed/foreign/non-retired responses and mismatched/duplicate history rejected; failed reads clear stale data, delayed close/switch responses and actual guest revocation handled.
+Read-only catalogue/history preserved independent Concept and active Claim drafts; no mutations sent by archive interactions.
+New isolated-schema storage tests preserve byte-identical original Outbox entries and history across reads/reference retirement and a fresh store instance.
+V12 partial retired-Claim index validated; no canonical data rewrite, Kafka event changes, projection rebuild or checkpoint reset.
+Knowledge and Gateway images imported on both nodes and rolled out; exact owned temporary build resources removed.
+All 12 application Deployments ready; host HTTPS /graph 200.
+Scope: explicitly RETIRED Claims. Retired subject queries work, while the existing Concept library still lists active Concepts only.

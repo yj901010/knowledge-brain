@@ -1,0 +1,76 @@
+Source -> Citation reverse browsing delivery (2026-10-11)
+
+AGENTS.md / PROJECT.md reviewed before implementation. No conflict with existing
+Knowledge ownership, private Personal Space, common guest/registered authority,
+read-only local SQL, existing immutable Citation pins or event contracts.
+
+Java 25 whole reactor validation:
+  scripts/Run-BackendValidation.py --knowledge-kafka
+  Job: backend-validation-1791683409 Complete; BUILD SUCCESS
+  360 discovered; 344 executed/passed;
+  0 failures; 0 errors;
+  16 optional unrelated environment-gated tests skipped.
+  New Source citation tests: 25, all executed/passed.
+  GatewayProxyTest: 19 executed/passed, including exact read-only route, strict
+  bodyless GET, bounded cursors and denial before upstream forwarding.
+  PostgreSQL: 22 Claim citations over 20+2 pages; stable duplicate-title IDs;
+  pinned revisions unchanged by Source/Claim/Concept edits; retired Source still
+  readable; current Claim/all three Concept lifecycle filters; known history
+  retained; Space isolation; V7 partial index present; canonical/revision/Outbox
+  rows byte-for-byte unchanged by GET.
+  Actual production servlet filters: fresh authority, HTTPS, canonical raw path
+  UUIDv7, strict singleton queries/body, no-store and no collection ETag.
+  Full logs/counts: .local/source-citations-backend-full.log and
+  .local/source-citations-backend-proof.json (also lists optional skipped classes).
+
+Static TypeScript / Next production build:
+  graph-static-build-1791683487739122700 Complete.
+  Build-GraphWeb.py export, dependency license notices and CSP generation passed.
+
+Deployed local images (matching imports on both k3d nodes):
+  knowledge-brain/knowledge-service:local-03b36561ab7e12bd
+  knowledge-brain/gateway-service:local-a004878a29b74917
+  Knowledge imports: knowledge-image-import-1791683463-0 / -1 Complete.
+  Gateway imports: gateway-image-import-1791683572-0 / -1 Complete.
+  Install-LocalSourceCitations.py: Knowledge and Gateway rollout Ready.
+  All 8 brain-apps Deployments Ready; Knowledge validated 7 migrations and schema
+  current version 7. V7 adds only claim_citation_source_active_idx on
+  claim_citation(space_id,source_id,citation_id) WHERE state='ACTIVE'.
+  Evidence: .local/source-citations-deployments.json.
+
+Deployed browser verification:
+  scripts/Run-GraphWebValidation.py --public
+  Job: graph-web-validation-1791683630 Complete.
+  21 tests passed in the same full run; 0 failed.
+  New real-API Source citation scenario: 22 distinct Claims share one Source;
+  real 20+2 pages and duplicate subject titles; separate current metadata and
+  immutable pins; full pinned detail, eight revisions over 5+3 history pages;
+  five sibling drafts preserved; parent Source edit/history/retirement keeps
+  selected Citation history; Source retirement retains discovery; Claim/Concept
+  retirement and Citation unlink hide discovery while known history remains;
+  503 retry/clear, held read switch/close, foreign/public denial and revocation;
+  escaped metadata, explicit safe links, no external fetch/browser storage,
+  390-pixel mobile fit and no JavaScript/CSP errors.
+  Logs: .local/source-citations-browser-full-validation.txt.
+  Screenshots: .local/graph-ui-results/source-citations.png and
+  .local/graph-ui-results/source-citations-mobile.png.
+
+HTTPS host check:
+  https://localhost:8443/graph returned 200 with project CA and hostname verified;
+  CSP present. .local/source-citations-https-proof.json.
+
+Temporary build resources:
+  Exact builder Pod ownership, per-node imports and deployed image tags checked.
+  Owned Knowledge and Gateway Pods/Services/NetworkPolicies/source ConfigMaps
+  deleted; absence verified. .local/source-citations-build-cleanup.json.
+  Validation Jobs and owned source ConfigMaps retain the existing 24h TTL.
+
+Published event contracts and previous migrations are unchanged. No new topic,
+Registry subject, ACL, aggregate, canonical revision, mutation or dependency.
+OpenAPI: contracts/openapi/source-citations.yaml.
+Feature guide: docs/source-citations.md.
+Immutable Protobuf SHA256 evidence: .local/source-citations-contracts-proof.json.
+
+Visual QA: inspected deployed desktop 1280px and mobile 390px screenshot crops.
+Current fields, immutable pins, eight history rows, safe metadata text and long
+IDs wrap within their panels; mobile controls stack without horizontal overflow.

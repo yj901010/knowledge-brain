@@ -1,0 +1,38 @@
+groups:
+- name: brain-platform
+  rules:
+  - alert: BrainServiceUnavailable
+    expr: brain_application_ready < 1
+    for: 30s
+    labels: {severity: warning}
+    annotations: {summary: 'An expected application has no Ready replica', runbook: 'docs/observability.md#service-unavailable'}
+  - alert: BrainCdcTaskUnavailable
+    expr: brain_cdc_connector_running < 1 or brain_cdc_tasks_running < 1
+    for: 60s
+    labels: {severity: critical}
+    annotations: {summary: 'An expected Outbox connector/task is unavailable', runbook: 'docs/observability.md#cdc-unavailable'}
+  - alert: BrainTelemetryMissing
+    expr: brain_expected_application_info unless on (service_name) group by (service_name) (jvm_memory_used_bytes)
+    for: 2m
+    labels: {severity: warning}
+    annotations: {summary: 'An expected service is not exporting JVM telemetry'}
+  - alert: BrainObserverUnavailable
+    expr: up == 0 or brain_observer_collection_success < 1
+    for: 60s
+    labels: {severity: warning}
+    annotations: {summary: 'A monitoring target cannot be collected'}
+  - alert: BrainKafkaLagHigh
+    expr: sum by (consumergroup) (kafka_consumergroup_lag) > 100
+    for: 2m
+    labels: {severity: warning}
+    annotations: {summary: 'A consumer group remains behind Kafka'}
+  - alert: BrainHostMemoryLow
+    expr: brain_host_memory_available_bytes / brain_host_memory_total_bytes < 0.10
+    for: 2m
+    labels: {severity: warning}
+    annotations: {summary: 'Local Linux host memory headroom is below10 percent'}
+  - alert: BrainProjectionRetries
+    expr: (sum(rate(brain_graph_projection_failures_total[5m])) or vector(0)) + (sum(rate(brain_network_failures_total[5m])) or vector(0)) > 0.1
+    for: 2m
+    labels: {severity: warning}
+    annotations: {summary: 'Read-model processing repeatedly retries'}
