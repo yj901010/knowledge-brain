@@ -1,0 +1,20 @@
+{
+  "image": {
+    "repository": "ghcr.io/yj901010/knowledge-brain/integration-service",
+    "tag": "",
+    "digest": "sha256:19f4482be88581789e346733635d0aefb047c09cc968dd08a92bc1c6656f60f5",
+    "pullPolicy": "IfNotPresent"
+  },
+  "podAnnotations": {
+    "brain.knowledge/source-revision": "fb12b1543cb9405c1f720a4f0ccef8519af2c5f8",
+    "brain.knowledge/release-id": "e6c3453ab023e7529f10bc285a6bfc406de1891b3678eb10f2d42b3a4fafda5e"
+  },
+  "resourceAnnotations": {
+    "argocd.argoproj.io/sync-options": "Prune=false,Delete=false"
+  },
+  "imagePullSecrets": [
+    {
+      "name": "brain-ghcr-pull"
+    }
+  ]
+}

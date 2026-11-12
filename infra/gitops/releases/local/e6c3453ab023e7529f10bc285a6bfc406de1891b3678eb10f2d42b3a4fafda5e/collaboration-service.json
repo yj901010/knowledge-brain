@@ -1,0 +1,20 @@
+{
+  "image": {
+    "repository": "ghcr.io/yj901010/knowledge-brain/collaboration-service",
+    "tag": "",
+    "digest": "sha256:61e840b0d6a3d141c32f28b425c4f9206813288202f31616fb415d9fafbf2ec4",
+    "pullPolicy": "IfNotPresent"
+  },
+  "podAnnotations": {
+    "brain.knowledge/source-revision": "fb12b1543cb9405c1f720a4f0ccef8519af2c5f8",
+    "brain.knowledge/release-id": "e6c3453ab023e7529f10bc285a6bfc406de1891b3678eb10f2d42b3a4fafda5e"
+  },
+  "resourceAnnotations": {
+    "argocd.argoproj.io/sync-options": "Prune=false,Delete=false"
+  },
+  "imagePullSecrets": [
+    {
+      "name": "brain-ghcr-pull"
+    }
+  ]
+}

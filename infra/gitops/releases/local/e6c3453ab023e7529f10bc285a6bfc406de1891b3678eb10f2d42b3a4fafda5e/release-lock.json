@@ -1,0 +1,60 @@
+{
+  "createdAt": "2026-11-12T15:09:26.548580+00:00",
+  "images": {
+    "activity-service": {
+      "digest": "sha256:f1a48a504198ba5d7732748aca98d6484bc10c98c214f2efff75c8812a20c34d",
+      "repository": "ghcr.io/yj901010/knowledge-brain/activity-service"
+    },
+    "brain-query-service": {
+      "digest": "sha256:b64d7c117357f3af146252a9386225927a97141a937d383210e7d79a891b5613",
+      "repository": "ghcr.io/yj901010/knowledge-brain/brain-query-service"
+    },
+    "collaboration-service": {
+      "digest": "sha256:61e840b0d6a3d141c32f28b425c4f9206813288202f31616fb415d9fafbf2ec4",
+      "repository": "ghcr.io/yj901010/knowledge-brain/collaboration-service"
+    },
+    "content-service": {
+      "digest": "sha256:0790740d1ebcab0bfd2e050fd1dc674d56ffceb72542addc105324d7d9b709d8",
+      "repository": "ghcr.io/yj901010/knowledge-brain/content-service"
+    },
+    "gateway-service": {
+      "digest": "sha256:bf5e5478d0ea7da4a27828150d538f4eb6fbb4f16458fd46d9d79bc5cdd2a3f9",
+      "repository": "ghcr.io/yj901010/knowledge-brain/gateway-service"
+    },
+    "identity-service": {
+      "digest": "sha256:c622006293a76150f82a3f5696c79125e93b65908298eb6edf8f907012ca1f70",
+      "repository": "ghcr.io/yj901010/knowledge-brain/identity-service"
+    },
+    "integration-service": {
+      "digest": "sha256:19f4482be88581789e346733635d0aefb047c09cc968dd08a92bc1c6656f60f5",
+      "repository": "ghcr.io/yj901010/knowledge-brain/integration-service"
+    },
+    "knowledge-service": {
+      "digest": "sha256:cb08e464d3faedb90412056717110584baaffa80eca21966cfcd42ad93d35317",
+      "repository": "ghcr.io/yj901010/knowledge-brain/knowledge-service"
+    },
+    "learning-service": {
+      "digest": "sha256:d017342545c2162a3f1a147daea1b5526bde634dd90c565bfa57c0b3694a1f93",
+      "repository": "ghcr.io/yj901010/knowledge-brain/learning-service"
+    },
+    "media-service": {
+      "digest": "sha256:8156c10114228d3df8b0096387222920d69b4c95628bdcfe6aa8d40b39b9e3da",
+      "repository": "ghcr.io/yj901010/knowledge-brain/media-service"
+    },
+    "notification-service": {
+      "digest": "sha256:6302f63530a47cc00bb50d1f4119d9912bcce43f616b831e7576d48c53cb5c0f",
+      "repository": "ghcr.io/yj901010/knowledge-brain/notification-service"
+    },
+    "planning-service": {
+      "digest": "sha256:68f59197a411519992a2a75e3912db7c5add69fba09c4d572406ca3edcf2ddc9",
+      "repository": "ghcr.io/yj901010/knowledge-brain/planning-service"
+    },
+    "space-service": {
+      "digest": "sha256:e4bcca2c609e843ed550f4d5b464813798171ff404232efd2f53d7508e83c100",
+      "repository": "ghcr.io/yj901010/knowledge-brain/space-service"
+    }
+  },
+  "repository": "yj901010/knowledge-brain",
+  "schemaVersion": 1,
+  "sourceRevision": "fb12b1543cb9405c1f720a4f0ccef8519af2c5f8"
+}
