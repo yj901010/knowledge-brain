@@ -1,0 +1,20 @@
+{
+  "image": {
+    "repository": "ghcr.io/yj901010/knowledge-brain/space-service",
+    "tag": "",
+    "digest": "sha256:e4bcca2c609e843ed550f4d5b464813798171ff404232efd2f53d7508e83c100",
+    "pullPolicy": "IfNotPresent"
+  },
+  "podAnnotations": {
+    "brain.knowledge/source-revision": "fb12b1543cb9405c1f720a4f0ccef8519af2c5f8",
+    "brain.knowledge/release-id": "e6c3453ab023e7529f10bc285a6bfc406de1891b3678eb10f2d42b3a4fafda5e"
+  },
+  "resourceAnnotations": {
+    "argocd.argoproj.io/sync-options": "Prune=false,Delete=false"
+  },
+  "imagePullSecrets": [
+    {
+      "name": "brain-ghcr-pull"
+    }
+  ]
+}
