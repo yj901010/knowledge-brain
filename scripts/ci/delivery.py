@@ -1,7 +1,8 @@
 """Shared CI/release commands. Inputs are data, never interpolated shell code."""
-import argparse,hashlib,json,os,re,shutil,subprocess,sys,tarfile,tempfile,xml.etree.ElementTree as ET
+import argparse,base64,hashlib,json,os,re,shutil,subprocess,sys,tarfile,tempfile,xml.etree.ElementTree as ET
 from pathlib import Path,PurePosixPath
 from datetime import datetime,timezone
+from ghcr_private import require_private_package
 
 ROOT=Path(__file__).resolve().parents[2]
 SERVICES=json.loads((ROOT/'scripts/ci/services.json').read_text())
@@ -9,7 +10,8 @@ BY_NAME={s['name']:s for s in SERVICES}
 SHA=re.compile(r'^[0-9a-f]{40}$')
 DIGEST=re.compile(r'^sha256:[0-9a-f]{64}$')
 REPOSITORY=re.compile(r'^[a-z0-9][a-z0-9_.-]*/[a-z0-9][a-z0-9_.-]*$')
-def run(args,**kwargs):return subprocess.run([str(v) for v in args],cwd=ROOT,check=True,**kwargs)
+def run(args, *, cwd=None, **kwargs):
+    return subprocess.run([str(value) for value in args], cwd=ROOT if cwd is None else cwd, check=True, **kwargs)
 def maven(args,env=None):
     env=env or os.environ.copy();image=env.get('CI_MAVEN_IMAGE')
     if image:
@@ -30,8 +32,8 @@ def maven(args,env=None):
     return run(['mvn']+args,env=env)
 def write(path,data):
     path=Path(path);path.parent.mkdir(parents=True,exist_ok=True);path.write_text(json.dumps(data,indent=2)+'\n',encoding='utf-8')
-def revision(expected=None):
-    value=run(['git','rev-parse','HEAD'],capture_output=True,text=True).stdout.strip()
+def revision(expected=None, *, cwd=None, env=None):
+    value=run(['git','rev-parse','HEAD'],cwd=cwd,env=env,capture_output=True,text=True).stdout.strip()
     if not SHA.fullmatch(value) or expected and value!=expected:raise ValueError('Exact source revision required')
     return value
 def matrix():return {'include':SERVICES}
@@ -117,10 +119,11 @@ def assemble(directory,repository,source):
         if name not in BY_NAME or name in images or data.get('sourceRevision')!=source or data.get('scanPassed') is not True:raise ValueError('Duplicate, foreign or unscanned image artifact')
         images[name]=dict(repository=data['repository'],digest=data['digest'])
     return validate_lock(dict(schemaVersion=1,repository=repository,sourceRevision=source,createdAt=datetime.now(timezone.utc).isoformat(),images=images))
-def project_legal_hashes():
+def project_legal_hashes(directory=None):
+    directory = ROOT if directory is None else directory
     result={}
     for name in ['LICENSE','NOTICE']:
-        source=(ROOT/name).read_bytes();mirror=ROOT/'infra/runtime/legal'/('project-'+name+'.txt')
+        source=(directory/name).read_bytes();mirror=directory/'infra/runtime/legal'/('project-'+name+'.txt')
         if not source or len(source)>65536 or mirror.read_bytes()!=source:raise ValueError('Project legal source and image copy must match')
         result['/licenses/knowledge-brain/project-'+name+'.txt']=hashlib.sha256(source).hexdigest()
     return result
@@ -196,29 +199,44 @@ def build_image(service,repository,source):
     run([trivy,'image','--input',tar,'--scanners','vuln','--severity','HIGH,CRITICAL','--exit-code','1','--format','json','--output',target/'trivy.json'])
     if hashlib.sha256(tar.read_bytes()).hexdigest()!=image_hash:raise ValueError('Image changed during legal/scan validation')
     write(target/'scan-proof.json',dict(sourceRevision=source,service=service,repository=image,scanPassed=True,imageTarSha256=image_hash,reportSha256=hashlib.sha256((target/'trivy.json').read_bytes()).hexdigest(),legalFiles=legal))
-def publish(service,repository,source):
-    revision(source);target=ROOT/BY_NAME[service]['module']/'target';proof=json.loads((target/'scan-proof.json').read_text())
+def publish(service, repository, source, *, source_directory=None):
+    source_directory = ROOT if source_directory is None else Path(source_directory).resolve(strict=True)
+    env = os.environ.copy()
+    token = env.pop('GHCR_TOKEN', None)
+    revision(source, cwd=source_directory, env=env)
+    target = source_directory / BY_NAME[service]['module'] / 'target'
+    receipt=target/'image.json';receipt.unlink(missing_ok=True)
+    proof=json.loads((target/'scan-proof.json').read_text())
     if proof.get('sourceRevision')!=source or proof.get('service')!=service or proof.get('repository')!='ghcr.io/'+repository+'/'+service or not proof.get('scanPassed'):raise ValueError('Verified image scan required')
     tar=target/'jib-image.tar'
     if hashlib.sha256(tar.read_bytes()).hexdigest()!=proof['imageTarSha256'] or hashlib.sha256((target/'trivy.json').read_bytes()).hexdigest()!=proof['reportSha256']:raise ValueError('Image or scan changed after validation')
-    if proof.get('legalFiles')!=project_legal_hashes():raise ValueError('Current project legal proof required')
-    user=os.environ['GHCR_USER'];token=os.environ['GHCR_TOKEN'];image=proof['repository']+':sha-'+source
+    if proof.get('legalFiles')!=project_legal_hashes(source_directory):raise ValueError('Current project legal proof required')
+    user=env['GHCR_USER'];image=proof['repository']+':sha-'+source
+    require_private_package(proof['repository'],token)
     with tempfile.TemporaryDirectory(prefix='brain-ghcr-') as directory:
-        env=os.environ.copy();env['DOCKER_CONFIG']=directory
-        run(['docker','login','ghcr.io','--username',user,'--password-stdin'],input=token,text=True,env=env)
+        env['DOCKER_CONFIG']=directory
+        # An explicit auth entry prevents Docker from selecting a native credential helper.
+        auth = base64.b64encode(f'{user}:{token}'.encode('utf-8')).decode('ascii')
+        config = os.open(Path(directory)/'config.json', os.O_WRONLY|os.O_CREAT|os.O_EXCL, 0o600)
+        with os.fdopen(config, 'w', encoding='utf-8') as stream:
+            json.dump({'auths': {'ghcr.io': {'auth': auth}}}, stream)
         run(['docker','load','--input',tar],env=env);run(['docker','push',image],env=env)
         digests=json.loads(run(['docker','image','inspect',image,'--format','{{json .RepoDigests}}'],capture_output=True,text=True,env=env).stdout)
         values=[v.split('@',1)[1] for v in digests if v.startswith(proof['repository']+'@')]
         if len(set(values))!=1 or not DIGEST.fullmatch(values[0]):raise ValueError('Pushed manifest digest missing')
-    write(target/'image.json',dict(service=service,repository=proof['repository'],digest=values[0],sourceRevision=source,scanPassed=True,legalFiles=proof['legalFiles']))
+    require_private_package(proof['repository'],token)
+    write(receipt,dict(service=service,repository=proof['repository'],digest=values[0],sourceRevision=source,scanPassed=True,legalFiles=proof['legalFiles']))
 def main():
-    p=argparse.ArgumentParser();p.add_argument('command',choices=['matrix','frontend','restore-web','backend','build-image','publish','assemble','assert-revision','release-source']);p.add_argument('--service',choices=list(BY_NAME));p.add_argument('--repository');p.add_argument('--revision');p.add_argument('--directory');p.add_argument('--branch');p.add_argument('--output',default='.local/release-lock.json');a=p.parse_args()
+    p=argparse.ArgumentParser();p.add_argument('command',choices=['matrix','frontend','restore-web','backend','build-image','publish','assemble','assert-revision','release-source']);p.add_argument('--service',choices=list(BY_NAME));p.add_argument('--repository');p.add_argument('--revision');p.add_argument('--directory');p.add_argument('--branch');p.add_argument('--output',default='.local/release-lock.json')
+    p.add_argument('--source-directory', type=Path, help='Source checkout containing the scanned archive for publish')
+    a=p.parse_args()
+    if a.source_directory is not None and a.command!='publish':p.error('--source-directory is only supported for publish')
     if a.command=='matrix':print(json.dumps(matrix(),separators=(',',':')))
     elif a.command=='frontend':frontend()
     elif a.command=='restore-web':restore_web(a.directory,revision(a.revision))
     elif a.command=='backend':backend(a.service)
     elif a.command=='build-image':build_image(a.service,a.repository,a.revision)
-    elif a.command=='publish':publish(a.service,a.repository,a.revision)
+    elif a.command=='publish':publish(a.service,a.repository,a.revision,source_directory=a.source_directory)
     elif a.command=='assemble':write(ROOT/a.output,assemble(a.directory,a.repository,a.revision))
     elif a.command=='assert-revision':print(revision(a.revision))
     elif a.command=='release-source':
