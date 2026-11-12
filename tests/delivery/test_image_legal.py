@@ -1,4 +1,5 @@
 """Real layered Docker archives verify the project license publication gate."""
+import base64
 import hashlib
 import io
 import json
@@ -10,7 +11,7 @@ import tarfile
 import tempfile
 from types import SimpleNamespace
 import unittest
-from unittest.mock import patch
+from unittest.mock import call, patch
 
 ROOT=Path(__file__).resolve().parents[2];sys.path.insert(0,str(ROOT/'scripts/ci'))
 import delivery
@@ -125,10 +126,36 @@ class ImageLegalTests(unittest.TestCase):
             expected={'/'+name:hashlib.sha256(data).hexdigest() for name,data in files.items()}
             proof=json.loads((target/'scan-proof.json').read_text());self.assertEqual(expected,proof['legalFiles'])
             self.assertEqual(hashlib.sha256(archive.read_bytes()).hexdigest(),proof['imageTarSha256'])
+            temporary_configs=[]
             def docker(command,**kwargs):
+                self.assertNotIn('GHCR_TOKEN',kwargs['env'])
+                self.assertNotEqual(['docker','login'],command[:2])
+                config=Path(kwargs['env']['DOCKER_CONFIG'])/'config.json'
+                self.assertEqual({'auths':{'ghcr.io':{'auth':base64.b64encode(b'fixture:disposable-test-only').decode('ascii')}}},json.loads(config.read_text()))
+                temporary_configs.append(config)
                 return SimpleNamespace(stdout=json.dumps(['ghcr.io/'+REPO+'/gateway-service@sha256:'+'c'*64]))
-            with patch.object(delivery,'ROOT',root),patch.object(delivery,'revision',return_value=SHA),patch.object(delivery,'run',side_effect=docker),patch.dict(os.environ,GHCR_USER='fixture',GHCR_TOKEN='disposable-test-only'):
-                delivery.publish('gateway-service',REPO,SHA)
+            package='ghcr.io/'+REPO+'/gateway-service'
+            policy=root/'workflow-checkout';policy.mkdir()
+            with patch.object(delivery,'ROOT',policy),patch.object(delivery,'revision',return_value=SHA) as source_check,patch.dict(os.environ,GHCR_USER='fixture',GHCR_TOKEN='disposable-test-only'):
+                with patch.object(delivery,'require_private_package',side_effect=ValueError('package not private')),patch.object(delivery,'run') as external:
+                    with self.assertRaisesRegex(ValueError,'package not private'):
+                        delivery.publish('gateway-service',REPO,SHA,source_directory=root)
+                    external.assert_not_called()
+                    self.assertFalse((target/'image.json').exists())
+                with patch.object(delivery,'require_private_package',side_effect=[None,ValueError('package changed')]),patch.object(delivery,'run',side_effect=docker):
+                    with self.assertRaisesRegex(ValueError,'package changed'):
+                        delivery.publish('gateway-service',REPO,SHA,source_directory=root)
+                    self.assertFalse((target/'image.json').exists())
+                with patch.object(delivery,'require_private_package') as privacy,patch.object(delivery,'run',side_effect=docker):
+                    delivery.publish('gateway-service',REPO,SHA,source_directory=root)
+                self.assertEqual([call(package,'disposable-test-only'),call(package,'disposable-test-only')],privacy.call_args_list)
+                self.assertEqual(3,source_check.call_count)
+                for attempt in source_check.call_args_list:
+                    self.assertEqual((SHA,),attempt.args)
+                    self.assertEqual(root.resolve(),attempt.kwargs['cwd'])
+                    self.assertNotIn('GHCR_TOKEN',attempt.kwargs['env'])
+            self.assertTrue(temporary_configs)
+            self.assertFalse(any(config.exists() for config in temporary_configs))
             self.assertEqual(expected,json.loads((target/'image.json').read_text())['legalFiles'])
 
     def test_archive_changed_during_scan_never_gets_success_proof(self):

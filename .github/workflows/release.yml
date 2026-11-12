@@ -24,7 +24,12 @@ jobs:
           ref: ${{ inputs.source_revision }}
           fetch-depth: 0
           persist-credentials: false
-      - run: python scripts/ci/delivery.py release-source --revision "$SOURCE_REVISION" --branch "$DEFAULT_BRANCH"
+      - name: Verify the source revision belongs to the default branch
+        shell: bash
+        run: |
+          [[ "$SOURCE_REVISION" =~ ^[0-9a-f]{40}$ ]]
+          test "$(git rev-parse HEAD)" = "$SOURCE_REVISION"
+          git merge-base --is-ancestor "$SOURCE_REVISION" "refs/remotes/origin/$DEFAULT_BRANCH"
         env:
           SOURCE_REVISION: ${{ inputs.source_revision }}
           DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
@@ -35,14 +40,27 @@ jobs:
     uses: ./.github/workflows/ci.yml
     with:
       revision: ${{ inputs.source_revision }}
-  images:
+  registry:
     needs: [source, validate]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    environment: ghcr-release
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.workflow_sha }}
+          sparse-checkout: scripts/ci
+          persist-credentials: false
+      - name: Verify all release packages are already private
+        run: python scripts/ci/ghcr_private.py --repository "${REPOSITORY,,}"
+        env:
+          REPOSITORY: ${{ github.repository }}
+          GHCR_TOKEN: ${{ secrets.GHCR_PUBLISH_TOKEN }}
+  images:
+    needs: [source, registry]
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     environment: ghcr-release
-    permissions:
-      contents: read
-      packages: write
     strategy:
       fail-fast: false
       max-parallel: 2
@@ -66,10 +84,20 @@ jobs:
         run: python scripts/ci/delivery.py restore-web --directory .local/download-web --revision "$SOURCE_REVISION"
       - run: python scripts/ci/bootstrap.py trivy
       - run: python scripts/ci/delivery.py build-image --service "$SERVICE" --repository "${REPOSITORY,,}" --revision "$SOURCE_REVISION"
-      - run: python scripts/ci/delivery.py publish --service "$SERVICE" --repository "${REPOSITORY,,}" --revision "$SOURCE_REVISION"
+      # The workflow commit carries publication policy even for an older image source.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .local/release-policy
+          sparse-checkout: scripts/ci
+          persist-credentials: false
+      - name: Verify private package and publish scanned image
+        shell: bash
+        run: |
+          python .local/release-policy/scripts/ci/delivery.py publish --source-directory . --service "$SERVICE" --repository "${REPOSITORY,,}" --revision "$SOURCE_REVISION"
         env:
-          GHCR_USER: ${{ github.actor }}
-          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GHCR_USER: ${{ github.repository_owner }}
+          GHCR_TOKEN: ${{ secrets.GHCR_PUBLISH_TOKEN }}
       - if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:

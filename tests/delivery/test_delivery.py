@@ -92,6 +92,30 @@ class ReleaseTests(unittest.TestCase):
                         name,sha=action.split('@');self.assertEqual(lock['actions'][name]['sha'],sha)
         ci=yaml.load((ROOT/'.github/workflows/ci.yml').read_text(),Loader=yaml.BaseLoader)
         self.assertTrue(all('permissions' not in job for job in ci['jobs'].values()))
+    def test_release_requires_private_packages_even_for_an_older_image_source(self):
+        workflow=yaml.load((ROOT/'.github/workflows/release.yml').read_text(),Loader=yaml.BaseLoader)
+        source_steps=workflow['jobs']['source']['steps']
+        source_runs=[step['run'] for step in source_steps if 'run' in step]
+        self.assertIn('test "$(git rev-parse HEAD)" = "$SOURCE_REVISION"',source_runs[0])
+        self.assertIn('git merge-base --is-ancestor "$SOURCE_REVISION" "refs/remotes/origin/$DEFAULT_BRANCH"',source_runs[0])
+        self.assertNotIn('delivery.py',source_runs[0])
+        registry=workflow['jobs']['registry']
+        images=workflow['jobs']['images']
+        self.assertEqual({'source','validate'},set(registry['needs']))
+        self.assertIn('registry',images['needs'])
+        for job in (registry,images):
+            self.assertEqual('ghcr-release',job['environment'])
+            self.assertNotIn('permissions',job)
+            self.assertTrue(any(step.get('with',{}).get('ref')=='${{ github.workflow_sha }}' for step in job['steps']))
+        preflight=registry['steps'][-1]
+        self.assertIn('ghcr_private.py',preflight['run'])
+        publish=next(step for step in images['steps'] if 'delivery.py publish' in step.get('run',''))
+        policy_checkout=next(step for step in images['steps'] if step.get('with',{}).get('ref')=='${{ github.workflow_sha }}')
+        self.assertEqual('.local/release-policy',policy_checkout['with']['path'])
+        self.assertLess(images['steps'].index(policy_checkout),images['steps'].index(publish))
+        self.assertTrue(publish['run'].strip().startswith('python .local/release-policy/scripts/ci/delivery.py publish --source-directory . '))
+        for step in (preflight,publish):
+            self.assertEqual('${{ secrets.GHCR_PUBLISH_TOKEN }}',step['env']['GHCR_TOKEN'])
 class ChartTests(unittest.TestCase):
     def helm(self,*args,ok=True):
         result=subprocess.run([os.environ.get('HELM','helm'),'template','gateway-service',str(ROOT/'infra/charts/brain-service'),*args],capture_output=True,text=True)
